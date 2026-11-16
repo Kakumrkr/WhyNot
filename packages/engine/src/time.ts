@@ -1,4 +1,4 @@
-import { DateTime } from "luxon";
+import { DateTime, IANAZone } from "luxon";
 import {
   ClockSchema,
   ClockEndSchema,
@@ -39,6 +39,9 @@ function calendar(date: string): DateTime | null {
 function atMinute(minute: number, zone: string): TimeResult<DateTime> {
   if (!MinuteSchema.safeParse(minute).success)
     return failure("Expected a safe integer UTC minute", ["minute"]);
+  // Luxon's invalid constructors consult Settings.now, so reject before construction.
+  if (Math.abs(minute * 60000) > 8640000000000000 || !IANAZone.create(zone).isValid)
+    return failure("Unsupported instant or timezone", ["timezone"]);
   const value = DateTime.fromMillis(minute * 60000, { zone, locale: "en" });
   if (!value.isValid || !DateSchema.safeParse(value.toISODate()).success)
     return failure("Unsupported instant or timezone", ["timezone"]);
@@ -86,10 +89,13 @@ export function addLocalDays(date: string, days: number): TimeResult<string> {
   const base = calendar(date);
   if (base === null || !Number.isSafeInteger(days))
     return failure("Expected a date and safe integer day count", ["date"]);
-  const shifted = base.plus({ days }).toISODate();
-  return shifted !== null && DateSchema.safeParse(shifted).success
-    ? success(shifted)
-    : failure("Local date arithmetic overflow", ["date"]);
+  // This is a UTC-encoded calendar date, not a zoned instant with a DST day length.
+  const shifted = addElapsedDays(base.toMillis() / 60000, days);
+  if (!shifted.ok) return failure("Local date arithmetic overflow", ["date"]);
+  const value = atMinute(shifted.value, "UTC");
+  if (!value.ok) return failure("Local date arithmetic overflow", ["date"]);
+  const result = value.value.toISODate();
+  return result === null ? failure("Local date arithmetic overflow", ["date"]) : success(result);
 }
 
 /** Count calendar days rather than elapsed 24-hour periods. */
@@ -130,6 +136,7 @@ export function resolveRecurringBoundary(
   }
   const base = calendar(date);
   if (base === null) return failure("Invalid calendar date", ["date"]);
+  if (!IANAZone.create(zone).isValid) return failure("Unknown timezone", ["timezone"]);
   const hour = Number(clock.slice(0, 2));
   const minute = Number(clock.slice(3, 5));
   const wall = base.set({ hour, minute });

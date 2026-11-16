@@ -142,6 +142,12 @@ verify remote HEAD and open a PR. Do not start another session.
 - Scope boundary: helpers report structured issues for later evaluation validation; no evaluate/isBookable/rules are implemented. Notice/advance tests cover arithmetic only; rule decisions begin 1.3. No new dependencies or infrastructure.
 - Unresolved material questions: none. Implemented only; independent review and merge pending. Next eligible implementation is Session 1.3 after PR #4's review/merge. Stop after 1.2.
 
+#### Session 1.2 independent review corrections — 2026-11-16
+
+- User explicitly requested independent review and merge. Fresh review of e3eef275766fb72586d62a0ff1f21fa9b4f9dfcd found one major issue: Luxon invalid constructors consult Settings.now, so unsupported instants/zones threw when the actual clock was disabled. Reviewer independently passed pnpm verify (87 tests/11 files), planning checks and diff checks; changes were required before merge.
+- Added a regression that first reproduced the actual-clock read, then rejected invalid timezone/timestamp ranges before Luxon construction. Checked UTC-encoded calendar-day arithmetic also avoids invalid construction on huge day shifts. Existing date, DST and error semantics remain unchanged. The clock-disabled regression covers invalid instants/zones, large/overflowing local-day shifts, next-midnight overflow, folds and gaps. No golden corrections or new dependencies.
+- Follow-up independent review and final-head checks remain pending until recorded in PR #4/session response. Merge is explicitly authorized by the user after successful review/checks; no later session is started here.
+
 Exact next prompt (fresh review task):
 
 ```text

@@ -226,4 +226,36 @@ describe("local grids and half-open intervals", () => {
     }
     expect(hours).toEqual([{ weekday: 7, from: "00:00", to: "24:00" }]);
   });
+
+  it("returns structured failures without consulting the clock on invalid inputs", () => {
+    const clock = vi.spyOn(Date, "now").mockImplementation(() => {
+      throw new Error("Actual clock read");
+    });
+    try {
+      const invalidResults = [
+        formatOffsetInstant(Number.MAX_SAFE_INTEGER, london),
+        formatOffsetInstant(-Number.MAX_SAFE_INTEGER, london),
+        formatOffsetInstant(144000000001, london),
+        formatOffsetInstant(-144000000001, london),
+        formatOffsetInstant(0, "bad"),
+        resolveRecurringBoundary("2026-01-01", "00:00", "bad"),
+        datedSchedule([], "2026-01-01", "bad"),
+        gridStarts("2026-01-01", "bad", 15),
+        addLocalDays("2026-01-01", Number.MAX_SAFE_INTEGER),
+        addLocalDays("2026-01-01", -Number.MAX_SAFE_INTEGER),
+        addLocalDays("9999-12-31", 1),
+        resolveRecurringBoundary("9999-12-31", "24:00", london, true),
+        resolveRecurringBoundary("2026-03-29", "01:30", london),
+        resolveRecurringBoundary("2026-10-25", "01:30", london),
+      ];
+      for (const result of invalidResults) {
+        expect(result).toEqual({
+          ok: false,
+          issues: [expect.objectContaining({ message: expect.any(String) })],
+        });
+      }
+    } finally {
+      clock.mockRestore();
+    }
+  });
 });
