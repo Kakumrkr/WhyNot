@@ -137,3 +137,8 @@ _Scope:_ no domain exports, routes, DB, provider settings, benchmark/e2e placeho
 _License:_ MIT original code, copyright Rama Kakumani, verified from repository owner Kakumrkr's GitHub profile API; confirms D-042.
 
 _Rejected:_ unsupported installed Node 20; incompatible latest TypeScript 7; premature future-stack dependencies; version-marker APIs created solely to smoke-test skeleton packages. _Revisit if:_ support windows or upstream peers change, or the packaging session establishes public release metadata.
+
+## Session 1.1 contracts
+
+**D-060 · Supply web-standard declarations required by Zod.**
+The first real contracts import exposes Zod 4.6.7's declaration dependency on the global `URL` type. Add `DOM` alongside `ES2022` to the contracts package's type libraries; retain `types: []`, strict checking and `skipLibCheck: false`. This supplies declarations only, adds no runtime dependency and preserves architectural/browser lint checks. Do not add Node globals or suppress dependency type errors. Other packages retain their existing settings until they consume schemas in their owning sessions.
