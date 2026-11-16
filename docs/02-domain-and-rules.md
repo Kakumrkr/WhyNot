@@ -32,6 +32,8 @@ Policy        { versionId, minNoticeMin, maxAdvanceDays, patientMaxBookingsPerDa
 
 `WeeklyHours` is a list of `{ weekday, from: 'HH:mm', to: 'HH:mm' }` in clinic local time. `Window` is `{ id, from, to }` in instants.
 
+Schedule starts use `00:00`–`23:59`; ends additionally allow `24:00`, the next local date's midnight. Split overnight hours across weekdays; a full local day is `00:00`–`24:00` (D-061). Grounded break intervals use the same end-boundary convention.
+
 ## Rule catalog (v1)
 
 Each rule produces facts for specific subjects. **Kind** drives grouping and wording. **Weight** drives which explanation is preferred when several are possible (lower weight = preferred to *mention*; see doc 03). **Visibility** controls what patients see. **Relaxable by** controls whether a fact may appear in alternatives (patient changes their request) or admin fixes (clinic changes policy).
