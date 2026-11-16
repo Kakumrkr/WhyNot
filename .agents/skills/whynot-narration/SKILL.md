@@ -1,30 +1,16 @@
 ---
 name: whynot-narration
-description: Use for WhyNot wording work — per-rule templates (patient and staff), the Narrator interface, the OpenAI narrator (Responses API, structured output, cache, budget), the verifier, and the narration eval runner. Use with the openai-docs skill for current API syntax.
+description: Implement WhyNot deterministic patient/staff templates and, only in optional AI sessions, grounded wording experiments and their evaluations.
 ---
 
-# Wording and AI narration in WhyNot
+# Templates and later wording experiments
 
-Spec: `docs/04-explanation-and-ai.md` (authoritative), `docs/06-testing-and-accuracy.md` (narration eval).
+Read doc 04 and card. First release uses synchronous deterministic TemplateNarrator, not provider calls. One template per 23-rule/audience plus synthetic projected facts/groups/alternatives/policy/range. Tests iterate actual catalog and public schema.
 
-## Templates
+Use already projected facts and formatting helpers only; no engine decisions, DB lookups or raw staff inputs for patient wording. Cite actual references. No time change guidance falsely presented as bookable alternative. Incomplete searches get honest copy.
 
-- One function per rule ID per audience in `packages/narrator/src/templates/`; plus group templates.
-- Templates only use `fact.params`, subject `displayName`, and formatting helpers (clinic timezone, locale). No engine calls, no data lookups.
-- Patient tone: polite, specific, never blaming, never revealing staff-only info. Staff tone: precise, includes rule names and settings.
-- The catalog-coverage test enforces both templates for every rule.
+A1 defines benefit and output contract before A2 provider work. Constrained approved wording is recommended; free prose requires explicit limits. Citation/number/name/deny-list checks can miss reversed meaning and negation; never claim semantic proof.
 
-## OpenAI narrator
+For A2/A3, check current official API docs using openai-docs. Keys/config injected from API; browser-safe template entry points cannot import provider. Project before model input, cap budgets/timeouts, fail to templates, isolate audience cache keys if caching is approved.
 
-- Check current API syntax with `openai-docs` before coding (Responses API + strict JSON schema output). Do not rely on memory for parameter names.
-- Model from `OPENAI_MODEL`; key from `OPENAI_API_KEY`; both read only in `apps/api` config and passed in. The narrator package never reads `process.env` itself.
-- Input = projected facts + template sentences + alternatives. Never pass unprojected evaluations for patient audience.
-- Timeouts, one transport retry, no retry on verification failure, cache by content hash, daily cap.
-- Bump `PROMPT_VERSION` whenever the system prompt or few-shots change.
-
-## Verifier
-
-- Deterministic, no model calls. Checks: schema, citations exist, coverage, token grounding, privacy, no promises, length (doc 04 table).
-- Any failure ⇒ return template narration with `source: 'template'` and the report.
-- Every check has adversarial unit tests (fake model outputs that should fail): invented time, invented name, missing citation, staff-only word, promise phrase, other patient's name, extra sentence count.
-- Prefer false rejections over false acceptances. Don't loosen a check to raise pass rates — improve the prompt instead.
+Adversaries include reversed referral requirement, negation, fake citation, invented action/time/name, leakage and transport/budget failure. No lowering check strictness merely to hit a pass-rate. Live eval without key is incomplete, not passed. Static demo remains template-only.

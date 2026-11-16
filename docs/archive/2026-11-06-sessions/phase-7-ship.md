@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 7 — Ship
 
 Exit gate: the v1.0 release checklist in `docs/07-roadmap.md` is 100% ticked.

@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 0 — Foundation
 
 Exit gate: `pnpm verify` green locally and in CI; import-boundary and engine-purity lint rules demonstrably fail on a violating sample; project skills visible in Codex.

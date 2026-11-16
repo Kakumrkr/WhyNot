@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 4 — Patient experience (the demo)
 
 Exit gate (checked in Session 4.5): Playwright e2e for H1, H2, H3, H7, H9, H10 pass in **full** and **static** mode; axe reports no serious/critical issues; desktop + mobile screenshots approved by you; static build deploys to GitHub Pages.

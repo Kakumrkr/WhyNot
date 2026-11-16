@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 3 — API & data
 
 Exit gate (checked in Session 3.4): API integration suite green on PGlite (and `@pg` tests green in CI); concurrent-booking test passes; H1–H8 reproduce through `POST /api/explain` on the seeded DB with the same outcomes as the engine goldens.

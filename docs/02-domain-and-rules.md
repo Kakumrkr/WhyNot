@@ -26,7 +26,7 @@ Service       { id, displayName, durationMin, requiredSkill: SkillId, requiredRo
                 requiredEquipmentType?: EquipmentTypeId, bufferAfterMin, roomTurnoverMin,
                 eligibility: 'any' | 'returning_only' | 'referral_required' }
 Patient       { id, displayName, isReturning: boolean, referrals: ServiceId[] }
-Booking       { id, patientId, serviceId, practitionerId, roomId, equipmentId?, start, end, status: 'confirmed' }
+Booking       { id, patientId, serviceId, practitionerId, roomId, equipmentId?, start, end, status: 'confirmed' | 'cancelled' }
 Policy        { versionId, minNoticeMin, maxAdvanceDays, patientMaxBookingsPerDay, defaultDailyCap? }
 ```
 
@@ -60,6 +60,7 @@ Each rule produces facts for specific subjects. **Kind** drives grouping and wor
 | `equipment-type` | capability | equipment unit | Unit is not of the required type | 6 | staff | — |
 | `equipment-maintenance` | availability | equipment unit + window | Unit out of service | 4 | public ("equipment unavailable") | patient |
 | `equipment-busy` | occupancy | equipment unit + booking | Unit in use by another booking | 4 | public | patient |
+| `resource-missing` | capability | clinic + missing dimension | Required practitioner/room pool empty, or equipment required but pool empty | 1 | public | — |
 
 Notes:
 
@@ -94,7 +95,7 @@ The fixture generator (`packages/fixtures/src/clinic.ts`) builds this determinis
 
 ## Hero scenarios (the demo stories)
 
-Unless a scenario says otherwise, `now` = Monday of the demo week, 09:00 clinic time. These are written **before** the engine exists. Golden tests assert them. Each must make a viewer think "a normal booking system couldn't tell me that".
+Unless a scenario says otherwise, `now` = Monday of the demo week, 09:00 clinic time. These are written **before** the engine exists. Golden tests assert them. Each demonstrates a useful explanation, without claiming other schedulers cannot explain failures.
 
 | # | Request | Expected explanation | Expected top alternative |
 | --- | --- | --- | --- |
@@ -114,3 +115,17 @@ Unless a scenario says otherwise, `now` = Monday of the demo week, 09:00 clinic 
 | H9 | Ultrasound, Mon–Fri of demo week, patient **without** referral | `fully_blocked`; common cause = referral required (headline); no per-time noise | `null` — UI copy: "Ask your GP for a referral" |
 | H10 | GP consultation with Dr. Okafor, Friday | `fully_blocked`; common cause = Dr. Okafor doesn't work Fridays | Mon 10:00 Dr. Okafor (first slot of her next working day) |
 | H11 | Minor procedure, Tuesday, `now` = Tue 08:30 | `fully_blocked`; no common cause; context = only Dr. Rao and Dr. Mehta offer minor procedures; segments: until 10:30 · 2 hours' notice → mid-day · Dr. Rao fully booked + Dr. Mehta on leave → after 16:00 · Dr. Rao not working (fixture places Rao's bookings to make this exact) | Wed, first free slot with Dr. Rao or Dr. Mehta |
+
+## Revised scenario and input rules (D-052)
+
+There are 23 internal rule IDs: the original 22 plus resource-missing. Public projection replacements use a separate enum. Empty pools are valid modeled states; missing referenced entities are invalid snapshots. Structural explanation behavior is in doc 03.
+
+Resolve each golden to an immutable Riverside base plus named overrides. Random background load must not disturb hand-placed expected facts or alternatives. Isolate H11's fully blocked Tuesday from H1's 14:45 opening.
+
+H1 keeps its room/equipment free at 14:30 and 14:45; its room turnover no longer blocks 14:30, leaving practitioner buffer as intended cause. H6 includes unsuitable rooms' capability facts as internal evidence, grouped in resource context.
+
+H9 uses a patient without referral and no incidental global blocker. H10 keeps Monday 10:00 available within the advance window. H5 keeps Friday same time feasible; H8 keeps next day same time feasible. H7's cost remains 4 for 10:00 same doctor and 8 for 09:00 another doctor.
+
+Hand-check all golden grid boundaries, lead times, primary weights and alternatives before implementation. Keep all necessary facts in evidence even if range copy abbreviates them. Test snapshot isolation.
+
+Snapshot includes covered from/to instants. Time validation follows doc 03. maxAdvanceDays means maxAdvanceDays * 1440 elapsed UTC minutes. Ignore cancelled bookings in every count/conflict. Weekly hours use separate day intervals instead of overnight spans.

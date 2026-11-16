@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 1 — Engine core (proof)
 
 Exit gate (checked in Session 1.6): properties P1–P5, P8, P9, P12 pass at `FC_NUM_RUNS=5000`; H1–H8 golden **explanation** expectations pass; S-dataset bench meets doc 03 targets for `isBookable` and `evaluate` without alternatives. If the gate fails, fix the engine before starting Phase 2. No UI work happens until this gate passes.
