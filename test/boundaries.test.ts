@@ -39,7 +39,18 @@ const invalid = [
   ["apps/web/src/App.tsx", 'import "./credentials.server.js";', "whynot/boundaries"],
   ["apps/web/src/App.tsx", 'import "node:process";', "whynot/boundaries"],
   ["apps/web/src/App.tsx", "void process.env.OPENAI_API_KEY;", "no-restricted-globals"],
-  ["apps/web/src/App.tsx", "void import.meta.env.VITE_SECRET;", "no-restricted-syntax"],
+  ["apps/web/src/App.tsx", "void import.meta.env.VITE_SECRET;", "whynot/browser-environment"],
+  [
+    "apps/web/src/App.tsx",
+    "const { env } = import.meta; void env.VITE_SECRET;",
+    "whynot/browser-environment",
+  ],
+  [
+    "apps/web/src/App.tsx",
+    "const meta = import.meta; void meta.env;",
+    "whynot/browser-environment",
+  ],
+  ["apps/web/src/App.tsx", "void globalThis.process.env.SECRET;", "no-restricted-globals"],
   [
     "apps/web/src/adapter/staticAdapter.ts",
     'import "@whynot/fixtures/test/generators";',
@@ -70,6 +81,21 @@ const invalid = [
     "export const value: any = 1;",
     "@typescript-eslint/no-explicit-any",
   ],
+  [
+    "packages/engine/test/sample.test.ts",
+    'import { test } from "vitest"; const { skip } = test; skip("bad", () => {});',
+    "whynot/complete-tests",
+  ],
+  [
+    "packages/engine/test/sample.test.ts",
+    'import { test } from "vitest"; const { only: focus } = test; focus("bad", () => {});',
+    "whynot/complete-tests",
+  ],
+  [
+    "packages/engine/test/sample.test.ts",
+    'import * as suite from "vitest"; suite.xtest("bad", () => {});',
+    "whynot/complete-tests",
+  ],
 ];
 
 test.each(invalid)("rejects %s: %s", async (filePath, code, ruleId) => {
@@ -89,6 +115,7 @@ const valid = [
   ["apps/web/src/adapter/staticAdapter.ts", 'import "@whynot/fixtures";'],
   ["packages/engine/test/sample.test.ts", 'import "@whynot/fixtures/test/generators";'],
   ["apps/web/src/App.tsx", 'import "react"; import "./App.js";'],
+  ["apps/web/src/App.tsx", 'export const asset = new URL("./image.png", import.meta.url);'],
 ];
 
 test.each(valid)("allows %s: %s", async (filePath, code) => {

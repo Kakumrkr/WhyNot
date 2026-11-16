@@ -10,3 +10,4 @@ docs/**/*.md
 !docs/PROGRESS.md
 !docs/QUESTIONS.md
 !docs/08-decisions.md
+!docs/validation/session-0.1.md

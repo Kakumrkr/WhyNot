@@ -125,14 +125,14 @@ These future-session decisions do not block 0.1. No unresolved first-release arc
 
 ## Session 0.1 foundation
 
-**D-043 � Pin the supported foundation toolchain; resolve Q-1.**
+**D-043 · Pin the supported foundation toolchain; resolve Q-1.**
 Checked npm stable versions and engine/peer requirements on 2026-11-16. Select Node **24.22.3 LTS**, pnpm **12.21.0**, TypeScript **6.0.3**, Zod **4.6.7**, Luxon **3.7.2**, React/React DOM **19.3.1**, Vite **8.3.8**, Vitest **5.1.0**, ESLint **10.15.0**, @eslint/js **10.0.1**, typescript-eslint **8.73.0**, @vitejs/plugin-react **6.3.0**, Prettier **3.10.1** and fast-check **4.10.2**. Type packages: Node **24.19.2**, React/React DOM **19.3.0**, Luxon **3.7.6**. Exact package versions and lockfile are committed.
 
 _Why:_ Node 24 is supported LTS ([release schedule](https://nodejs.org/en/about/previous-releases)); the installed Node 20 is unsuitable. TypeScript 7 is stable but exceeds typescript-eslint's declared <6.1 peer range; 6.0.3 satisfies it. The selected Vite/Vitest/React/plugin peers agree. Local isolated tools under ignored .tools avoid changing the machine's Node installation. CI reads the same Node and pnpm pins and uses a frozen install. pnpm's generated, version-specific minimumReleaseAgeExclude entries retain its default supply-chain policy for the selected current parser; no blanket policy disable.
 
 _Boundaries:_ package roots are ESM, private until packaging is owned by 5.1. Source import allowlists enforce contracts <- engine, contracts <- narrator, fixtures -> contracts/engine. Only apps/web/src/adapter/staticAdapter.ts may import the fixture runtime from production web source; test-only fixture paths never enter production. Luxon is confined to engine/src/time.ts. Browser source cannot import Node, server or provider packages, or read environment settings. ESLint programmatic samples check rejected and permitted edges. This is a development guardrail, not a security sandbox or semantic proof of purity.
 
-_Scope:_ no domain exports, routes, DB, provider settings, benchmark/e2e placeholders, design system or executable Node adoption example. Update README's status/commands as part of foundation handoff. Prettier covers current files and maintained progress/questions/decisions; pre-existing planning skills/specs and historical archive keep their original formatting to avoid unrelated churn. Tests/configuration live at root where they enforce workspace architecture.
+_Scope:_ no domain exports, routes, DB, provider settings, benchmark/e2e placeholders, design system or executable Node adoption example. Update README's status/commands as part of foundation handoff. Prettier covers current files and maintained progress/questions/decisions; pre-existing planning skills/specs and historical archive keep their original formatting to avoid unrelated churn. Tests/configuration live at root where they enforce workspace architecture. Foundation evidence and the inspected screenshot live under docs/validation. The test stage compiles library prerequisites before native Node imports through package exports; the final build stage also builds the web page.
 
 _License:_ MIT original code, copyright Rama Kakumani, verified from repository owner Kakumrkr's GitHub profile API; confirms D-042.
 

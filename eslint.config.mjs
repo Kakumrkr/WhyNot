@@ -1,6 +1,11 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
-import { boundaries, completeTests, purityGlobals } from "./eslintBoundaries.mjs";
+import {
+  boundaries,
+  completeTests,
+  browserEnvironment,
+  purityGlobals,
+} from "./eslintBoundaries.mjs";
 
 export default [
   { ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**", ".tools/**"] },
@@ -8,7 +13,15 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    plugins: { whynot: { rules: { boundaries, "complete-tests": completeTests } } },
+    plugins: {
+      whynot: {
+        rules: {
+          boundaries,
+          "complete-tests": completeTests,
+          "browser-environment": browserEnvironment,
+        },
+      },
+    },
     rules: {
       "whynot/boundaries": "error",
       "whynot/complete-tests": "error",
@@ -24,7 +37,7 @@ export default [
     rules: { "no-restricted-syntax": "off" },
   },
   {
-    files: ["packages/engine/src/**/*.ts"],
+    files: ["packages/engine/src/**/*.{ts,tsx,js,mjs}"],
     rules: {
       "no-restricted-globals": ["error", ...purityGlobals],
       "no-restricted-syntax": [
@@ -52,12 +65,16 @@ export default [
   },
   {
     files: [
-      "apps/web/src/**/*.{ts,tsx}",
-      "packages/narrator/src/**/*.ts",
-      "packages/contracts/src/**/*.ts",
+      "apps/web/src/**/*.{ts,tsx,js,mjs}",
+      "packages/narrator/src/**/*.{ts,tsx,js,mjs}",
+      "packages/contracts/src/**/*.{ts,tsx,js,mjs}",
     ],
     rules: {
-      "no-restricted-globals": ["error", "process", "require"],
+      "no-restricted-globals": [
+        "error",
+        { globals: ["process", "require"], checkGlobalObject: true },
+      ],
+      "whynot/browser-environment": "error",
       "no-restricted-syntax": [
         "error",
         { selector: "ExportDefaultDeclaration", message: "Use named exports." },

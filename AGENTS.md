@@ -23,18 +23,18 @@ Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README
 
 Use Node 24.22.3 and pnpm 12.21.0 (see .node-version and packageManager).
 
-| Command                        | Current behavior                                                        |
-| ------------------------------ | ----------------------------------------------------------------------- |
-| pnpm install                   | Install the workspace and update the lockfile                           |
-| pnpm install --frozen-lockfile | Install exactly the committed dependency graph; used in CI              |
-| pnpm format                    | Format current source/configuration and maintained handoff documents    |
-| pnpm format:check              | Check that formatting without writing                                   |
-| pnpm lint                      | Enforce TypeScript, source boundaries, engine purity and complete tests |
-| pnpm typecheck                 | Check strict TypeScript across source, tests and configuration          |
-| pnpm test                      | Run package ESM smoke imports and programmatic ESLint boundary samples  |
-| pnpm build                     | Compile package ESM/declarations and build the static React page        |
-| pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast    |
-| pnpm dev                       | Start the static Vite app at http://127.0.0.1:5173; no Docker           |
+| Command                        | Current behavior                                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| pnpm install                   | Install the workspace and update the lockfile                                                      |
+| pnpm install --frozen-lockfile | Install exactly the committed dependency graph; used in CI                                         |
+| pnpm format                    | Format current source/configuration and maintained handoff documents                               |
+| pnpm format:check              | Check that formatting without writing                                                              |
+| pnpm lint                      | Enforce TypeScript, source boundaries, engine purity and complete tests                            |
+| pnpm typecheck                 | Check strict TypeScript across source, tests and configuration                                     |
+| pnpm test                      | Compile package prerequisites, then run native ESM entry smoke imports and ESLint boundary samples |
+| pnpm build                     | Compile package ESM/declarations and build the static React page                                   |
+| pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast                               |
+| pnpm dev                       | Start the static Vite app at http://127.0.0.1:5173; no Docker                                      |
 
 Benchmarks, browser suites, DB and narration commands arrive with their owning sessions. No passing placeholders.
 

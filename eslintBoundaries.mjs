@@ -133,10 +133,28 @@ export const completeTests = {
     messages: { incomplete: "Tests must run unconditionally." },
   },
   create(context) {
+    const modifiers = [
+      "skip",
+      "only",
+      "todo",
+      "skipIf",
+      "runIf",
+      "xtest",
+      "xit",
+      "xdescribe",
+      "fit",
+      "fdescribe",
+    ];
     return {
+      Property(node) {
+        const name = node.computed ? node.key.value : node.key.name;
+        if (node.parent.type === "ObjectPattern" && modifiers.includes(name)) {
+          context.report({ node, messageId: "incomplete" });
+        }
+      },
       MemberExpression(node) {
         const name = node.computed ? node.property.value : node.property.name;
-        if (["skip", "only", "todo", "skipIf", "runIf"].includes(name)) {
+        if (modifiers.includes(name)) {
           context.report({ node, messageId: "incomplete" });
         }
       },
@@ -149,6 +167,29 @@ export const completeTests = {
               context.report({ node: specifier, messageId: "incomplete" });
             }
           }
+        }
+      },
+    };
+  },
+};
+
+/** Permit import.meta.url without allowing aliases to browser environment settings. */
+export const browserEnvironment = {
+  meta: {
+    type: "problem",
+    schema: [],
+    messages: {
+      env: "Browser source may use only import.meta.url; no environment or meta aliases.",
+    },
+  },
+  create(context) {
+    return {
+      MetaProperty(node) {
+        if (node.meta.name !== "import") return;
+        const parent = node.parent;
+        const name = parent.computed ? parent.property?.value : parent.property?.name;
+        if (parent.type !== "MemberExpression" || name !== "url") {
+          context.report({ node, messageId: "env" });
         }
       },
     };
