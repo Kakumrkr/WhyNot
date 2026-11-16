@@ -16,6 +16,20 @@ to create another conversation or restate the task.
 Not activated. Do not describe this document or a saved prompt as a running service.
 Use an isolated test task for activation checks before enabling roadmap work.
 
+### Requested schedule and account
+
+- Account: user reports ChatGPT Plus. Verify account-specific Codex Cloud access
+  and hosted trigger support; the subscription alone does not prove either is configured.
+- Cadence: daily at **22:00 and 00:00 CST**, requested 2026-11-16.
+- Timezone: interpret the explicitly requested CST as fixed **UTC−06:00**,
+  year-round. This is not the daylight-saving schedule of America/Chicago.
+- UTC equivalents: **04:00 and 06:00 UTC** each day. For a UTC cron executor,
+  the equivalent expression is `0 4,6 * * *`.
+- Each trigger resumes an active card first; the midnight trigger must not start
+  another worker if the 22:00 run still owns the card.
+- Activation: pending. These saved preferences have not created a scheduled job.
+  No separate API billing or paid overage has been authorized.
+
 Before activation, record the user's chosen execution route, schedule, timezone,
 merge policy, model access and spending limit. Credential values belong in the
 provider's secret store, never this repository or chat. Verify a hosted run and
@@ -36,6 +50,14 @@ Current official references checked 2026-11-16:
 [scheduled tasks](https://learn.chatgpt.com/docs/automations),
 [cloud environments](https://learn.chatgpt.com/docs/environments/cloud-environments),
 [Codex GitHub Action](https://learn.chatgpt.com/docs/github-action).
+
+Plus includes Codex, and Codex Cloud is available to eligible Plus accounts,
+subject to rollout, settings and usage limits; see
+[Codex with a ChatGPT plan](https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan).
+The official Codex GitHub Action documents an API key as a prerequisite.
+[API billing is separate from ChatGPT](https://help.openai.com/en/articles/9039756-managing-billing-for-chatgpt-and-the-api-platform).
+Do not treat connecting GitHub to Codex as proof that a scheduled GitHub Actions
+worker can use the Plus subscription's allowance.
 
 ## Setup sequence
 
