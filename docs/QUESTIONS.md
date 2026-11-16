@@ -4,7 +4,7 @@ Record unresolved material ambiguity here instead of inventing architecture, rul
 
 ## Open blockers
 
-None for Session 0.1. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. Deferred version/design/DB/model/hosting decisions belong to their named sessions in doc 08; they are not reasons to block foundation work.
+None for Session 0.1. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. Deferred design/DB/model/hosting decisions belong to their named sessions in doc 08; they are not reasons to block foundation work.
 
 ## Planning resolutions — 2026-11-16
 

@@ -1,11 +1,11 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Session 0.1 foundation is implemented on session/0.1-foundation; follow-up review and final CI are pending. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Session 0.1 foundation is implemented on session/0.1-foundation; independent review and implementation CI are green; the requested merge is pending. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
 | [0.0](sessions/session-0.0.md) | Planning handoff                                 | done        | pending  | done    | [#1](https://github.com/Kakumrkr/WhyNot/pull/1) |
-| [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | pending  | pending | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
+| [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | pending | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | pending     | pending  | pending | —                                               |
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | pending     | pending  | pending | —                                               |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | pending     | pending  | pending | —                                               |
@@ -39,16 +39,16 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Session 0.1 foundation is im
 
 ## Milestone evidence
 
-| Gate             | State                                         | Evidence                                                                                           |
-| ---------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Planning 0.0     | implemented and merged; review unrecorded     | [Validation report](validation/session-0.0.md); PR #1 merged at dd7ed80                            |
-| Foundation 0.1   | local gate green; follow-up review/CI pending | [Validation report](validation/session-0.1.md); [PR #2](https://github.com/Kakumrkr/WhyNot/pull/2) |
-| Core 1.6         | pending                                       | —                                                                                                  |
-| Alternatives 2.3 | pending                                       | —                                                                                                  |
-| Preview 3.3      | pending                                       | —                                                                                                  |
-| Policy/range 4.4 | pending                                       | —                                                                                                  |
-| Release 5.2      | pending                                       | —                                                                                                  |
-| Optional P/H/A   | not selected                                  | Human selection after first release                                                                |
+| Gate             | State                                                       | Evidence                                                                                           |
+| ---------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Planning 0.0     | implemented and merged; review unrecorded                   | [Validation report](validation/session-0.0.md); PR #1 merged at dd7ed80                            |
+| Foundation 0.1   | implemented; independent review and CI green; merge pending | [Validation report](validation/session-0.1.md); [PR #2](https://github.com/Kakumrkr/WhyNot/pull/2) |
+| Core 1.6         | pending                                                     | —                                                                                                  |
+| Alternatives 2.3 | pending                                                     | —                                                                                                  |
+| Preview 3.3      | pending                                                     | —                                                                                                  |
+| Policy/range 4.4 | pending                                                     | —                                                                                                  |
+| Release 5.2      | pending                                                     | —                                                                                                  |
+| Optional P/H/A   | not selected                                                | Human selection after first release                                                                |
 
 ## Handoff notes
 
@@ -69,8 +69,8 @@ Old cards are archived. Session IDs have been reassigned: consult active index.
 - Built: pinned supported workspace, four empty ESM package entry points, minimal React page, strict types, architectural lint tests, real verification commands, locked-install CI, MIT license and PR template. No domain behavior or future infrastructure.
 - Branch: session/0.1-foundation; [PR #2](https://github.com/Kakumrkr/WhyNot/pull/2). Stable checkpoint 17360aefbe8abaf8ee82e4913672551710035771 pushed and remote verified. Final HEAD belongs in PR/final response.
 - Evidence: pnpm install; second pnpm install --frozen-lockfile; pnpm verify green. Initial CI green at [run 43957545990](https://github.com/Kakumrkr/WhyNot/actions/runs/43957545990). After review fixes: 49 tests across 5 files, native built-package imports and web build green. [Screenshot](validation/session-0.1.png) inspected at 1280x800; no full browser/axe suite claimed before 3.1.
-- Independent review: initial fresh-task whynot-review requested changes for browser meta aliases, destructured skipped helpers and source-only smoke imports. All three fixed with regression checks; follow-up review pending. Merge pending until actual GitHub evidence.
-- Decision: D-043 resolves Q-1, supported compatible pins and verified MIT owner. No unresolved material questions. Only final review/CI/handoff remain.
+- Independent review: initial fresh-task whynot-review requested changes for browser meta aliases, destructured skipped helpers and source-only smoke imports. All three fixed with regression checks. Fresh follow-up review of baf593438816607ce8b25b90a2f1bef8bc91a4e9 found no remaining issues and independently reran pnpm verify (49 tests) and diff checks. Implementation CI is green at run 43958296672. Merge pending until actual GitHub evidence; final merge/HEAD are recorded in the PR and response.
+- Decision: D-043 resolves Q-1, supported compatible pins and verified MIT owner. No unresolved material questions. Only final documentation-head CI and the explicitly requested merge remain.
 - Next eligible card after this PR merges: 1.1; stop here. A later task reconciles actual merge evidence from PR #2 rather than assuming it.
 
 Exact next prompt (do not execute in this session):
