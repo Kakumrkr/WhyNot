@@ -1,0 +1,12 @@
+pnpm-lock.yaml
+node_modules/
+dist/
+coverage/
+.tools/
+docs/archive/
+.agents/
+.codex/
+docs/**/*.md
+!docs/PROGRESS.md
+!docs/QUESTIONS.md
+!docs/08-decisions.md

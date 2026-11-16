@@ -2,34 +2,34 @@
 
 > Active revision: D-050–D-059 below governs the current plan. Earlier entries and original Open assignments are historical wherever superseded; use the Revised deferred decisions table.
 
-Format: **ID · Decision** — *Why* — *Rejected alternatives* — *Revisit if*. New decisions are appended; superseded ones are marked, never deleted.
+Format: **ID · Decision** — _Why_ — _Rejected alternatives_ — _Revisit if_. New decisions are appended; superseded ones are marked, never deleted.
 
 ## Product
 
 **D-001 · Build WhyNot (explainable booking engine) instead of the VouchDesk support-investigation agent.**
-*Why:* VouchDesk's category is crowded (Pluno, Pylon, Intercom Fin) and its plan needed months of third-party integration work; WhyNot has an original combination, a provable core, and a 60-second demo.
-*Rejected:* VouchDesk; generic RAG/chat apps; agent replay debugger (good, but less demo-friendly).
-*Revisit if:* never for v1.
+_Why:_ VouchDesk's category is crowded (Pluno, Pylon, Intercom Fin) and its plan needed months of third-party integration work; WhyNot has an original combination, a provable core, and a 60-second demo.
+_Rejected:_ VouchDesk; generic RAG/chat apps; agent replay debugger (good, but less demo-friendly).
+_Revisit if:_ never for v1.
 
-**D-002 · Portfolio-quality product first, not a startup.** Commercial adoption is unlikely (platforms own the rules). *Revisit if* real demand appears after launch.
+**D-002 · Portfolio-quality product first, not a startup.** Commercial adoption is unlikely (platforms own the rules). _Revisit if_ real demand appears after launch.
 
-**D-003 · Demo business: fictional Riverside Family Clinic.** Clinics have the richest interacting rules (skills, rooms, equipment, buffers, referrals). *Rejected:* gym, coworking.
+**D-003 · Demo business: fictional Riverside Family Clinic.** Clinics have the richest interacting rules (skills, rooms, equipment, buffers, referrals). _Rejected:_ gym, coworking.
 
 **D-004 · Single clinic, single timezone, single-appointment requests in v1.** Keeps the algorithm exact and fast. Extension notes in doc 03.
 
-**D-006 · Position WhyNot on the three moments where hiding slots fails** (patient stuck on an empty day/practitioner, front-desk calls, invisible lost bookings) — not on the ordinary "pick another open slot" case. Adds range explanations ("Why is this empty?", Session 2.5) as a first-class feature. *Why:* most apps hide unavailable slots; a single-slot explainer alone would solve a rare problem.
+**D-006 · Position WhyNot on the three moments where hiding slots fails** (patient stuck on an empty day/practitioner, front-desk calls, invisible lost bookings) — not on the ordinary "pick another open slot" case. Adds range explanations ("Why is this empty?", Session 2.5) as a first-class feature. _Why:_ most apps hide unavailable slots; a single-slot explainer alone would solve a rare problem.
 
 **D-005 · The demo creates bookings in its own DB; WhyNot integrates with no third-party scheduler in v1.**
 
 ## Engine
 
-**D-010 · Pure TypeScript engine, no external solver.** Demo-sized candidate matrices (≤ ~100 candidates) are solved exactly with a hitting-set branch-and-bound. Enables in-browser static demo. *Rejected:* OR-Tools/Python service (second language, deployment cost), MiniZinc, clingo. *Revisit if* bench L dataset matters or multi-resource/series bookings are added.
+**D-010 · Pure TypeScript engine, no external solver.** Demo-sized candidate matrices (≤ ~100 candidates) are solved exactly with a hitting-set branch-and-bound. Enables in-browser static demo. _Rejected:_ OR-Tools/Python service (second language, deployment cost), MiniZinc, clingo. _Revisit if_ bench L dataset matters or multi-resource/series bookings are added.
 
-**D-011 · Explanation = minimum-weight irredundant hitting set over the violation matrix.** Sufficient + minimal by construction; weights encode "simplest true thing". *Rejected:* first-failing-rule (misleading), all violations (noisy), LLM-chosen reasons (unverifiable).
+**D-011 · Explanation = minimum-weight irredundant hitting set over the violation matrix.** Sufficient + minimal by construction; weights encode "simplest true thing". _Rejected:_ first-failing-rule (misleading), all violations (noisy), LLM-chosen reasons (unverifiable).
 
 **D-012 · Buffers/turnover are separate rules from busy.** Lets explanations distinguish "booked" from "policy buffer" and powers admin fixes.
 
-**D-013 · Instants are integer epoch minutes (UTC) inside the engine; luxon isolated in `time.ts`.** *Rejected:* Date objects everywhere (TZ bugs), Temporal polyfill (heavier; revisit when Temporal is universal).
+**D-013 · Instants are integer epoch minutes (UTC) inside the engine; luxon isolated in `time.ts`.** _Rejected:_ Date objects everywhere (TZ bugs), Temporal polyfill (heavier; revisit when Temporal is universal).
 
 **D-014 · Alternatives ranked by an explicit, configurable cost model with category diversity.** "Nearest" is a preference; making it explicit makes it honest and tunable.
 
@@ -37,7 +37,7 @@ Format: **ID · Decision** — *Why* — *Rejected alternatives* — *Revisit if
 
 ## AI
 
-**D-020 · OpenAI API for optional narration (user choice: cost).** Behind a `Narrator` interface; model via `OPENAI_MODEL` env, chosen by the narration eval in Session 5.3. *Revisit if* cost/quality changes — swapping providers touches one file.
+**D-020 · OpenAI API for optional narration (user choice: cost).** Behind a `Narrator` interface; model via `OPENAI_MODEL` env, chosen by the narration eval in Session 5.3. _Revisit if_ cost/quality changes — swapping providers touches one file.
 
 **D-021 · Templates are the default and the ground truth; AI output must pass a deterministic verifier or is replaced by templates.** The model never decides anything.
 
@@ -45,13 +45,13 @@ Format: **ID · Decision** — *Why* — *Rejected alternatives* — *Revisit if
 
 ## Platform
 
-**D-030 · TypeScript monorepo with pnpm workspaces** (`packages/contracts`, `engine`, `narrator`, `fixtures`; `apps/api`, `apps/web`). *Rejected:* Nx/Turborepo (unneeded at this size), separate repos.
+**D-030 · TypeScript monorepo with pnpm workspaces** (`packages/contracts`, `engine`, `narrator`, `fixtures`; `apps/api`, `apps/web`). _Rejected:_ Nx/Turborepo (unneeded at this size), separate repos.
 
 **D-031 · Fastify + Drizzle + PostgreSQL 16; React + Vite + TanStack Query + Tailwind; Recharts.**
 
 **D-032 · API tests use PGlite (in-process Postgres), so no Docker is required in any sandbox.** Postgres-only features get `@pg`-tagged tests run in CI with a service container.
 
-**D-033 · Demo role switcher instead of real authentication.** No real users or data exist. Clearly labelled. *Revisit if* hosted with real users (never planned).
+**D-033 · Demo role switcher instead of real authentication.** No real users or data exist. Clearly labelled. _Revisit if_ hosted with real users (never planned).
 
 **D-034 · Double safety for booking races:** serializable transaction re-evaluation + Postgres exclusion constraints.
 
@@ -67,13 +67,13 @@ Format: **ID · Decision** — *Why* — *Rejected alternatives* — *Revisit if
 
 ## Open (to decide in the named session)
 
-| ID | Question | Session |
-| --- | --- | --- |
-| Q-1 | Exact pinned versions of Node, pnpm, and libraries | 0.1 |
-| Q-2 | PGlite support for `btree_gist` exclusion constraints | 3.1 |
-| Q-3 | Visual design direction (style, palette, typography) | 4.1 |
-| Q-4 | OpenAI model for narration | 5.3 |
-| Q-5 | Full-stack hosting provider (or none) | 7.2 |
+| ID  | Question                                              | Session |
+| --- | ----------------------------------------------------- | ------- |
+| Q-1 | Exact pinned versions of Node, pnpm, and libraries    | 0.1     |
+| Q-2 | PGlite support for `btree_gist` exclusion constraints | 3.1     |
+| Q-3 | Visual design direction (style, palette, typography)  | 4.1     |
+| Q-4 | OpenAI model for narration                            | 5.3     |
+| Q-5 | Full-stack hosting provider (or none)                 | 7.2     |
 
 ## Approved revision — 2026-11-16 (Session 0.0)
 
@@ -113,12 +113,27 @@ Update seven project skills; add whynot-planning. Main implementer plus fresh-ta
 
 This table replaces the earlier Open table's obsolete session assignments; those rows above are historical.
 
-| ID | Decision to resolve | Owner |
-| --- | --- | --- |
-| Q-1 | Supported pinned Node LTS >=22, pnpm and compatible stable libraries; record D-043 | 0.1 |
-| Q-2 | PGlite btree_gist/concurrency support; record evidence and real-Postgres fallback | P1 |
-| Q-3 | Accessible calm clinic design tokens and typography | 3.1 |
-| Q-4 | Whether AI adds value, output constraints, provider/model if justified | A1/A2 |
-| Q-5 | Full-stack hosting optional; static Pages is fixed | P5, only if human requests hosting |
+| ID  | Decision to resolve                                                               | Owner                              |
+| --- | --------------------------------------------------------------------------------- | ---------------------------------- |
+| Q-1 | Resolved by D-043: pinned supported Node/pnpm and compatible stable libraries     | 0.1                                |
+| Q-2 | PGlite btree_gist/concurrency support; record evidence and real-Postgres fallback | P1                                 |
+| Q-3 | Accessible calm clinic design tokens and typography                               | 3.1                                |
+| Q-4 | Whether AI adds value, output constraints, provider/model if justified            | A1/A2                              |
+| Q-5 | Full-stack hosting optional; static Pages is fixed                                | P5, only if human requests hosting |
 
 These future-session decisions do not block 0.1. No unresolved first-release architecture choice should be delegated silently to implementation.
+
+## Session 0.1 foundation
+
+**D-043 � Pin the supported foundation toolchain; resolve Q-1.**
+Checked npm stable versions and engine/peer requirements on 2026-11-16. Select Node **24.22.3 LTS**, pnpm **12.21.0**, TypeScript **6.0.3**, Zod **4.6.7**, Luxon **3.7.2**, React/React DOM **19.3.1**, Vite **8.3.8**, Vitest **5.1.0**, ESLint **10.15.0**, @eslint/js **10.0.1**, typescript-eslint **8.73.0**, @vitejs/plugin-react **6.3.0**, Prettier **3.10.1** and fast-check **4.10.2**. Type packages: Node **24.19.2**, React/React DOM **19.3.0**, Luxon **3.7.6**. Exact package versions and lockfile are committed.
+
+_Why:_ Node 24 is supported LTS ([release schedule](https://nodejs.org/en/about/previous-releases)); the installed Node 20 is unsuitable. TypeScript 7 is stable but exceeds typescript-eslint's declared <6.1 peer range; 6.0.3 satisfies it. The selected Vite/Vitest/React/plugin peers agree. Local isolated tools under ignored .tools avoid changing the machine's Node installation. CI reads the same Node and pnpm pins and uses a frozen install. pnpm's generated, version-specific minimumReleaseAgeExclude entries retain its default supply-chain policy for the selected current parser; no blanket policy disable.
+
+_Boundaries:_ package roots are ESM, private until packaging is owned by 5.1. Source import allowlists enforce contracts <- engine, contracts <- narrator, fixtures -> contracts/engine. Only apps/web/src/adapter/staticAdapter.ts may import the fixture runtime from production web source; test-only fixture paths never enter production. Luxon is confined to engine/src/time.ts. Browser source cannot import Node, server or provider packages, or read environment settings. ESLint programmatic samples check rejected and permitted edges. This is a development guardrail, not a security sandbox or semantic proof of purity.
+
+_Scope:_ no domain exports, routes, DB, provider settings, benchmark/e2e placeholders, design system or executable Node adoption example. Update README's status/commands as part of foundation handoff. Prettier covers current files and maintained progress/questions/decisions; pre-existing planning skills/specs and historical archive keep their original formatting to avoid unrelated churn. Tests/configuration live at root where they enforce workspace architecture.
+
+_License:_ MIT original code, copyright Rama Kakumani, verified from repository owner Kakumrkr's GitHub profile API; confirms D-042.
+
+_Rejected:_ unsupported installed Node 20; incompatible latest TypeScript 7; premature future-stack dependencies; version-marker APIs created solely to smoke-test skeleton packages. _Revisit if:_ support windows or upstream peers change, or the packaging session establishes public release metadata.
