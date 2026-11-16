@@ -1,13 +1,13 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Session 0.1 foundation is independently reviewed and confirmed merged through PR #2. Session 1.1 contracts are implemented on session/1.1-contracts with verification green; independent review and merge remain pending through PR #3. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 time handling and minimal fixtures are implemented on session/1.2-time-fixtures with verification green; independent review and merge remain pending through PR #4. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
 | [0.0](sessions/session-0.0.md) | Planning handoff                                 | done        | pending  | done    | [#1](https://github.com/Kakumrkr/WhyNot/pull/1) |
 | [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | done    | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
-| [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | pending  | pending | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
-| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | pending     | pending  | pending | —                                               |
+| [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
+| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | pending  | pending | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | pending     | pending  | pending | —                                               |
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | pending     | pending  | pending | —                                               |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
@@ -119,6 +119,43 @@ Next eligible implementation only after PR #3 is independently reviewed and merg
 $whynot-session
 Start Session 1.2 using docs/sessions/session-1.2.md.
 Confirm PR #3 is merged and reconcile docs/PROGRESS.md with that evidence.
+Read the full card and required documents/skills. Implement only its Build list.
+Commit logical verified checkpoints, run required checks, push all commits,
+verify remote HEAD and open a PR. Do not start another session.
+```
+
+#### Session 1.1 follow-up review and merge — 2026-11-16
+
+- User explicitly requested review and merge while starting 1.2. Fresh independent whynot-review of b3f4bf3f9b808f4b10e7d2fd975da89459a62813 found no remaining findings and recommended merge. Both prior findings were verified fixed. Reviewer independently ran pnpm verify on Node 24.22.3/pnpm 12.21.0: 72 tests across 9 files, strict types, lint, formatting, native ESM imports and all builds passed. git diff --check main...HEAD passed; no review edits.
+- Review result recorded on PR #3 using authenticated GitHub CLI; latest-head CI run 43963452093 succeeded. Connector write calls returned integration-access 403; native CLI completed the authorized review/merge.
+- GitHub API confirmed PR #3 closed and merged at 384e9e3455cdef475dd4b977906bf10f8b3a8c62. Clean main was fast-forwarded to origin/main before creating Session 1.2. Earlier pending-review/merge notes above are historical.
+
+### 1.2 — Time handling and minimal fixtures (2026-11-16)
+
+- Built: UTC-minute/explicit-offset parsing and formatting; local-date and exact elapsed arithmetic; half-open overlap/containment; local-midnight grids; end-only 24:00, weekly materialization and overnight splitting. London fold/gap recurring boundaries return structured unsupported_wall_time issues; explicit offsets select fold instants. Grid enumeration omits gaps and retains both fold occurrences. Historical sub-minute offsets are rejected to preserve integer-minute semantics.
+- Fixtures: fresh authored minimal builders, fixed demoNow = 29913660 (2026-11-16 09:00 London), distinct test-only fast-check generation with 0–8 practitioners, 0–6 rooms, 0–3 equipment, hours/policies and confirmed/cancelled bookings. Seed 12012026 repeats exactly. London/Kolkata and empty pools are exercised. No random generators or fast-check in built package exports. No full Riverside/hero scenarios, rules, alternatives or UI changes.
+- Branch: session/1.2-time-fixtures; [PR #4](https://github.com/Kakumrkr/WhyNot/pull/4). Verified implementation checkpoint 6c9240d pushed. Final HEAD and remote equality belong in PR/final response.
+- Verification: baseline pnpm verify passed (72 tests); implementation pnpm verify passed (87 tests across 11 files), including formatting, lint/import/purity guards, strict types, native built ESM imports and all package/web builds. Targeted time/fixture suite passed (15 tests). Properties retain 500 local runs and FC_NUM_RUNS=5000 in CI with default seed/counterexample failure output. No property failures or golden corrections. Initial new-test epoch typo was corrected against an independent UTC calculation. No browser/PostgreSQL gate applies; no UI/screenshot evidence required.
+- Decision: D-062 supplies DOM declarations required by Zod in the first engine/fixture contract consumers, without runtime changes or weakened strict/purity checks. Luxon is isolated in time.ts; explicitly anchored construction avoids implicit clock reads. A throwing actual-clock spy verifies that behavior. Test generators intentionally live under fixtures/test/generate.ts instead of the card's src/generate.ts suggestion, preserving the test-only boundary.
+- Scope boundary: helpers report structured issues for later evaluation validation; no evaluate/isBookable/rules are implemented. Notice/advance tests cover arithmetic only; rule decisions begin 1.3. No new dependencies or infrastructure.
+- Unresolved material questions: none. Implemented only; independent review and merge pending. Next eligible implementation is Session 1.3 after PR #4's review/merge. Stop after 1.2.
+
+Exact next prompt (fresh review task):
+
+```text
+$whynot-review
+Review Session 1.2, PR #4, against docs/sessions/session-1.2.md and its required specification.
+Use fresh context. Inspect the full diff, D-062 and validation evidence; run applicable checks.
+Report findings with severity, file/line, evidence and suggested fix.
+Do not edit, post comments, push or merge unless separately instructed.
+```
+
+Next implementation only after PR #4 is independently reviewed and merged:
+
+```text
+$whynot-session
+Start Session 1.3 using docs/sessions/session-1.3.md.
+Confirm PR #4 is merged and reconcile docs/PROGRESS.md with that evidence.
 Read the full card and required documents/skills. Implement only its Build list.
 Commit logical verified checkpoints, run required checks, push all commits,
 verify remote HEAD and open a PR. Do not start another session.
