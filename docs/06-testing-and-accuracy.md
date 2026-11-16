@@ -1,110 +1,62 @@
-# 06 — Testing & accuracy
+# 06 — Testing and accuracy
 
-WhyNot's credibility is that its answers are **provably correct** and **judged helpful**. Those are different and are tested differently.
+## Gates
 
-## The single gate: `pnpm verify`
+Session 0.0 has no package manifest: validate document links, card completeness, dependency order, skills/frontmatter, agent TOML and whitespace. Do not claim pnpm verify ran.
 
-Every session ends with `pnpm verify` green. It runs, in order:
+From 0.1, pnpm verify runs format:check, lint, typecheck, test and build, failing fast. Run baseline on untouched branches after scaffold exists. Session 0.1 creates the gate and demonstrates it green. No success-returning test:e2e/bench placeholders; introduce commands with real suites.
 
-1. `pnpm format:check` (Prettier)
-2. `pnpm lint` (ESLint incl. import-boundary rules)
-3. `pnpm typecheck` (tsc `--noEmit`, all packages, strict)
-4. `pnpm test` (Vitest: unit + property + golden + integration on PGlite)
-5. `pnpm build` (all packages and apps)
+CI sets FC_NUM_RUNS=5000; local default 500. Print failure seeds and save shrunk counterexamples as normal tests. No skip/only/todo, lowered counts, disabled lint or weakened assertions.
 
-CI runs the same script, plus Playwright e2e and the `@pg` tests against a real Postgres service on `main` and PRs. A session is not done if `pnpm verify` is red — no exceptions, no skipped tests.
+Browser CI starts at 3.1 against built static app, full mode at P5, real-Postgres job at P1. Report unavailable required environments; do not silently omit checks.
 
-## Test layers
+## Test layers and generators
 
-| Layer | Tool | Where | What it proves |
-| --- | --- | --- | --- |
-| Unit | Vitest | `*/test/*.test.ts` | Each rule check, time conversion, template, verifier check |
-| **Property** | fast-check | `engine/test/properties.test.ts` | Engine invariants hold for thousands of random clinics and requests |
-| **Differential** | Vitest + reference impl | `engine/test/differential.test.ts` | Optimised engine agrees with a naive, obviously-correct implementation |
-| **Golden** | Vitest + JSON scenarios | `fixtures/scenarios/*.json` | Hero and edge scenarios produce the human-expected explanation and alternatives |
-| Integration | Vitest + PGlite + Fastify `inject` | `apps/api/test` | Routes, validation, projection, booking transactions |
-| E2E | Playwright | `apps/web/e2e` | Hero journeys in a real browser (full mode and static mode) |
-| Accessibility | @axe-core/playwright | e2e | No serious/critical violations on key pages |
-| Narration eval | `tools/eval-narration` | manual/CI-optional | AI wording quality and verifier pass rate |
-| Benchmarks | Vitest bench / tinybench | `engine/bench` | Speed targets (doc 03) |
+Unit rules/time/projection/templates; differential independent reference; goldens written from doc 02 before implementation; properties over valid clinics and separate malformed input cases; real-engine browser journeys; axe plus keyboard/focus/contrast/responsive checks; external benchmark wrappers. Provider mocks/evals begin A2.
 
-## Engine properties (must always hold)
+Generators are fixture test-only exports. Exercise all implemented rules, 0–8 practitioners, 0–6 rooms, 0–3 equipment, bookings, hours and policies. Keep brute-force optimality instances bounded to <=12 facts without lowering run counts. Generate empty pools explicitly.
 
-Generators (`fixtures/src/generate.ts`) produce random but valid snapshots (1–8 practitioners, 1–6 rooms, 0–3 equipment units, random hours/breaks/leave/maintenance, 0–60 bookings, random policies) and random requests, with a fixed seed per CI run printed on failure.
+## Properties
 
-| ID | Property |
+| ID | Required behavior |
 | --- | --- |
-| P1 | **Feasibility correctness:** `outcome === 'bookable'` ⇔ the reference implementation finds a valid assignment |
-| P2 | **Bookable assignments are valid:** the returned assignment violates no rule (checked by the reference) |
-| P3 | **Sufficiency:** every candidate's `V(a)` intersects `explanation.primary` |
-| P4 | **Irredundancy (minimality):** for each primary fact `x`, some candidate has `V(a) ∩ primary = {x}` |
-| P5 | **Optimality:** when `optimal === true`, no hitting set of lower weight exists (brute force on instances with ≤ 12 distinct facts) |
-| P6 | **Alternatives are bookable:** every alternative re-evaluates to `bookable` with the same assignment |
-| P7 | **Alternatives are distinct and ordered:** no duplicate (practitioner, start); cost non-decreasing within the diversity rules |
-| P8 | **Determinism:** shuffling every input array yields a deep-equal result |
-| P9 | **Purity:** calling twice with the same input yields equal output; input objects are not mutated (deep-frozen inputs in tests) |
-| P10 | **Privacy:** patient projection contains no staff-only rule IDs, no `reason` params, no other patient IDs/names, no raw booking IDs |
-| P11 | **Admin fix validity:** relaxing exactly the admin-fix facts makes the original request bookable; `adminFix` contains only admin-relaxable facts |
-| P12 | **Fact integrity:** every `primary` id exists in `facts`; every fact's `ruleId` is in the catalog |
-| P13 | **Range coverage:** `explainRange` segments cover every candidate slot exactly once, in time order; each slot's primary facts ⊆ its segment's facts; `fully_blocked` ⇔ no slot is bookable |
-| P14 | **Range common cause & next available:** every common-cause pair is in every slot's signature, and when non-empty `commonCause` alone blocks every slot (sufficiency); `nextAvailable` (if any) re-evaluates bookable and lies after the range |
+| P1 | Bookable iff independent checker finds valid assignment |
+| P2 | Returned assignment violates no reference rule |
+| P3 | Matrix explanation covers every real row; structural explanation has true missing-resource witness |
+| P4 | Each matrix-primary fact uniquely hits some row; structural primary is exactly one true missing dimension |
+| P5 | optimal true implies minimum weight and canonical equal-weight tie on bounded matrices; structural cases checked separately |
+| P6 | Changed alternative request is bookable and supplied assignment reference-valid |
+| P7 | Distinct start/practitioner; costs/categories/order obey diversity, not incorrect global monotonicity |
+| P8 | Shuffled inputs yield deep-equal output |
+| P9 | Deep-frozen input unchanged; repeated calls equal |
+| P10 | Patient serialization contains no staff IDs/params, reason values, raw bookings, other patients or dangling references |
+| P11 | Applying actual allowlisted adminFix patches makes original request bookable |
+| P12 | Internal references resolve to catalog facts; public references resolve under public schema |
+| P13 | Fully blocked segments/context cover eligible starts once/in order; closed dates explicit; count/status match feasibility |
+| P14 | Common-cause actual facts suffice per slot; nextAvailable rechecks after range and respects preference/search status |
+| P15 | Preview immutable; baseline/modified evaluations equal direct checks at same now |
+| P16 | Search respects budget and exhaustive small-domain completion reference; incomplete search never claims absence |
 
-Run counts: 5,000 cases per property in CI (`FC_NUM_RUNS`), 500 locally by default for speed.
+Introduce properties with owning features; earlier tests remain green. Until capabilities land, public outputs use documented disabled fields.
 
-## Reference implementation
+## Reference checker
 
-`engine/src/reference/` is a deliberately naive feasibility checker written **independently** of the optimised path: it loops over every practitioner × room × equipment combination and checks every rule directly from the snapshot, with no factorisation, indexes or bitsets. It must stay simple enough to review by eye. It is used only in tests.
+packages/engine/test/reference directly loops real candidates and checks domain rules, without optimized evaluators, matrix or indexes. No production exports. Review hand-computed cases so differential paths cannot merely share the same mistake.
 
-## Golden scenarios
+## Golden and regression corpus
 
-Format (`fixtures/scenarios/H1-procedure-buffer.json`):
+H1–H8 explanations in 1.6, template expectations in 2.2, alternatives in 2.3, actual patches in 4.1; isolated H9–H11 in 4.3. Format: schemaVersion, id, named snapshot/overrides, injected now, request, expected behavior. Adding planned expectations is permitted; changing existing expectations needs a decision and PR explanation.
 
-```json
-{
-  "id": "H1",
-  "title": "Minor procedure blocked by buffer + leave",
-  "snapshot": "riverside",          // or inline overrides
-  "now": "2026-11-09T09:00:00+00:00",
-  "request": { "patientId": "pt-asha", "serviceId": "svc-minor-proc", "start": "2026-11-10T14:30:00+00:00" },
-  "expect": {
-    "outcome": "blocked",
-    "primaryRuleIds": ["practitioner-buffer", "practitioner-time-off", "practitioner-skill"],
-    "primaryFactIdsInclude": ["practitioner-buffer:prac=dr-rao:booking=bk-h1-a"],
-    "topAlternative": { "start": "2026-11-10T14:45:00+00:00", "practitionerId": "dr-rao" },
-    "adminFixSettings": ["service.svc-minor-proc.bufferAfterMin"],
-    "patientTextIncludes": ["15-minute", "14:45"]
-  }
-}
-```
+At least 16 edge goldens: DST transition, closing boundary, break edge, exact adjacency, zero buffers, no qualified practitioner, no capable room, patient-limit plus notice, preference plus leave, equipment-only conflict, maintenance midnight, advance boundary, exact notice, exact cap, cancelled booking, equal-cost ties.
 
-Rules:
+Additional regressions: every empty pool, malformed references, equal-weight ties, node fallback, evaluation budget, snapshot truncation, shared-setting patch, projection references, ranges across different bookings, H1/H11 isolation, imports and consumer packaging.
 
-- Scenarios are written from the **spec (doc 02)**, before the code that satisfies them.
-- An expectation may only be changed together with a decision-log entry explaining why the original expectation was wrong. Never "update the golden file to make it pass".
-- Required set by v1.0: H1–H11 + at least 16 edge scenarios (DST change day, request at closing boundary, appointment spanning a break edge, back-to-back exact adjacency, zero buffers, all practitioners unqualified, no rooms with capability, patient limit + notice together, preference + leave, equipment-only conflict, maintenance spanning midnight, max-advance boundary, min-notice exact boundary, daily cap exactly reached, cancelled booking ignored, two equal-cost alternatives tie-break).
+## Review, performance and claims
 
-## Helpfulness review (human)
+Human helpfulness: correct, clear, complete enough, kind, actionable; target >=4/5 per audience/scenario. Record reviewer/date and real observations in docs/reviews. Missing reviewers mean validation pending; technical preview/release reports status honestly.
 
-For each hero scenario, the reviewer (you) scores the patient and staff wording 1–5 on: **correct**, **clear**, **complete enough**, **kind**, **actionable**. Target: no score below 4 on hero scenarios. Results are kept in `docs/reviews/helpfulness-<date>.md`. This is the honest measure of "is it actually good", separate from correctness.
+Use doc 03's sole benchmark target table. Record runtime/hardware/warm-up and p50/p95 on S/M/L. Baseline in 1.6, extended as features land; changes require card authority and measured reasons.
 
-## Narration eval
+5.1 consumes packed ESM packages in a clean temporary consumer; check schema/template subpaths and absence of fixture/provider/test dependencies.
 
-`pnpm eval:narration` runs every golden scenario × both audiences through `OpenAINarrator` (needs `OPENAI_API_KEY`) and writes `reports/narration-<date>.md` with:
-
-- verifier pass rate on first attempt (target ≥ 90% before shipping AI wording by default),
-- failure reasons by check,
-- privacy failures (target **0**; any privacy failure blocks enabling AI wording for patients),
-- side-by-side template vs AI text for manual review,
-- token usage and estimated cost.
-
-It also writes `apps/web/src/static/narrations.json` for the static demo (only verified narrations).
-
-## Performance tests
-
-`pnpm bench` prints p50/p95 for the operations in doc 03 on datasets S/M/L. A lightweight CI check fails if S-dataset `evaluate` p95 regresses by > 50% versus the committed baseline (`engine/bench/baseline.json`).
-
-## What "accurate" means in our claims
-
-We will claim: *"For the rules it models, WhyNot's explanations are sufficient and minimal, and every suggested alternative is verified bookable — checked by property tests on thousands of generated clinics."*
-
-We will **not** claim: that explanations match every human's intuition, that the AI wording is always perfect (it's verified or replaced), or that it reflects rules the clinic never configured.
+Say tests check sufficient/irredundant explanations and bookable alternatives for modeled inputs. Claim optimal only with flag true. Do not claim universal proof, clinical endorsement, real demand, recovered revenue or semantic proof of AI prose.

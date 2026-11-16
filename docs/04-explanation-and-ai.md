@@ -1,123 +1,59 @@
-# 04 — Explanations, privacy & AI narration
+# 04 — Explanations, projection and wording
 
-## The Explanation contract (v1)
+## Contracts
 
-Defined in `packages/contracts/src/evaluation.ts` (zod). Abbreviated:
+Zod schemas in contracts define shared types. Required capabilities:
 
-```ts
-Fact = {
-  id: string                 // stable, e.g. "practitioner-buffer:prac=dr-rao:booking=bk-0142"
-  ruleId: RuleId             // catalog id, doc 02
-  ruleVersion: number
-  kind: 'availability' | 'occupancy' | 'capability' | 'timing' | 'patient' | 'preference' | 'policy'
-  subject: { type: 'clinic' | 'patient' | 'practitioner' | 'room' | 'equipment' | 'request', id: string, displayName: string }
-  params: Record<string, string | number>   // e.g. { bufferMin: 15, adjacentStart: "14:00", adjacentEnd: "14:30" }
-  window?: { from: Instant, to: Instant }   // the time span that conflicts, if any
-  visibility: 'public' | 'staff'
-  relaxableBy: ('patient' | 'admin')[]
-}
+- Fact: internal stable ID, catalog rule ID/version, kind, subject, validated rule parameters, optional window, visibility, relaxableBy.
+- Explanation: primary IDs, deterministic groups, per-practitioner summaries, facts, optimal boolean and basis (matrix or missing_resource).
+- Alternative: changed BookingRequest, rechecked Assignment, category, cost and explicit changes.
+- SearchReport: status disabled/complete/budget_exhausted/window_limited, searched from/to instants, evaluated count. Complete means exhausted configured finite domain, not all future time.
+- AdminFix: supporting fact IDs, typed concrete changes, verified viaCandidate, cost. Minimum is over supported generated patches.
+- Meta: engineVersion, policyVersionId, evaluatedAt equal to injected now; no runtime measurements.
+- StaffEvaluation: bookable/blocked/invalid_request; blocked includes explanation, alternatives, search, adminFix, meta and optional trace.
+- PatientEvaluation: separate union with public explanation/groups, safe alternatives/search/meta; no adminFix, perCandidateSummary, raw candidates, internal subject IDs or trace.
+- PolicyPatch: typed allowed entity/field/value operations, no arbitrary object paths. PolicyPreview: concrete changes, baseline and modified evaluations without mutating the input.
+- RangeExplanation: invalid_request/has_availability/fully_blocked variants, bookableCount, commonCause/context IDs, segments with member starts and fact references, nextAvailable, nextSearch, facts/meta. has_availability has empty segments/commonCause/context and no next search.
 
-Explanation = {
-  primary: FactId[]          // minimum-weight hitting set (doc 03), ordered for presentation
-  groups: FactGroup[]        // presentation grouping, see below
-  perCandidateSummary: { practitionerId: string, factIds: FactId[] }[]
-  optimal: boolean           // false if B&B budget hit and greedy fallback used
-  facts: Record<FactId, Fact>
-}
+Start schema version 1 before publication; breaking published changes need a bump/decision. Before owning sessions, advanced fields have explicit disabled/null values and their functions are not public. Do not expose malformed placeholder results.
 
-Alternative = { request: BookingRequest, assignment: Assignment, category: 'same-day' | 'other-practitioner' | 'other-day',
-                cost: number, changes: { field: 'start' | 'practitioner' | 'date', from: string, to: string }[] }
+## Grouping
 
-AdminFix = { factIds: FactId[], changes: { setting: string, from: string | number, to: string | number }[], viaCandidate: Assignment }
+Engine groups request, per-practitioner, capability-context and resources facts. Primary retains full sufficiency evidence; grouping is not deletion. Staff summaries use each practitioner's candidate of lowest total violation weight then canonical IDs, listing all its blockers. A concise explanation and all violations are labelled separately.
 
-RangeExplanation = { status: 'has_availability' | 'fully_blocked', bookableCount: number,
-                     commonCause: FactId[], context: FactId[], segments: { date: LocalDate, from: LocalTime, to: LocalTime, factIds: FactId[] }[],
-                     nextAvailable: Alternative | null, facts: Record<FactId, Fact> }
-```
+## Patient projection
 
-Range wording: a headline from the common cause (if any), then one line per segment ("09:00–11:00 · bookings need 2 hours' notice", "11:00–16:00 · Dr. Rao is fully booked", "after 16:00 · Dr. Rao isn't working"), then "Next available: …". Same templates, same projection, same verifier.
+projectForAudience(output, audience, { requesterPatientId }) is pure and mandatory before patient rendering/serialization.
 
-The contract is versioned (`EXPLANATION_SCHEMA_VERSION = 1`). Any breaking change bumps it and gets a decision-log entry.
+1. Allowlist fields per rule. Replace staff time-off/break detail with public practitioner-unavailable facts. Remove reason, internal staff rule IDs and sensitive params.
+2. Busy facts may identify public practitioner/window, never booking IDs, another patient's identity or service.
+3. Replace room/equipment capability details with generic resource-unavailable context retaining coverage references. If none qualifies, render service unavailable here. Never silently discard necessary evidence.
+4. Remove fixes, raw candidates, summaries, traces, internal resource/patient IDs and raw requests. Safe alternatives retain public practitioner IDs, times and changes needed for selection.
+5. Canonically sort projected facts and rebuild every ID/reference using evaluation-local ordinal IDs, encoding no raw source ID. No hashing dependency or security claim about non-cryptographic hashing.
+6. Use a separate public rule-ID schema including practitioner-unavailable/resource-unavailable replacements; these are presentation abstractions, not raw catalog violations.
 
-### Presentation grouping
+All references resolve. Test serialized privacy and source-to-projection coverage. Redaction preserves truth/sufficiency at the public abstraction level; do not claim projected weight optimality. Allowlist invalid-request details too; never echo arbitrary input.
 
-The engine groups primary facts for readability (deterministic rules, in `engine/src/explain.ts`):
+## First-release templates
 
-| Group | Contains | Example rendering |
-| --- | --- | --- |
-| `request` | timing, clinic, patient facts | "Appointments need at least 2 hours' notice." |
-| `per-practitioner` | one group per qualified practitioner, their blocking facts | "Dr. Rao — has a 15-minute buffer after a 14:00–14:30 appointment." |
-| `capability-context` | all `practitioner-skill` facts collapsed | "Only Dr. Rao and Dr. Mehta offer minor procedures." |
-| `resources` | room/equipment facts | "The ultrasound unit is under maintenance until 12:00." |
+One template per catalog rule per audience, plus synthetic public facts, groups, alternatives, previews and ranges. Use already projected inputs and locale/timezone display helpers only. No lookups or decision computation.
 
-## Audience projection (privacy)
+TemplateNarrator is synchronous/deterministic with source template and fact-linked sentences. Async provider contracts are deferred. Patient wording is polite, specific, actionable. Staff wording includes precise setting changes. Buffers and eligibility previews are hypothetical options requiring judgment, never automatically applied recommendations.
 
-`projectForAudience(evaluation, 'patient' | 'staff')` is the **only** way an evaluation reaches a patient-facing surface. It is pure, in the engine, and heavily tested.
+Time changes cannot resolve eligibility/referral failures. Static next-step copy may suggest requesting a referral or considering an assessment; that is not a verified alternative.
 
-Rules for `patient`:
+Range wording describes appointment start times, not uninterrupted occupancy or a single appointment spanning a merged range.
 
-1. Facts with `visibility: 'staff'` are **replaced** by a generic public fact of the same subject: `practitioner-time-off` → "Dr. Mehta is unavailable at that time." The `reason` param is dropped.
-2. Occupancy facts never include other patients' IDs, names, or services — only the busy window ("booked 14:00–14:30") or for room/equipment just "in use".
-3. `room-capability` and `equipment-type` facts are dropped unless *no* room/unit qualifies, in which case one public fact "This service isn't available at this clinic site" remains.
-4. `adminFix` and `perCandidateSummary` are removed; `trace` is removed.
-5. Fact IDs in patient output are **opaque** (hashed per evaluation), so internal booking IDs never leak.
+Search wording:
+- complete + empty: no alternatives found in stated searched window;
+- budget_exhausted: search stopped at limit; openings may remain;
+- window_limited: more snapshot coverage needed;
+- disabled: alternatives not searched.
 
-A property test asserts: for any evaluation, the serialized patient projection contains no booking IDs, no patient IDs other than the requester's, no `reason` values, no staff-only rule IDs.
+## Optional AI A1–A3
 
-## Template wording (the default)
+No first-release provider calls, cached narrations or enablement gate. A1 compares constrained approved wording selection with free prose and records the output contract before implementation.
 
-`packages/narrator/src/templates/` holds one template per rule ID per audience, plus group templates. Templates are plain TypeScript functions `(fact, ctx) => string` using the clinic's locale and timezone formatting.
+For free prose, schema/citation/number/name/coverage/privacy/length checks are heuristic: they can miss reversed meaning. Never claim semantic proof or use an unqualified AI wording verified badge.
 
-- Every rule in the catalog **must** have both templates; a test iterates the catalog to enforce it.
-- Template output is the **ground truth wording**: it is what the UI shows without AI, and what the verifier compares against.
-- Tone guide (patients): polite, specific, never blaming ("That time is within…" not "You chose…"), always followed by alternatives.
-
-## AI narration (optional polish, OpenAI)
-
-### Purpose
-
-Turn the grouped template sentences into one short, natural paragraph for patients, and a crisp summary for staff. **The model adds no information.** If it can't be verified, we show templates.
-
-### Interface
-
-```ts
-interface Narrator {
-  narrate(input: NarrationInput): Promise<Narration>
-}
-NarrationInput = { audience: 'patient' | 'staff', facts: Fact[] /* already projected */, groups: FactGroup[],
-                   alternatives: Alternative[], templateSentences: { factIds: FactId[], text: string }[], locale: string }
-Narration = { sentences: { text: string, factIds: FactId[] }[], source: 'ai' | 'template',
-              model?: string, promptVersion: string, verification: VerificationReport }
-```
-
-Implementations: `TemplateNarrator` (always available) and `OpenAINarrator` (server only).
-
-### OpenAI usage
-
-- Responses API with a **strict JSON schema** output: `{ sentences: [{ text, factIds[] }] }`.
-- Model from env `OPENAI_MODEL` (choose the cheapest current small model that passes the narration eval in Session 5.3; record the choice in the decision log). Key from env `OPENAI_API_KEY`, server-side only.
-- System prompt (versioned `PROMPT_VERSION`): role, tone guide per audience, the hard rules (only use given facts, cite factIds on every sentence, never promise, never mention other people, keep times exactly as given), and 3 few-shot examples.
-- Input is the **projected** facts + template sentences — the model never sees staff facts when narrating for patients.
-- Limits: `max_output_tokens` ~300, timeout 8 s, 1 retry on transport errors only, no retry on verification failure (fall back instead).
-- Cache: key = SHA-256 of (projected facts, alternatives, audience, locale, model, PROMPT_VERSION). Stored in `narrations` table. Identical explanations never cost twice.
-- Budget: per-IP rate limit and a daily global call cap (env `NARRATION_DAILY_CAP`); when exceeded → templates.
-
-### Verifier (`packages/narrator/src/verify.ts`)
-
-Runs on every AI narration. Any failure ⇒ `source: 'template'` and the report is logged.
-
-| Check | Rule |
-| --- | --- |
-| Schema | Output parses against the JSON schema |
-| Citations exist | Every `factIds` entry exists in the input; every sentence cites ≥ 1 fact |
-| Coverage | Every primary fact (or its group) is cited by at least one sentence; alternatives mentioned only if provided |
-| Token grounding | Every time (`14:30`, `2:30 pm`), date, weekday, duration/number, and proper name found in a sentence must appear in the rendered params/templates of the facts **that sentence cites**, or in a provided alternative. Extracted with deterministic regexes + the known-names list from the snapshot |
-| Privacy | For patient audience: no staff-only vocabulary list ("leave", "sick", "holiday", "maintenance contractor"…), no names other than the requester, practitioners, clinic and rooms/equipment in cited facts |
-| No promises / no invented actions | Deny-list: "guarantee", "we will", "I've booked", "refund", "exception", "waitlist" (unless a future feature provides them) |
-| Length | ≤ 4 sentences, ≤ 90 words (patient); ≤ 6 sentences (staff) |
-
-The verifier is deliberately conservative: false rejections only cost a little fluency; false acceptances would break trust.
-
-### Static demo
-
-The static (GitHub Pages) build ships **pre-generated, verified narrations** for the hero scenarios (produced by the eval runner), so visitors see AI wording without any key. Other requests in static mode use templates. The UI labels the wording source ("Plain wording" / "AI wording — verified").
+Adversarial evaluations include reversed referral requirements, negation, invented implications, forged citations and leaks. Passing is evidence, not proof. Templates remain fallback. Keys stay server-side. Check current official APIs/models when this milestone begins.

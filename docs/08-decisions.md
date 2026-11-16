@@ -72,3 +72,51 @@ Format: **ID · Decision** — *Why* — *Rejected alternatives* — *Revisit if
 | Q-3 | Visual design direction (style, palette, typography) | 4.1 |
 | Q-4 | OpenAI model for narration | 5.3 |
 | Q-5 | Full-stack hosting provider (or none) | 7.2 |
+
+## Approved revision — 2026-11-16 (Session 0.0)
+
+The following decisions supersede conflicting earlier wording. Earlier entries remain historical; the active specification is docs 00–09 plus the new session index. Old phase cards are archived and must not be executed.
+
+**D-050 · Engine and static playground first; all three audiences remain.**
+Supersedes D-002's portfolio-only priority, D-005's DB requirement for v1, D-006's old session mapping, D-031's immediate full-stack scope and D-035's late demo deployment. Build reusable appointment packages, patient/staff workflows, inspector and policy preview first; first preview at 3.3, first release at 5.2. Persistence P1–P5, history H1–H4 and AI A1–A3 follow. VouchDesk is complementary forensic investigation, not simply an LLM support bot; D-001's old competitive characterization is superseded. Revisit scope only through a decision.
+
+**D-051 · Truthful deterministic results and search metadata.**
+Remove timingsMs from engine output. Keep injected now. Report disabled/complete/budget_exhausted/window_limited; complete is finite-domain exhaustion. Explicit local-time/day cost replaces ambiguous total-minute/day double counting and removes undefined any-practitioner-change baseline penalty. Stable equal-weight ties must survive branch pruning. Supersedes affected D-011/D-014 details. See doc 03.
+
+**D-052 · Missing-resource cause and isolated scenarios.**
+Add resource-missing as the 23rd internal rule; structural explanation handles empty required pools without invented candidates. Public synthetic rule IDs stay separate. H1 and H11 use separate overrides. H1's room turnover must not mask its intended practitioner-buffer cause. Preserve hero intent; no golden files exist yet. See docs 02/03 for input/time boundaries and structural properties.
+
+**D-053 · Verify concrete policy patches.**
+Removing fact IDs is insufficient. Compute/coalesce typed setting patches, apply to copied snapshot, re-evaluate every rule, and choose least-cost verified supported proposal. Expose baseline/modified previews; do not automatically persist. Buffer/eligibility changes are hypothetical operations requiring judgment. See doc 03.
+
+**D-054 · Distinct patient contract.**
+Allowlist output and rebuild all fact references with canonical evaluation-local opaque ordinal IDs. Replace sensitive causes with truthful public abstractions instead of silently dropping necessary facts. No non-crypto hash secrecy claim. Projection is not confidentiality for publicly bundled synthetic fixtures. See doc 04.
+
+**D-055 · Regular checkpoint commits and mandatory session push.**
+Strengthens D-041. Commit logical verified increments during sessions, push checkpoints during longer sessions and all commits before ending, verify remote HEAD, open/update PR. Record implemented/reviewed/merged separately; dependencies must be merged. A blocked/incomplete session gets a coherent checkpoint/draft and honest failing-check record, not a completion tick. Documentation bootstrap uses consistency checks until 0.1 creates pnpm verify. No placeholder passing scripts.
+
+**D-056 · Templates first release; optional AI experiment later.**
+Supersedes D-020's old session mapping, D-021's implied semantic verification guarantee and D-022's static AI narrations. Heuristic citation/token checks cannot prove meaning. A1 must decide constrained wording versus free prose before a provider client. No AI badge/provider/key in first release.
+
+**D-057 · Adoption example and bounded synthetic imports.**
+Publish clean ESM package entry points, excluding tests/generators/reference checker. Node example supplies its own data. Playground imports versioned synthetic JSON, bounded per doc 05, in memory only; no uploads/logging/persistent storage or imported-data links. No general rule-plugin framework.
+
+**D-058 · Immutable replay inputs and descriptive insights.**
+Store full snapshot/request/now/options/version bundles. Current rules and booking timestamps cannot reconstruct historical settings. Reject unsupported engine replay versions. Distinguish selected explanation attribution from all blockers, real lost bookings and revenue. Independent replay is an estimate. See doc 05.
+
+**D-059 · Small skill set and focused independent review.**
+Update seven project skills; add whynot-planning. Main implementer plus fresh-task reviewer by default; optional correctness/UX reviewers at gates. No standing parallel implementation swarm. Custom Codex agents are optional role definitions, with inherited permissions, not separate security boundaries. Native Git/GitHub is a fallback for optional convenience skills. External capabilities are checked just before use. See doc 09.
+
+## Revised deferred decisions
+
+This table replaces the earlier Open table's obsolete session assignments; those rows above are historical.
+
+| ID | Decision to resolve | Owner |
+| --- | --- | --- |
+| Q-1 | Supported pinned Node LTS >=22, pnpm and compatible stable libraries; record D-043 | 0.1 |
+| Q-2 | PGlite btree_gist/concurrency support; record evidence and real-Postgres fallback | P1 |
+| Q-3 | Accessible calm clinic design tokens and typography | 3.1 |
+| Q-4 | Whether AI adds value, output constraints, provider/model if justified | A1/A2 |
+| Q-5 | Full-stack hosting optional; static Pages is fixed | P5, only if human requests hosting |
+
+These future-session decisions do not block 0.1. No unresolved first-release architecture choice should be delegated silently to implementation.

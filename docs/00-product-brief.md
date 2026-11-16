@@ -1,106 +1,61 @@
 # 00 — Product brief
 
-## One sentence
+## Promise
 
-WhyNot is an explainable booking engine that, when a booking request fails, returns the minimal set of rules that block it, the nearest alternatives that would work, and — for staff — which policies are costing the business bookings.
+**Understand why a booking fails, find what works, and inspect what a policy change would do.**
 
-## The problem
+WhyNot is an open-source TypeScript appointment engine and a reference playground for the fictional Riverside Family Clinic. It serves developers embedding scheduling logic, clinic staff evaluating explanations, and reviewers inspecting the engineering. Adoption and clinical usefulness remain unvalidated.
 
-Booking systems answer a failed request with "unavailable". That hides three different situations:
+## Where it helps
 
-1. **One obvious reason** (clinic closed on Sunday).
-2. **Several rules that only block in combination** (the room is free, but the only two qualified practitioners are, respectively, inside a cleaning buffer and on leave).
-3. **A policy, not a physical limit** (a 24-hour notice rule blocks a slot that is otherwise completely free).
+Ordinary availability grids work when a convenient opening exists. WhyNot helps when a patient encounters an empty day, staff must reconstruct interacting blockers, or a developer needs explainable decisions rather than a boolean.
 
-Patients guess, give up, or contact support. Staff dig through settings to reconstruct why. Nobody learns which rules quietly cost bookings every week.
+The engine returns a valid assignment or a sufficient, irredundant explanation, verified alternatives, and a staff-only policy preview. Minimal means each selected fact is necessary to that explanation; changing one selected rule alone need not make the real request feasible.
 
-## Where WhyNot lands (and where it doesn't)
+## Existing work and differentiation
 
-Most booking apps simply **hide** unavailable times. When a patient has plenty of open slots that suit them, that works fine — they pick one, and **WhyNot adds little there. We don't claim otherwise.**
+Checked during planning on 2026-11-16:
 
-Hiding fails in three moments, and those are WhyNot's three surfaces:
+- [Cal.com](https://cal.com/help/availabilities/troubleshoot-your-availability) documents unavailable-slot reasons, whole-day explanations, and suggested setting changes. Do not describe it as merely a single-reason troubleshooter.
+- [Timefold](https://docs.timefold.ai/timefold-solver/latest/constraints-and-score/score-calculation) supports constraint justifications; its Java/Kotlin solver is open source. Do not attribute every platform feature to the open-source distribution.
+- [clingo-explaid](https://github.com/potassco/clingo-explaid) explains unsatisfiability in answer-set programs.
 
-| Moment | What goes wrong with hidden slots | What WhyNot does |
-| --- | --- | --- |
-| **The patient is stuck** — a whole day, a whole week, or their preferred practitioner shows *nothing*, or the time they need is missing | They can't tell "fully booked" from "on leave", "needs a referral", "returning patients only" or "2 hours' notice". Many causes are *rules*, which a hidden slot can never communicate. They give up or phone the clinic | **"Why is this empty?"** for a day or practitioner (the most common real moment), plus "why not this time?" for a specific slot, and always "here's what you *can* book" |
-| **The front desk gets the call** | Staff reconstruct the cause from calendars and settings | One click: the full staff-level reason and the minimal policy fix |
-| **The manager never finds out** | A hidden slot leaves no trace; the clinic never learns which rules cost it bookings | Every "no" is recorded with its reason → insights ("the 15-min buffer hid 41 requested times") + a what-if simulator |
+No individual feature is claimed unprecedented. The intended contribution is the combination: a pure browser/Node appointment engine, minimal blockers, rechecked alternatives, audience projection, concrete policy previews, and an inspectable product. Absence of an exact equivalent has not been established.
 
-In one line: **normal apps hide the "no"; WhyNot explains it when the patient is stuck, answers it for staff, and counts it for the business.** The third surface is the strongest value; the first is the most visible in the demo.
+VouchDesk is a separate planning-stage project for reconstructing historical booking incidents from external evidence. WhyNot computes decisions from a supplied model. Keep them separate; do not add forensic capture or connectors.
 
-## Users
+## First public release
 
-| User | What they need | WhyNot surface |
-| --- | --- | --- |
-| **Patient** (booking online) | "Why can't I book this, and what can I book instead?" in plain, polite language that never exposes other people's information | Booking page + "Why not?" panel |
-| **Front-desk / clinic admin** | The full reason (including staff-only facts like leave), plus what policy change would have allowed it | Staff view of the same explanation |
-| **Clinic manager** | Which rules block the most requests; what happens if a policy changes | Insights dashboard + policy simulator |
-| **Developer / reviewer** (portfolio audience) | Proof the engine is correct and the AI cannot invent reasons | Engine inspector, test suite, write-up |
+- Single appointment, one clinic timezone, one practitioner, one room, optionally one equipment unit.
+- Existing appointment rules plus explicit missing-resource explanations.
+- Patient/staff views, curated scenarios, day/week explanations and next-available navigation.
+- Up to three ranked, diverse, re-evaluated alternatives with changes and search-completion status.
+- Hypothetical staff policy patches applied to copied inputs and re-evaluated before presentation.
+- Inspector showing violations, explanation coverage, optimization status and search costs.
+- In-memory policy playground with reset. Selecting an alternative evaluates it; the static demo does not pretend to persist bookings.
+- Consumable engine/contracts/template exports and a Node example that does not import Riverside.
+- Validated synthetic snapshot import/export kept in memory: no input upload, logging, persistence or imported-data share links.
+- GitHub Pages static demo with no server, account, DB, model key or narration calls.
 
-## What already exists (checked November 2026)
+## Follow-on milestones and exclusions
 
-| Existing thing | What it does | Gap WhyNot targets |
-| --- | --- | --- |
-| Cal.com "Why unavailable?" troubleshooter | Host-side; shows the *main* reason a slot is blocked and a suggested setting fix | One reason, host-only, no multi-resource interaction, no ranked alternatives, no aggregate insights |
-| CozyCal, NeetoCal, Meetergo, etc. | Help-centre articles / troubleshooters listing common causes | Static guidance, not computed explanations |
-| WhyUnsat, clingo-explaid, TRACE-CS (research) | Minimal explanations of unsatisfiable constraint problems | Research artifacts; no product UX, not booking-specific |
-| AI support agents (Pluno, Pylon, Intercom Fin) | LLM investigates tickets using logs/DBs | The LLM decides; explanations are not provably correct |
+Persistence and race-safe booking; then immutable history, descriptive insights and independent replay; then optional AI wording experiments. See [roadmap](07-roadmap.md).
 
-**Positioning:** WhyNot combines rigorous constraint explanation (minimal blocking sets + counterfactual alternatives) with a polished, privacy-aware product experience, and uses AI only for wording that is verified against the engine's output. The unique value is the **combination** — no single feature is unprecedented.
+Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group appointments, third-party integrations, general constraint framework, coupled-resource rules and AI decisions.
 
-## What makes it good (the bar we hold ourselves to)
+## Quality and usefulness
 
-1. **Correct by construction.** Every "why" is checkable: the stated reasons are sufficient to block the request, and each is necessary. Every suggested alternative is re-evaluated and bookable. These are tested properties, not hopes.
-2. **Helpful, not just correct.** The explanation is the *simplest* sufficient one (weighted by how meaningful each reason is to the reader), and alternatives are ranked by how little they change the patient's request.
-3. **Honest AI.** The model never decides. It rewords structured facts; a verifier rejects uncited or invented content and falls back to templates.
-4. **Private.** Patients never see other patients, leave reasons, or internal notes. Staff see more. Visibility is enforced in the explanation data, not in the UI.
-5. **Runs free.** Template mode and a static in-browser demo mean zero hosting or model cost for reviewers.
-
-## Scope
-
-### In scope (v1.0)
-
-- Single-appointment requests at one clinic (one timezone).
-- Resources: practitioners (skills, hours, breaks, leave), rooms (capabilities, maintenance), equipment (types, maintenance).
-- Rule families: availability, occupancy, buffers/turnover, capability, timing policy (notice, advance window), daily caps, patient eligibility, patient's stated preferences.
-- Outputs: bookable assignment *or* minimal explanation + up to 3 diverse alternatives + staff-only "minimal policy fix".
-- **Range explanations:** "Why is this day / this practitioner's week empty?" — a headline common cause (if one exists), time segments with their reasons, and the next available slot.
-- Demo booking flow (books into the demo database), staff insights, policy simulator, engine inspector.
-- Template wording + optional OpenAI wording with verification.
-- Static in-browser demo (GitHub Pages) + full-stack local mode (Docker Compose).
-
-### Out of scope (deliberately)
-
-- Real calendar sync (Google/Outlook), payments, reminders, notifications.
-- Multi-clinic / multi-tenant SaaS, real authentication, real patient data.
-- Recurring/series bookings and group bookings (the algorithm design notes how they would extend).
-- Integrating with third-party schedulers (Cal.com etc.) — a possible later adapter, not part of v1.0.
-- Letting the AI make or change bookings.
-
-## Success criteria
-
-| Area | Target |
+| Measure | Acceptance |
 | --- | --- |
-| Correctness | All engine properties (doc 06) pass on ≥ 5,000 generated cases per CI run and all golden scenarios |
-| Helpfulness | All 8 hero scenarios produce the explanation and top alternative a human reviewer expects |
-| AI honesty | 100% of displayed AI wording passes the verifier (by construction); 0 privacy leaks across the narration eval |
-| Speed (demo dataset) | Explain p95 ≤ 150 ms, alternatives p95 ≤ 400 ms in Node on a laptop |
-| Demo | A first-time visitor understands the value in < 60 s, with no signup or key |
-| Portfolio | README with GIF, architecture diagram, 2-minute video, technical write-up, honest limitations |
+| Correctness evidence | Properties, independent differential checker, H1–H11, at least 16 edge goldens, search/patch/privacy regressions |
+| Performance | Authoritative target table in doc 03; timing outside engine |
+| Helpfulness | Correct, clear, complete enough, kind, actionable; target no score below 4/5 |
+| Integration | Clean consumer runs packaged Node example without web, DB or model |
+| Demo | A visitor follows a curated failure, explanation and alternative in under a minute |
+| Adoption evidence | Outside developer tries integration; scheduling practitioner assesses representative scenarios |
 
-## Main risks and mitigations
+Technical readiness and usefulness validation are separate. Publish an unvalidated technical preview if reviewers are unavailable; never fabricate approval. Record feedback and adapt subsequent work.
 
-| Risk | Mitigation |
-| --- | --- |
-| Looks like Cal.com's troubleshooter | Hero scenarios are multi-rule interactions; build those first (Phase 1 gate) |
-| Correct but unhelpful explanations | Weighted minimum explanation + reviewer rubric on hero scenarios |
-| "Nearest alternative" feels arbitrary | Explicit, configurable cost model; diversity across alternative types |
-| Performance | Benchmark in Phase 1 before any UI; algorithm designed around a small candidate matrix |
-| Scope creep | Fixed out-of-scope list; every new idea goes to the decision log first |
-| LLM cost / misbehaviour | Template default, cache, verifier, budget limits, static demo uses pre-verified narrations |
+## Honest limitations
 
-## Honest limitations (to publish)
-
-- The engine explains the rules it knows. If a real clinic has unwritten rules, explanations are correct about the model, not about reality.
-- "Nearest alternative" reflects a stated preference model; a different patient may prefer differently.
-- Policy simulation is an estimate: it replays past requests independently and ignores knock-on effects (an extra accepted booking would have occupied time others later wanted).
+The engine explains the supplied model, not unwritten practice. Ranking reflects explicit preferences and bounded search. Policy patches are hypotheses, not clinical recommendations. Future replay cannot establish recovered bookings, revenue or abandonment causation. Property tests are evidence, not universal mathematical proof. Heuristic AI checks cannot prove prose meaning.

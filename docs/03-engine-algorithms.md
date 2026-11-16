@@ -1,187 +1,106 @@
 # 03 — Engine algorithms
 
-This is the technical heart of WhyNot. Everything here is deterministic, pure TypeScript.
+## Public API and validation
 
-## Public API
+Public functions: evaluate(snapshot, request, options), isBookable(snapshot, request, now), projectForAudience, applyPolicyChanges, previewPolicyChanges, explainRange; catalog/version exports. Signatures/types are schemas in contracts; output shapes are specified in doc 04.
 
-```ts
-evaluate(snapshot: ClinicSnapshot, request: BookingRequest, opts: EvaluateOptions): Evaluation
+EvaluateOptions contains injected now, alternatives false or { max: 3, searchDays: 14, budgetEvals: 3000 }, optional positive CostWeights, trace boolean and includeAdminFix boolean. Search disabled is explicit. includeAdminFix defaults false until 4.1 and true thereafter. During 1.6 public evaluate defaults alternatives to false; 2.3 changes the default to the stated search. Record capability/default transitions in package docs until first publication.
 
-type EvaluateOptions = {
-  now: Instant                      // injected clock (epoch minutes UTC)
-  alternatives?: { max: number /*3*/, searchDays: number /*14*/, budgetEvals: number /*3000*/ }
-  weights?: Partial<CostWeights>    // alternative ranking weights
-  trace?: boolean                   // include matrix + search steps (engine inspector)
-}
+Validate snapshot structure and references before rules: IDs unique, booking resources/services exist, positive durations/grid, nonnegative buffers/caps/notice, finite integer instants, ordered covered window. Unknown request entities, off-grid start, appointment outside coverage, or unsupported wall-time boundary return invalid_request. isBookable returns false for invalid inputs; evaluate returns structured errors. No unparsed input echo.
 
-type Evaluation =
-  | { outcome: 'bookable', assignment: Assignment, meta: Meta }
-  | { outcome: 'blocked', explanation: Explanation, alternatives: Alternative[], adminFix: AdminFix | null, meta: Meta, trace?: Trace }
-  | { outcome: 'invalid_request', errors: ValidationError[], meta: Meta }
+Start grid is aligned to local midnight in clinic time, not UTC modulo arithmetic. Durations may differ from grid size. Intervals are half-open. Weekly hours cannot span midnight; express them as separate dated/day intervals. Explicit instants may span midnight. Request instants carry offsets at boundaries; DST folds are resolved by that offset. Nonexistent or ambiguous recurring schedule boundaries must return a structured invalid_request on the affected date rather than silently shifting; time helpers report this condition. maxAdvanceDays uses elapsed days of 1440 minutes; local daily counts use clinic dates.
 
-Meta = { engineVersion, policyVersionId, evaluatedAt /* = now */, timingsMs }
-```
+## Candidates and missing resources
 
-Also exported: `isBookable(snapshot, request, now)` (fast path), `projectForAudience(evaluation, audience)` (doc 04), and the rule catalog.
+A real candidate is (practitioner, room, required equipment unit or null) at [start, start + duration). Enumerate all resources including unqualified ones; no equipment requirement means exactly one null choice. Sort by canonical IDs using codepoint comparisons.
 
-## Step 1 — Validate the request
+If practitioners or rooms are empty, or equipment is required and its entire pool is empty, return blocked with basis missing_resource and one resource-missing fact for the first missing dimension in practitioner/room/equipment order. No candidate or assignment is invented. The structural explanation has optimal true (single structural cause), no adminFix and no time alternatives capable of restoring missing resources. Reference feasibility still returns false. Hitting-set irredundancy/optimality properties apply to nonempty real matrices; structural explanations have separate sufficiency/nonempty-cause assertions. Nonempty but incompatible pools use ordinary skill/capability/type facts.
 
-Reject before any rule runs: unknown patient/service/practitioner, `start` not on the slot grid, start outside the snapshot window. Output `invalid_request`. These are input errors, not reasons.
+## Violation matrix and feasibility
 
-## Step 2 — Enumerate candidates
+V(a) = G union P(p) union R(r) union E(e).
+G contains clinic, patient and timing violations. P includes qualification, availability, occupancy, buffers, caps and request-practitioner. R/E contain capability/type, maintenance, occupancy and turnover as applicable.
 
-A candidate is `(practitioner p, room r, equipmentUnit e | null)` at the requested interval
-`[start, start + duration)`.
+Compute per-resource families once. Index intervals sorted by start; overlap lookup must account for long intervals starting earlier, not inspect only one predecessor. Ignore cancelled bookings.
 
-- Practitioners: **all** practitioners in the snapshot (unqualified ones produce `practitioner-skill` facts — needed so explanations can say "only X and Y offer this").
-- Rooms: all rooms. Equipment: all units if the service needs equipment, else the single value `null`.
-- Demo size: ≤ 6 × 6 × 2 = 72 candidates. Ordered canonically by IDs.
+Bookable iff some real candidate has no violations. Choose lowest confirmed practitioner booking count on the local date, then practitioner/room/equipment IDs among candidates satisfying the request. A requested practitioner is a hard preference until an explicit alternative changes it.
 
-## Step 3 — Build the violation matrix
+For requested [s,e) and existing [bs,be):
+- overlap yields busy;
+- otherwise buffer if bs <= s < be + existingService.bufferAfterMin, or s <= bs < e + requestedService.bufferAfterMin;
+- turnover uses analogous room-specific service settings.
+Do not return busy and buffer for the same direct overlap.
 
-For each candidate `a`, compute `V(a)` = the set of violated **facts** (grounded rule instances, doc 02).
+## Minimal explanation
 
-Factorisation (implementation detail, also a big speed-up):
+For a nonempty blocked matrix, primary is a hitting set of all V(a). It is sufficient if every row is hit and irredundant if each selected fact uniquely hits at least one row. Removing a reason only makes the simplified explanation model satisfiable; it does not necessarily fix the real snapshot.
 
-```
-V(a) = G ∪ P(p) ∪ R(r) ∪ E(e)
-  G    = global/patient facts: clinic-closed-day, clinic-hours, min-notice, max-advance,
-         patient-eligibility-*, patient-daily-limit
-  P(p) = practitioner facts: skill, hours, break, time-off, busy, buffer, daily-cap, request-practitioner
-  R(r) = room facts: capability, maintenance, busy, turnover
-  E(e) = equipment facts: type, maintenance, busy
-```
+Minimize summed positive catalog weight, then the lexicographic sequence of sorted fact IDs:
+1. Dedupe rows and remove strict supersets; use canonical fact indices/bitsets.
+2. Include forced singleton facts.
+3. Branch on smallest unhit row, then (weight, factId); lower bound sums minimum weights of greedily selected disjoint unhit rows.
+4. Do not prune equal-weight branches until canonical tie preference is accounted for. Safe default: prune only when bound is strictly greater than best weight.
+5. Cap at 50,000 search nodes. If exhausted, greedy weight/coverage with ID ties, then descending weight/ID deletion until irredundant; optimal false.
+6. Assert sufficiency and irredundancy for every return; throw on invariant failure in all runtimes. No logging in engine.
 
-Each family is computed once per resource, not per candidate. Occupancy checks use per-resource interval lists sorted by start (binary search for overlaps/adjacency).
+Facts factorize by resource dimension in this model. Multiple necessary reasons typically block different practitioners or different rooms. Do not invent coupled-resource stories or claim tests constitute a general proof. The independent checker remains deliberately naive.
 
-**Bookable ⇔ ∃a: V(a) = ∅.** If bookable, the chosen assignment is the first empty-`V` candidate in a preference order: requested practitioner first, then lowest practitioner load that day, then canonical ID order (documented, deterministic).
+Groups and per-practitioner summaries follow doc 04. Trace contains real candidate rows, fact references, selected/reduced coverage, search nodes and evaluated alternatives, with deterministic caps (500 rows and 3000 alternative trace entries) and explicit truncation flags. Truncation never changes decisions.
 
-### Buffer semantics (precise)
+## Alternatives
 
-For the requested service S at `[s, e)` and an existing practitioner booking B at `[bs, be)` of service SB:
+Finite search domain: grid starts within the snapshot and requested local date plus/minus searchDays; skip starts before now + notice. Explore the original practitioner constraint plus explicit requests for other practitioners. Do not relax eligibility, change service/patient, or create policy changes.
 
-- `practitioner-busy(p, B)` if the intervals overlap.
-- Otherwise `practitioner-buffer(p, B)` if `bs ≤ s < be + SB.bufferAfter` (we start inside B's buffer) **or** `s ≤ bs < e + S.bufferAfter` (our buffer runs into B).
-- Room turnover is the same with `roomTurnoverMin` on room bookings.
+Categories are disjoint: different local date = other-day; same date with changed requested practitioner = other-practitioner; otherwise same-day. With no original practitioner preference, keep any-practitioner semantics and let canonical assignment select the resource. No undefined baseline-practitioner penalty.
 
-## Step 4 — Explanation = minimum-weight hitting set
+Cost defaults:
+- 1 per 15 minutes of absolute local time-of-day difference;
+- 6 per absolute local calendar-day difference;
+- 8 if an explicitly requested practitioner changes;
+- 0.1 if alternative instant precedes requested instant.
 
-### Why a hitting set
+Use time-of-day difference even across dates; do not count total elapsed days again in minute cost. The divisor remains 15, independent of grid. At DST folds, instant breaks equal wall-cost ties. Order by cost, start instant, practitioner ID, room ID, equipment ID. Weights configurable and finite/positive except earlier penalty may be zero.
 
-If we keep only a set of facts `X` active (treat every other rule as relaxed), the request is blocked iff **every** candidate still violates something in `X`, i.e. `X ∩ V(a) ≠ ∅` for all `a`. So:
+Merge finite generators in cost order. Deduplicate (start, assigned practitioner). Recheck each result/assignment using engine rules. Select cheapest result first; then cheapest results from categories not represented, then cheapest remaining. This can produce nonmonotonic cost across diversity selections; return selection order and category honestly. Do not claim global top-three after diversity or an incomplete search.
 
-- **Sufficient explanation** = a hitting set of the family `F = { V(a) }`.
-- **Minimal (irredundant) explanation** = a hitting set where every element is necessary: for each `x ∈ X` there is a candidate with `V(a) ∩ X = {x}`. Removing any reason would make the request bookable — this is exactly a *minimal unsatisfiable subset* in constraint-solving terms.
-- **Best explanation** = the minimal hitting set with **minimum total weight** (catalog weights, doc 02). Low-weight facts (closed day, notice, eligibility) are preferred over high-weight ones (room capability), so the engine says the simplest true thing.
+Stop at budgetEvals. SearchReport status:
+- disabled when not requested;
+- budget_exhausted if candidates remain after evaluation cap;
+- window_limited if requested domain exceeds supplied snapshot, unless budget_exhausted already applies;
+- complete only if the whole configured domain was evaluated.
 
-Example (H1): `F` after reduction is `{ {buffer(Rao,bk142)}, {timeoff(Mehta,to7)}, {skill(Okafor)}, {skill(Iyer)}, {skill(Harris)}, {skill(Chen)} }` → explanation = all six; the presenter groups the four skill facts into one context line. If `min-notice` were violated, it would be in every `V(a)` and the minimum explanation becomes just `{min-notice}` — the single simplest sufficient reason.
+Return exact searched coverage and evaluation count. Empty results never prove no openings outside that window. Doc 04 defines corresponding wording.
 
-### Structure note (important for scenario design)
+## Policy patches and verified fixes
 
-With v1's rules, every fact belongs to exactly one dimension — global (`G`), one practitioner, one room, or one equipment unit — so `V(a)` factorises. Consequence: a blocked request is blocked because **a global fact holds, or every practitioner is blocked, or every suitable room is blocked, or every suitable equipment unit is blocked**. A minimal explanation therefore never mixes dimensions (e.g. "room A under maintenance *and* nurse B booked" cannot both be necessary). Multi-reason explanations happen **within** a dimension: "Dr. Rao is in a buffer *and* Dr. Mehta is on leave"; "Treatment Room under maintenance *and* Consult 3 in use".
+applyPolicyChanges validates typed allowlisted changes and copies the snapshot. Allowed fields: policy notice, advance window, patient daily limit; service after-buffer, turnover, returning-only eligibility to any; practitioner daily cap. Never relax qualifications, referral requirements, physical occupancy or actual leave.
 
-The general hitting-set algorithm is kept anyway: it is simple, exact, already proven by the properties, and it stays correct when coupled rules arrive (e.g. equipment fixed to a room, a practitioner bound to their own room). A per-dimension shortcut may be added as an optimisation, but its output must equal the hitting set's (tested).
+previewPolicyChanges returns baseline and patched evaluations of the original request at the same now, with includeAdminFix false internally to prevent recursion. No persistent apply action in first release.
 
-### Algorithm
+Generate candidate patches only for candidates whose violations are all admin-relaxable. Calculate threshold values: notice down to actual lead; advance up to ceiling elapsed days; daily limit/cap at least current count + 1; buffers/turnover down to the largest nonnegative value fitting adjacent intervals. Target the existing booking's service setting for its trailing buffer, and the requested service setting for its own trailing buffer. Coalesce shared settings to satisfy every relevant constraint, reject conflicting/invalid patches.
 
-1. **Reduce:** dedupe sets; drop any set that is a superset of another (hitting the subset hits the superset). Represent facts as indices → sets as bitsets (`Uint32Array`).
-2. **Forced facts:** a singleton set `{x}` forces `x` into the answer.
-3. **Exact branch-and-bound:** choose the un-hit set with the fewest elements; branch on each of its facts in ascending (weight, factId) order; prune when `currentWeight + lowerBound ≥ bestWeight`. Lower bound: for disjoint un-hit sets picked greedily, sum of their minimum fact weights.
-4. **Budget:** cap at 50,000 search nodes. If exceeded: greedy (pick the fact with best `weight / setsHit` ratio, ties by ID), then **prune to irredundant** (remove any fact whose removal still leaves a hitting set, in descending weight order). Mark `explanation.optimal = false`.
-5. **Verify (always, cheap):** assert hitting property and irredundancy before returning. A failure is a bug → throw in tests, log + still return in production.
+Apply each patch and re-evaluate against all rules. Discard proposals that fail, including newly introduced conflicts. Choose minimum sum of catalog weights for the distinct supported violations addressed, then fewer changed settings, canonical setting/value order and candidate IDs. Return concrete changes and a valid witness assignment. Minimality is over these generated patches, not arbitrary policy transformations. If none verified, adminFix null.
 
-Also returned: `explanation.perCandidateSummary` — for each practitioner, the facts that block *them* (from their best candidate) — used by the staff view and the inspector.
+## Range explanation
 
-### Tie-breaking and determinism
+RangeRequest: patientId, serviceId, optional practitionerId, fromDate, days 1–7. Validate before scanning. List grid starts whose full appointment fits clinic opening intervals. A closed date has an explicit closed-day segment with no invented slot. If any start is bookable, return has_availability with count and empty explanation fields.
 
-All iteration orders are by canonical IDs; ties in weight are broken by fact ID string order. Inputs are canonicalised (sorted) on entry, so shuffled arrays produce identical output (tested).
+For fully blocked ranges, evaluate slots without alternatives/admin fixes. Signature is sorted (ruleId, subject.id) pairs. Merge consecutive starts on the same date and opening interval with equal signatures. Retain memberStarts, all fact IDs and windows. Segment [from,to) denotes starts; to = last start + grid, not last appointment end. Closed dates use a dedicated closedDay flag/date and no time bounds.
 
-## Step 5 — Alternatives (counterfactual search)
+For each signature pair present in every slot, collect its actual fact instances. Common cause is the union of those facts only if their per-slot subsets alone cover every row at every slot. Return real FactIds from the dictionary, never signature pairs in ID fields. Otherwise commonCause empty and invariant capability facts become context; segment facts plus context retain each slot's evidence. Closed-day structural facts participate via their own structural sufficiency check.
 
-Goal: up to `max` (default 3) **bookable** modified requests that change as little as possible, and that are meaningfully different from each other.
+Next available searches strictly after the requested date range, forward at most 14 days and 3000 evaluations by default, preserving requested practitioner. If a practitioner was requested, exhaust that search first; only then try others, recording the changed preference. Return incomplete status instead of skipping ahead on a truncated preferred-practitioner search. Every returned nextAvailable is re-evaluated; use nextSearch metadata for null/incomplete results. Snapshot coverage must include this forward domain.
 
-### Variation generators (lazy, in cost order)
+## Performance targets
 
-| Category | Variation |
+Measure wrappers externally; record runtime, hardware, dataset and warm-up.
+
+| Operation | S dataset p95 target |
 | --- | --- |
-| `same-day` | Same day, same practitioner constraint, other start times on the grid (alternate later/earlier: +15, −15, +30, −30, …) |
-| `other-practitioner` | Same start, a different practitioner (relaxes `request-practitioner` if the patient asked for one) |
-| `other-day` | Same time on the next/previous days within `searchDays`, then nearest time on those days |
+| isBookable | <= 2 ms |
+| evaluate without alternatives/admin fix | <= 20 ms |
+| evaluate with alternatives and supported admin fix | <= 400 ms |
+| Day availability | <= 100 ms |
+| Range one day / seven days | <= 300 ms / 1500 ms |
 
-### Cost model (configurable, documented in UI)
-
-```
-cost = 1.0 × (|Δ minutes| / 15)           // per 15-min shift on the same day
-     + 6.0 × |Δ days|                      // per day moved
-     + 8.0 × [requested practitioner changed]
-     + 0.5 × [any practitioner changed when none was requested]
-     + 0.1 × [earlier than requested]      // slight preference for later over earlier on ties
-```
-
-Weights live in `CostWeights` with defaults above; the UI explains them in plain words ("we prefer keeping your doctor over keeping your time").
-
-### Search
-
-- Generate variations in ascending cost (a merged lazy stream from each category), evaluate each with the fast `isBookable` path (matrix with early exit), stop at `budgetEvals`.
-- **Diversity selection:** take the cheapest bookable alternative; then fill remaining slots with the cheapest from categories not yet represented; then cheapest remaining. No two alternatives with identical (practitioner, start).
-- Every returned alternative includes its assignment and `changes: [{ field, from, to }]` and its `cost`.
-- Never suggest times before `now + minNotice` (they would fail anyway — but generators skip them for speed).
-- If none found within budget: `alternatives = []` and the UI shows "No nearby openings in the next 14 days".
-
-## Step 6 — Admin fix (minimal policy change)
-
-Staff-only answer to "what policy change would have allowed this exact request?"
-
-- Consider candidates whose `V(a)` contains **only** admin-relaxable facts (catalog column). Each such `V(a)` is a *correction set* — relaxing all of it makes the request bookable via `a`.
-- Choose the one with minimum total admin-cost (catalog weight), ties by candidate order.
-- Express as concrete changes where possible: `min-notice 120 → 60 min`, `Tom Harris daily cap 6 → 7`, `procedure buffer 15 → 0 min` (the exact value needed is computed: e.g. the largest buffer that would still fit).
-- If no candidate qualifies: `adminFix = null` ("No policy change alone would allow this — it's blocked by bookings or availability").
-
-## Step 7 — Trace (optional)
-
-With `trace: true`, include the candidate list, the full matrix (`V(a)` per candidate), reduced family, search node count and the alternatives evaluated. Used only by the engine inspector page; capped in size.
-
-## Step 8 — Range explanation: "Why is this day (or week) empty?"
-
-The most common real situation is not one blocked slot but **no slots at all** for a day or a practitioner. `explainRange` answers it by reusing Steps 1–5.
-
-```ts
-explainRange(snapshot, req: RangeRequest, opts): RangeExplanation
-RangeRequest = { patientId, serviceId, practitionerId?, fromDate: LocalDate, days: 1..7 }
-```
-
-Algorithm (deterministic):
-
-1. For each date in the range, list every grid start time where the appointment would fit inside clinic opening hours (a closed day yields one `clinic-closed-day` segment directly).
-2. For each slot: `isBookable`. If any slot in the range is bookable → `status: 'has_availability'` with the count (the UI just shows the grid).
-3. Otherwise evaluate each slot **without alternatives** (shared per-day indexes, built once) to get its primary facts.
-4. **Signature** of a slot = sorted set of `(ruleId, subject.id)` pairs of its primary facts (booking-specific details ignored, so "Dr. Rao busy" at 10:00 and 10:15 match).
-5. **Segments:** merge consecutive slots with identical signatures into `{ date, from, to, factIds (union), signature }`.
-6. **Common cause vs. context:** let `I` = the fact pairs present in **every** slot's signature.
-   - If the facts of `I` are **sufficient on their own** for every slot (they hit every candidate's `V(a)` in every slot), `commonCause = I` and it is the headline ("Ultrasound scans need a referral — none of these times can be booked without one"; "Dr. Okafor doesn't work Fridays").
-   - Otherwise `commonCause = []`, and the capability facts in `I` become `context` (e.g. "Only Dr. Rao and Dr. Mehta offer minor procedures") — shown once for the range, not repeated in every segment. This stops facts like "Nurse Iyer isn't qualified" from posing as the reason the day is empty.
-7. **Next available:** the first bookable slot after the range (same service, same practitioner constraint, then any practitioner), searched up to `searchDays` ahead; `null` if none.
-
-Output: `{ status: 'has_availability' | 'fully_blocked', commonCause: FactId[], context: FactId[], segments: Segment[], nextAvailable: Alternative | null, facts }` (segment fact lists exclude `context` facts). Projection and templates apply exactly as for single explanations.
-
-Properties (doc 06): segments cover every candidate slot exactly once and in order; every slot's primary facts are within its segment's facts; every common-cause pair is in every slot's signature and `commonCause` alone blocks every slot; `nextAvailable` re-evaluates bookable.
-
-Performance target: one day ≤ 300 ms, a 7-day practitioner range ≤ 1.5 s (S dataset).
-
-## Performance plan
-
-| Operation | Target p95 (demo dataset, Node, laptop) | Budget mechanism |
-| --- | --- | --- |
-| `isBookable` | ≤ 2 ms | Early exit on first empty `V(a)` |
-| `evaluate` without alternatives | ≤ 20 ms | Factorised matrix + bitsets |
-| `evaluate` with alternatives | ≤ 400 ms | `budgetEvals`, lazy cost-ordered generation |
-| Availability grid (one service, one day, all slots) | ≤ 100 ms | Repeated `isBookable` with shared per-day indexes |
-| `explainRange` one day / 7 days | ≤ 300 ms / ≤ 1.5 s | Shared per-day indexes; no alternatives per slot |
-
-Benchmarks (`pnpm bench`) run three dataset sizes: **S** (demo clinic), **M** (3× resources, 2× bookings), **L** (10× resources). Targets apply to S; M/L are reported to show scaling. If S misses targets in Phase 1, optimise before building UI.
-
-## Extension notes (not in v1)
-
-- **Multi-resource services** (two practitioners): candidates become longer tuples; hitting-set logic is unchanged.
-- **Series bookings:** a series is bookable iff every occurrence is; explanation = union of per-occurrence explanations with grouping.
-- **Larger clinics:** if candidate products explode, switch Step 4 to an incremental MUS algorithm (QuickXplain) over a CP-SAT model — the `Explanation` contract would not change.
+S = Riverside, M = 3x resources/2x bookings, L = 10x resources. S targets are gates; M/L report scaling. Baseline introduced in 1.6, extended as operations land. CI uses the same environment and flags >50% S regression; baseline updates require explicit card authorization and measured justification. No weakened targets to pass.
