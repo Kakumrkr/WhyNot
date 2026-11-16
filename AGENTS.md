@@ -30,7 +30,7 @@ Use Node 24.22.3 and pnpm 12.21.0 (see .node-version and packageManager).
 | pnpm format                    | Format current source/configuration and maintained handoff documents                               |
 | pnpm format:check              | Check that formatting without writing                                                              |
 | pnpm lint                      | Enforce TypeScript, source boundaries, engine purity and complete tests                            |
-| pnpm typecheck                 | Check strict TypeScript across source, tests and configuration                                     |
+| pnpm typecheck                 | Build library declarations, then check strict TypeScript across source, tests and configuration    |
 | pnpm test                      | Compile package prerequisites, then run native ESM entry smoke imports and ESLint boundary samples |
 | pnpm build                     | Compile package ESM/declarations and build the static React page                                   |
 | pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast                               |
