@@ -21,20 +21,22 @@ Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README
 
 ## Commands
 
-No package manifest exists before 0.1. That session replaces this target table with actual working commands.
+Use Node 24.22.3 and pnpm 12.21.0 (see .node-version and packageManager).
 
-| Target command | Introduced purpose |
-| --- | --- |
-| pnpm install | 0.1 workspace |
-| pnpm verify | 0.1 format check -> lint -> typecheck -> test -> build |
-| pnpm test | 0.1 onward current unit/property/golden suites; DB tests only later |
-| pnpm dev | 0.1 static web; no Docker |
-| pnpm bench | 1.6 real external benchmarks |
-| pnpm test:e2e | 3.1 built static browser suite |
-| pnpm db:migrate / pnpm db:seed | P1/P2 persistence milestone |
-| pnpm eval:narration | A2 optional experiment |
+| Command                        | Current behavior                                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| pnpm install                   | Install the workspace and update the lockfile                                                      |
+| pnpm install --frozen-lockfile | Install exactly the committed dependency graph; used in CI                                         |
+| pnpm format                    | Format current source/configuration and maintained handoff documents                               |
+| pnpm format:check              | Check that formatting without writing                                                              |
+| pnpm lint                      | Enforce TypeScript, source boundaries, engine purity and complete tests                            |
+| pnpm typecheck                 | Check strict TypeScript across source, tests and configuration                                     |
+| pnpm test                      | Compile package prerequisites, then run native ESM entry smoke imports and ESLint boundary samples |
+| pnpm build                     | Compile package ESM/declarations and build the static React page                                   |
+| pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast                               |
+| pnpm dev                       | Start the static Vite app at http://127.0.0.1:5173; no Docker                                      |
 
-No passing placeholder commands. Before 0.1, do not claim pnpm verify ran.
+Benchmarks, browser suites, DB and narration commands arrive with their owning sessions. No passing placeholders.
 
 ## Architecture invariants
 
