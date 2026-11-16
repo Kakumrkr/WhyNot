@@ -94,6 +94,16 @@ export const PatientExplanationSchema = z
       ],
       ctx,
     );
+    if (
+      value.basis === "missing_resource" &&
+      (value.primary.length !== 1 ||
+        value.facts.length !== 1 ||
+        value.facts[0]?.ruleId !== "resource-missing")
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Structural explanation requires one missing-resource fact",
+      });
   });
 export const PatientAssignmentSchema = z
   .strictObject({ practitionerId: IdSchema, start: MinuteSchema, end: MinuteSchema })
@@ -147,8 +157,8 @@ export const PatientEvaluationSchema = z
   .superRefine((value, ctx) => {
     if (
       value.status === "blocked" &&
-      value.search.status === "disabled" &&
-      value.alternatives.length > 0
+      value.alternatives.length > 0 &&
+      (value.search.status === "disabled" || value.explanation.basis === "missing_resource")
     )
       ctx.addIssue({
         code: "custom",

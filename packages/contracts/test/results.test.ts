@@ -12,10 +12,56 @@ import {
   type StaffEvaluation,
   type PatientEvaluation,
   type Fact,
+  TraceSchema,
 } from "../src/index.js";
 import { blocked, patientBlocked, fact, assignment, meta, alternative } from "./samples.js";
 
 describe("evaluation contracts", () => {
+  it("validates self-contained traces even for bookable results", () => {
+    const trace = {
+      facts: [fact],
+      candidates: [{ assignment, factIds: [fact.id] }],
+      reducedRows: [[fact.id]],
+      selected: [fact.id],
+      searchNodes: 1,
+      alternatives: [],
+      candidatesTruncated: false,
+      alternativesTruncated: false,
+    };
+    expect(
+      StaffEvaluationSchema.safeParse({ status: "bookable", assignment, meta, trace }).success,
+    ).toBe(true);
+    expect(TraceSchema.safeParse({ ...trace, facts: [] }).success).toBe(false);
+    expect(TraceSchema.safeParse({ ...trace, selected: ["unknown"] }).success).toBe(false);
+    expect(TraceSchema.safeParse({ ...trace, reducedRows: [["unknown"]] }).success).toBe(false);
+    expect(
+      TraceSchema.safeParse({
+        ...trace,
+        candidates: Array.from({ length: 501 }, () => ({ assignment, factIds: [] })),
+      }).success,
+    ).toBe(false);
+  });
+  it("accepts populated alternatives/admin fixes and rejects dangling fix references", () => {
+    const adminFix = {
+      factIds: [fact.id],
+      changes: [{ entity: "policy", field: "minNoticeMin", value: 60 }],
+      viaCandidate: assignment,
+      cost: 2,
+    };
+    const result = {
+      ...blocked,
+      adminFix,
+      alternatives: [alternative],
+      search: { status: "complete", from: 0, to: 1440, evaluated: 10 },
+    };
+    expect(StaffEvaluationSchema.safeParse(result).success).toBe(true);
+    expect(
+      StaffEvaluationSchema.safeParse({
+        ...result,
+        adminFix: { ...adminFix, factIds: ["unknown"] },
+      }).success,
+    ).toBe(false);
+  });
   it("has exactly 23 unique internal rule IDs and separate public replacements", () => {
     expect(RuleIdSchema.options).toHaveLength(23);
     expect(new Set(RuleIdSchema.options).size).toBe(23);

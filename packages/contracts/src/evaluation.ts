@@ -86,19 +86,36 @@ export const AlternativeSchema = z
         request.practitionerId === assignment.practitionerId),
     { message: "Assignment must satisfy alternative request" },
   );
-export const TraceSchema = z.strictObject({
-  candidates: z
-    .array(z.strictObject({ assignment: AssignmentSchema, factIds: z.array(IdSchema) }))
-    .max(500),
-  reducedRows: z.array(z.array(IdSchema)),
-  selected: z.array(IdSchema),
-  searchNodes: NonnegativeSchema,
-  alternatives: z
-    .array(z.strictObject({ request: BookingRequestSchema, bookable: z.boolean() }))
-    .max(3000),
-  candidatesTruncated: z.boolean(),
-  alternativesTruncated: z.boolean(),
-});
+export const TraceSchema = z
+  .strictObject({
+    facts: z.array(FactSchema),
+    candidates: z
+      .array(z.strictObject({ assignment: AssignmentSchema, factIds: z.array(IdSchema) }))
+      .max(500),
+    reducedRows: z.array(z.array(IdSchema)),
+    selected: z.array(IdSchema),
+    searchNodes: NonnegativeSchema,
+    alternatives: z
+      .array(z.strictObject({ request: BookingRequestSchema, bookable: z.boolean() }))
+      .max(3000),
+    candidatesTruncated: z.boolean(),
+    alternativesTruncated: z.boolean(),
+  })
+  .superRefine((value, ctx) => {
+    checkReferences(
+      value.facts.map((f) => f.id),
+      [
+        ...value.selected.map((id, i) => ({ id, path: ["selected", i] })),
+        ...value.candidates.flatMap((c, i) =>
+          c.factIds.map((id, j) => ({ id, path: ["candidates", i, "factIds", j] })),
+        ),
+        ...value.reducedRows.flatMap((row, i) =>
+          row.map((id, j) => ({ id, path: ["reducedRows", i, j] })),
+        ),
+      ],
+      ctx,
+    );
+  });
 export const StaffEvaluationSchema = z
   .discriminatedUnion("status", [
     z.strictObject({
@@ -125,13 +142,6 @@ export const StaffEvaluationSchema = z
     if (value.status !== "blocked") return;
     const refs = [
       ...(value.adminFix?.factIds.map((id, i) => ({ id, path: ["adminFix", "factIds", i] })) ?? []),
-      ...(value.trace?.selected.map((id, i) => ({ id, path: ["trace", "selected", i] })) ?? []),
-      ...(value.trace?.candidates.flatMap((c, i) =>
-        c.factIds.map((id, j) => ({ id, path: ["trace", "candidates", i, "factIds", j] })),
-      ) ?? []),
-      ...(value.trace?.reducedRows.flatMap((row, i) =>
-        row.map((id, j) => ({ id, path: ["trace", "reducedRows", i, j] })),
-      ) ?? []),
     ];
     checkReferences(
       value.explanation.facts.map((f) => f.id),
@@ -146,7 +156,9 @@ export const StaffEvaluationSchema = z
       });
     if (
       value.explanation.basis === "missing_resource" &&
-      (value.adminFix !== null || value.alternatives.length > 0)
+      (value.adminFix !== null ||
+        value.alternatives.length > 0 ||
+        (value.trace?.candidates.length ?? 0) > 0)
     )
       ctx.addIssue({
         code: "custom",

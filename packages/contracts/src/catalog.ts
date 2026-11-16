@@ -5,6 +5,7 @@ import {
   PositiveSchema,
   DateSchema,
   IntervalSchema,
+  ClockSchema,
 } from "./primitives.js";
 
 export const RuleIdSchema = z.enum([
@@ -97,7 +98,9 @@ export const RuleParams = {
   "request-practitioner": z.strictObject({ practitionerId: IdSchema }),
   "practitioner-skill": z.strictObject({ requiredSkill: IdSchema }),
   "practitioner-hours": dateParams,
-  "practitioner-break": z.strictObject({ date: DateSchema, from: z.string(), to: z.string() }),
+  "practitioner-break": z
+    .strictObject({ date: DateSchema, from: ClockSchema, to: ClockSchema })
+    .refine(({ from, to }) => from < to, { path: ["to"], message: "Invalid break interval" }),
   "practitioner-time-off": z.strictObject({ timeOffId: IdSchema, reason: z.string() }),
   "practitioner-busy": bookingParams,
   "practitioner-buffer": bookingParams.extend({

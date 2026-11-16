@@ -12,10 +12,79 @@ import {
   SyntheticSnapshotEnvelopeSchema,
   type ClinicSnapshot,
   type BookingRequest,
+  EvaluationInputSchema,
 } from "../src/index.js";
 import { snapshot, request } from "./samples.js";
 
 describe("snapshot and request contracts", () => {
+  it("checks request references, coverage edges and appointment-end overflow", () => {
+    const input = { snapshot, request, options: { now: 0 } };
+    expect(EvaluationInputSchema.safeParse(input).success).toBe(true);
+    for (const field of ["patientId", "serviceId", "practitionerId"]) {
+      const parsed = EvaluationInputSchema.safeParse({
+        ...input,
+        request: { ...request, [field]: "missing" },
+      });
+      expect(parsed.success).toBe(false);
+      if (!parsed.success)
+        expect(parsed.error.issues).toContainEqual(
+          expect.objectContaining({ path: ["request", field] }),
+        );
+    }
+    expect(
+      EvaluationInputSchema.safeParse({ ...input, request: { ...request, start: 1425 } }).success,
+    ).toBe(true);
+    for (const start of [-1, 1426, Number.MAX_SAFE_INTEGER])
+      expect(
+        EvaluationInputSchema.safeParse({ ...input, request: { ...request, start } }).success,
+      ).toBe(false);
+  });
+  it("bounds synthetic arrays and candidate combinations while preserving general snapshots", () => {
+    const envelope = { schemaVersion: 1, snapshot, now: 0 };
+    const practitioners = Array.from({ length: 101 }, (_, i) => ({
+      ...snapshot.practitioners[0],
+      id: `doctor-${i}`,
+    }));
+    expect(ClinicSnapshotSchema.safeParse({ ...snapshot, practitioners }).success).toBe(true);
+    expect(
+      SyntheticSnapshotEnvelopeSchema.safeParse({
+        ...envelope,
+        snapshot: { ...snapshot, practitioners },
+      }).success,
+    ).toBe(false);
+    const rooms = Array.from({ length: 100 }, (_, i) => ({
+      ...snapshot.rooms[0],
+      id: `room-${i}`,
+    }));
+    const equipment = Array.from({ length: 3 }, (_, i) => ({
+      id: `unit-${i}`,
+      displayName: "Unit",
+      type: "scanner",
+      maintenance: [],
+    }));
+    const large = {
+      ...snapshot,
+      practitioners: practitioners.slice(0, 100),
+      rooms,
+      equipment,
+      services: [{ ...snapshot.services[0], requiredEquipmentType: "scanner" }],
+    };
+    expect(
+      SyntheticSnapshotEnvelopeSchema.safeParse({ ...envelope, snapshot: large }).success,
+    ).toBe(false);
+    expect(
+      SyntheticSnapshotEnvelopeSchema.safeParse({
+        ...envelope,
+        snapshot: { ...large, equipment: equipment.slice(0, 2) },
+      }).success,
+    ).toBe(true);
+    expect(
+      SyntheticSnapshotEnvelopeSchema.safeParse({
+        ...envelope,
+        snapshot: { ...snapshot, patients: [{ ...snapshot.patients[0], referrals: ["unknown"] }] },
+      }).success,
+    ).toBe(false);
+  });
   it("infers shared types and accepts minimal snapshots, empty pools and cancelled bookings", () => {
     expectTypeOf(ClinicSnapshotSchema.parse(snapshot)).toEqualTypeOf<ClinicSnapshot>();
     expectTypeOf(BookingRequestSchema.parse(request)).toEqualTypeOf<BookingRequest>();

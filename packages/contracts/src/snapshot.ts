@@ -9,6 +9,8 @@ import {
   WindowSchema,
   IntervalSchema,
   SchemaVersionSchema,
+  BookingRequestSchema,
+  EvaluateOptionsSchema,
 } from "./primitives.js";
 
 export const ClinicSchema = z.strictObject({
@@ -141,9 +143,65 @@ export const ClinicSnapshotSchema = z
       p.referrals.forEach((id, j) => reference("services", id, ["patients", i, "referrals", j])),
     );
   });
+export const EvaluationInputSchema = z
+  .strictObject({
+    snapshot: ClinicSnapshotSchema,
+    request: BookingRequestSchema,
+    options: EvaluateOptionsSchema,
+  })
+  .superRefine(({ snapshot, request }, ctx) => {
+    for (const [field, entries] of [
+      ["patientId", snapshot.patients],
+      ["serviceId", snapshot.services],
+      ["practitionerId", snapshot.practitioners],
+    ] as const) {
+      const id = request[field];
+      if (id !== undefined && !entries.some((entry) => entry.id === id))
+        ctx.addIssue({
+          code: "custom",
+          path: ["request", field],
+          message: "Unknown request reference",
+        });
+    }
+    const service = snapshot.services.find((entry) => entry.id === request.serviceId);
+    if (service !== undefined) {
+      const end = request.start + service.durationMin;
+      if (!Number.isSafeInteger(end))
+        ctx.addIssue({
+          code: "custom",
+          path: ["request", "start"],
+          message: "Appointment end overflows safe minute range",
+        });
+      else if (request.start < snapshot.coverage.from || end > snapshot.coverage.to)
+        ctx.addIssue({
+          code: "custom",
+          path: ["request", "start"],
+          message: "Appointment is outside snapshot coverage",
+        });
+    }
+  });
+// Only playground imports have these bounds; engine consumers may supply larger snapshots.
+export const SyntheticClinicSnapshotSchema = ClinicSnapshotSchema.safeExtend({
+  practitioners: z.array(PractitionerSchema).max(100),
+  rooms: z.array(RoomSchema).max(100),
+  equipment: z.array(EquipmentSchema).max(100),
+  bookings: z.array(BookingSchema).max(5000),
+}).superRefine((snapshot, ctx) => {
+  const pairs = snapshot.practitioners.length * snapshot.rooms.length;
+  snapshot.services.forEach((service, index) => {
+    const combinations =
+      pairs * (service.requiredEquipmentType === undefined ? 1 : snapshot.equipment.length);
+    if (combinations > 20000)
+      ctx.addIssue({
+        code: "custom",
+        path: ["services", index],
+        message: "Import exceeds 20000 candidate combinations",
+      });
+  });
+});
 export const SyntheticSnapshotEnvelopeSchema = z.strictObject({
   schemaVersion: SchemaVersionSchema,
-  snapshot: ClinicSnapshotSchema,
+  snapshot: SyntheticClinicSnapshotSchema,
   now: MinuteSchema,
 });
 export type ClinicSnapshot = z.infer<typeof ClinicSnapshotSchema>;
@@ -156,3 +214,4 @@ export type Patient = z.infer<typeof PatientSchema>;
 export type Booking = z.infer<typeof BookingSchema>;
 export type Policy = z.infer<typeof PolicySchema>;
 export type SyntheticSnapshotEnvelope = z.infer<typeof SyntheticSnapshotEnvelopeSchema>;
+export type EvaluationInput = z.infer<typeof EvaluationInputSchema>;
