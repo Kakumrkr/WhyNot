@@ -95,6 +95,14 @@ push all changes and open a PR. Do not start another session.
 - Scope boundary: this card validates time shapes and safe arithmetic. Local grid/DST/conversion helpers are owned by 1.2; projection by 2.1; patch evaluation by 4.1; range computation by 4.3. Adapter ingestion must additionally enforce 256 KiB before parsing and 31 covered local dates via time helpers. General snapshots deliberately do not inherit playground size caps.
 - Unresolved material questions: none. Implemented only; independent review and merge pending. No self-claimed independent review. Stop after 1.1.
 
+#### Session 1.1 review corrections — 2026-11-16
+
+- Fresh-task review of PR #3 at ff59e90 requested changes: weekly schedules could not end at midnight; alternative changes could contradict returned times or contain no-op/repeated fields. Review outcome: changes required, not approved.
+- Fixed both findings on the existing branch. D-061 and docs 02/04 record `24:00` as an end-only next-local-midnight boundary and consistent alternative change destinations, including null/any-practitioner semantics. No engine/time conversion or Session 1.2 behavior implemented.
+- Added regression checks for split overnight/full-day hours, invalid midnight starts/ends, midnight break facts, contradictory/no-op/repeated changes for both audiences and valid practitioner selection/removal. Targeted regression suite: 3 tests passed; strict workspace/package typechecks passed.
+- Final correction gate: pnpm verify passed on the pinned toolchain, including 72 tests across 9 files, formatting, lint, strict types and all package/web builds. Non-bootstrap planning validation and git diff --check also passed.
+- Follow-up independent review and merge remain pending. Session 1.2 must first confirm PR #3's merge; these fixes do not constitute independent approval. Final verification/checkpoint/remote evidence is recorded in the PR and session response.
+
 Exact next prompt (fresh review task; do not start 1.2 yet):
 
 ```text

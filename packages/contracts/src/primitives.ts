@@ -9,6 +9,7 @@ export const PositiveSchema = MinuteSchema.positive();
 export const DateSchema = z.iso.date();
 export const OffsetIsoSchema = z.iso.datetime({ offset: true, precision: 0 });
 export const ClockSchema = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
+export const ClockEndSchema = z.union([ClockSchema, z.literal("24:00")]);
 export const IntervalSchema = z
   .strictObject({ from: MinuteSchema, to: MinuteSchema })
   .refine(({ from, to }) => from < to, { path: ["to"], message: "End must follow start" });
@@ -20,7 +21,7 @@ export const WeeklyHoursSchema = z.array(
     .strictObject({
       weekday: z.number().int().min(1).max(7),
       from: ClockSchema,
-      to: ClockSchema,
+      to: ClockEndSchema,
     })
     .refine(({ from, to }) => from < to, { path: ["to"], message: "Use separate day intervals" }),
 );

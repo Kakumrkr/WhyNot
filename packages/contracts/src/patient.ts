@@ -9,7 +9,7 @@ import {
   SearchReportSchema,
 } from "./primitives.js";
 import { RuleParams } from "./catalog.js";
-import { AlternativeCategorySchema, RequestChangeSchema } from "./evaluation.js";
+import { AlternativeCategorySchema, RequestChangesSchema } from "./evaluation.js";
 import { checkReferences } from "./references.js";
 
 export const PublicFactIdSchema = z.string().regex(/^fact-[1-9]\d*$/);
@@ -108,12 +108,24 @@ export const PatientExplanationSchema = z
 export const PatientAssignmentSchema = z
   .strictObject({ practitionerId: IdSchema, start: MinuteSchema, end: MinuteSchema })
   .refine(({ start, end }) => start < end, { path: ["end"], message: "End must follow start" });
-export const PatientAlternativeSchema = z.strictObject({
-  assignment: PatientAssignmentSchema,
-  category: AlternativeCategorySchema,
-  cost: z.number().nonnegative(),
-  changes: z.array(RequestChangeSchema).min(1),
-});
+export const PatientAlternativeSchema = z
+  .strictObject({
+    assignment: PatientAssignmentSchema,
+    category: AlternativeCategorySchema,
+    cost: z.number().nonnegative(),
+    changes: RequestChangesSchema,
+  })
+  .superRefine(({ assignment, changes }, ctx) => {
+    changes.forEach((change, index) => {
+      const destination = assignment[change.field];
+      if (change.to !== null && change.to !== destination)
+        ctx.addIssue({
+          code: "custom",
+          path: ["changes", index, "to"],
+          message: "Change destination must match alternative assignment",
+        });
+    });
+  });
 // Codes and fields are allowlisted; arbitrary staff diagnostic text/paths never enter public errors.
 export const PatientValidationIssueSchema = z.strictObject({
   code: z.enum([

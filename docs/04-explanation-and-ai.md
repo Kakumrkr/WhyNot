@@ -17,6 +17,8 @@ Zod schemas in contracts define shared types. Required capabilities:
 
 Start schema version 1 before publication; breaking published changes need a bump/decision. Before owning sessions, advanced fields have explicit disabled/null values and their functions are not public. Do not expose malformed placeholder results.
 
+Alternative changes must be non-no-op, unique per field and have destinations matching the changed request. Patient changes match the assignment's start and any explicitly selected practitioner; null means any practitioner. Schema validation cannot compare the original request or establish feasibility; the engine must still verify both (D-061).
+
 ## Grouping
 
 Engine groups request, per-practitioner, capability-context and resources facts. Primary retains full sufficiency evidence; grouping is not deletion. Staff summaries use each practitioner's candidate of lowest total violation weight then canonical IDs, listing all its blockers. A concise explanation and all violations are labelled separately.

@@ -63,21 +63,38 @@ export const ExplanationSchema = z
     }
   });
 export const AlternativeCategorySchema = z.enum(["same-day", "other-practitioner", "other-day"]);
-export const RequestChangeSchema = z.discriminatedUnion("field", [
-  z.strictObject({ field: z.literal("start"), from: MinuteSchema, to: MinuteSchema }),
-  z.strictObject({
-    field: z.literal("practitionerId"),
-    from: IdSchema.nullable(),
-    to: IdSchema.nullable(),
-  }),
-]);
+export const RequestChangeSchema = z
+  .discriminatedUnion("field", [
+    z.strictObject({ field: z.literal("start"), from: MinuteSchema, to: MinuteSchema }),
+    z.strictObject({
+      field: z.literal("practitionerId"),
+      from: IdSchema.nullable(),
+      to: IdSchema.nullable(),
+    }),
+  ])
+  .refine(({ from, to }) => from !== to, { path: ["to"], message: "Change must alter the value" });
+export const RequestChangesSchema = z
+  .array(RequestChangeSchema)
+  .min(1)
+  .superRefine((changes, ctx) => {
+    const seen = new Set<string>();
+    changes.forEach((change, index) => {
+      if (seen.has(change.field))
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "field"],
+          message: "Duplicate changed field",
+        });
+      seen.add(change.field);
+    });
+  });
 export const AlternativeSchema = z
   .strictObject({
     request: BookingRequestSchema,
     assignment: AssignmentSchema,
     category: AlternativeCategorySchema,
     cost: z.number().nonnegative(),
-    changes: z.array(RequestChangeSchema).min(1),
+    changes: RequestChangesSchema,
   })
   .refine(
     ({ request, assignment }) =>
@@ -85,7 +102,19 @@ export const AlternativeSchema = z
       (request.practitionerId === undefined ||
         request.practitionerId === assignment.practitionerId),
     { message: "Assignment must satisfy alternative request" },
-  );
+  )
+  .superRefine(({ request, changes }, ctx) => {
+    changes.forEach((change, index) => {
+      const destination =
+        change.field === "start" ? request.start : (request.practitionerId ?? null);
+      if (change.to !== destination)
+        ctx.addIssue({
+          code: "custom",
+          path: ["changes", index, "to"],
+          message: "Change destination must match alternative request",
+        });
+    });
+  });
 export const TraceSchema = z
   .strictObject({
     facts: z.array(FactSchema),
