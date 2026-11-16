@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 6 — Staff tools
 
 Exit gate (checked in Session 6.4): staff explanation view + admin fix visible for H1/H4/H5; insights dashboard populated from seed history; simulator result for "procedure buffer 15 → 10 min" matches a hand-checked count on a small fixture; inspector renders the H1 matrix; e2e + axe green for all staff pages.

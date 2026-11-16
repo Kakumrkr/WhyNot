@@ -1,76 +1,39 @@
-# 07 — Roadmap: phases, sessions & gates
+# 07 — Roadmap, milestones and release gates
 
-A **session** = one self-contained unit of work that ends with a working, tested, pushed increment (one feature, or a clean half of a big one). Time doesn't matter; the *done-when* checklist does. Each session has a card in [`docs/sessions/`](sessions/) with exact scope, files, tests, and a starter prompt for Codex.
+Approved 2026-11-16. [Active session index](sessions/README.md) is authoritative. First release: reusable appointment engine and static playground; optional persistence/history/AI follow. Do not execute archived phase cards.
 
-Phases are ordered so the **riskiest thing (the engine's correctness and speed) is proven first**, before any UI exists. A phase's exit gate must pass before the next phase starts.
-
-## Phase overview
-
-| Phase | Goal | Sessions | Exit gate |
-| --- | --- | --- | --- |
-| **0 — Foundation** | Monorepo, tooling, CI, guard rails | 0.1, 0.2 | `pnpm verify` green locally and in CI; import-boundary lint works; skills installed |
-| **1 — Engine core (proof)** | Correct, fast feasibility + minimal explanations | 1.1 – 1.6 | P1–P5, P8, P9, P12 pass at 5,000 runs; H1–H8 explanation sets pass; S-dataset bench within targets |
-| **2 — Alternatives, admin fix, wording, range** | Complete engine output + template wording + "why is this empty?" | 2.1 – 2.5 | P6, P7, P10, P11, P13, P14 pass; H9–H11 range goldens pass; H1–H8 fully pass incl. alternatives and patient text; every rule has templates |
-| **3 — API & data** | Persistence, seed clinic, endpoints, safe booking | 3.1 – 3.4 | Integration suite green on PGlite; concurrency test passes; seed reproduces hero scenarios through the API |
-| **4 — Patient experience** | The demo: booking page + "Why not?" panel + static mode | 4.1 – 4.5 | E2E for H1, H2, H3, H7 pass in full and static mode; axe clean; static build deploys |
-| **5 — AI narration** | Verified OpenAI wording | 5.1 – 5.3 | Verifier adversarial suite passes; narration eval ≥ 90% first-pass, 0 privacy failures; model choice recorded |
-| **6 — Staff tools** | Staff view, insights, simulator, inspector | 6.1 – 6.4 | Dashboard populated from seed; simulator estimates match a hand-checked example; inspector shows H1 matrix |
-| **7 — Ship** | Hardening, deploy, portfolio package | 7.1 – 7.3 | Release checklist (below) 100% ticked |
-
-**Total: 32 sessions.**
-
-## Session index
-
-| ID | Session | Depends on |
+| Milestone | Sessions | Gate |
 | --- | --- | --- |
-| 0.1 | Monorepo scaffold, tooling, `pnpm verify`, CI | — |
-| 0.2 | Guard rails: import boundaries, engine purity lint, PR template, skills check, ADR template | 0.1 |
-| 1.1 | Contracts: zod schemas for snapshot, request, fact, evaluation | 0.2 |
-| 1.2 | Time module: wall-clock ↔ instant, intervals, DST tests | 1.1 |
-| 1.3 | Rule catalog + global/patient/timing rules | 1.2 |
-| 1.4 | Practitioner, room, equipment rules (incl. buffers/turnover) | 1.3 |
-| 1.5 | Candidates, violation matrix, feasibility, reference impl, differential tests | 1.4 |
-| 1.6 | Explanation (min-weight hitting set) + properties + Riverside fixtures + H1–H8 explanation goldens + bench → **Phase 1 gate** | 1.5 |
-| 2.1 | Alternatives search + cost model + diversity | 1.6 |
-| 2.2 | Admin fix + presentation groups + `evaluate()` final shape | 2.1 |
-| 2.3 | Audience projection (privacy) + P10 | 2.2 |
-| 2.4 | Template narrator (all rules, both audiences) + edge goldens | 2.3 |
-| 2.5 | Range explanation ("Why is this empty?") + H9–H11 → **Phase 2 gate** | 2.4 |
-| 3.1 | DB schema, migrations, PGlite test harness, Docker Compose | 2.5 |
-| 3.2 | Seed script: Riverside clinic + demo clock + historical evaluations | 3.1 |
-| 3.3 | API skeleton + snapshot loader + `/clinic`, `/availability`, `/explain`, `/explain-range` | 3.2 |
-| 3.4 | Bookings (serializable + exclusion constraints), cancel, policies, demo reset → **Phase 3 gate** | 3.3 |
-| 4.1 | Design system with UI UX Pro Max + web scaffold + API client + role switcher | 3.4 |
-| 4.2 | Booking page: pickers + availability grid + "Why is this empty?" state | 4.1 |
-| 4.3 | "Why not?" panel + alternatives + one-click book + conflict handling | 4.2 |
-| 4.4 | Static demo mode (engine in browser) + GitHub Pages workflow | 4.3 |
-| 4.5 | E2E + accessibility pass + responsive polish → **Phase 4 gate** | 4.4 |
-| 5.1 | Narrator interface + OpenAI narrator + cache + budget | 4.5 |
-| 5.2 | Verifier + adversarial tests + fallback wiring in API/UI | 5.1 |
-| 5.3 | Narration eval runner + model choice + static narrations → **Phase 5 gate** | 5.2 |
-| 6.1 | Staff view of explanations + admin fix display + policy editor | 5.3 |
-| 6.2 | Insights dashboard | 6.1 |
-| 6.3 | Policy simulator | 6.2 |
-| 6.4 | Engine inspector (matrix visualisation) → **Phase 6 gate** | 6.3 |
-| 7.1 | Hardening: security review, rate limits, error states, perf recheck | 6.4 |
-| 7.2 | Deploy + environments + runbook | 7.1 |
-| 7.3 | Portfolio package: README, GIF, diagram, video script, write-up → **Release** | 7.2 |
+| Planning and foundation | 0.0–0.1 | Saved consistent plan; then clean-clone pnpm verify and enforced boundaries |
+| Explanation core | 1.1–1.6 | P1–P5/P8/P9/P12, H1–H8 explanation sets, independent checker, core S benchmarks |
+| Safe wording and alternatives | 2.1–2.3 | P6/P7/P10/P16, templates both audiences, edge corpus, truthful search status |
+| First interactive preview | 3.1–3.3 | Patient/staff journey, inspector, built browser/axe checks, Pages deployment evidence |
+| Policy and empty-calendar capability | 4.1–4.4 | Actual verified patches P11/P15, range P13/P14, isolated H9–H11, browser journeys |
+| Developer adoption and first release | 5.1–5.2 | Packed consumer example, synthetic imports, security/accessibility/performance and published limitations |
+| Optional persistence | P1–P5 | Portable DB + real-Postgres races, API/static parity and reproducible full local mode |
+| Optional history | H1–H4 | Immutable replay inputs, truthful aggregates, manually checked estimates and accessible dashboard |
+| Optional AI | A1–A3 | Explicit benefit/contract decision, adversarial eval and optional fallback integration; may be declined |
 
-Phases 1 and 2 are split finely on purpose: the engine is where mistakes are most expensive. Small sessions (e.g. 1.2) may be done back-to-back in one sitting, but each is still committed, verified and pushed separately.
+The early preview follows 3.3 rather than waiting for a DB/AI. Small verified cards remain intentional; calendar duration is not a completion criterion.
 
-## Release checklist (v1.0)
+## First-release checklist
 
-- [ ] All phase gates passed and recorded in `docs/PROGRESS.md`
-- [ ] `pnpm verify` + CI e2e green on `main`
-- [ ] H1–H11 + ≥ 16 edge goldens pass; helpfulness review scores ≥ 4
-- [ ] Narration eval report committed; 0 privacy failures
-- [ ] Bench within targets; baseline committed
-- [ ] Security review (skill `security-best-practices`) findings resolved or documented
-- [ ] Static demo live; full mode runs with one command (`docker compose up` + `pnpm dev`)
-- [ ] README with GIF, architecture diagram, limitations; write-up published in `docs/writeup.md`
-- [ ] LICENSE present; no secrets in history; `.env.example` complete
+- [ ] 0.0–5.2 implemented, independently reviewed and merged; evidence in PROGRESS.
+- [ ] pnpm verify, properties at 5000 in CI, built static browser/axe suites green.
+- [ ] H1–H11, E01–E16 and explicit empty-resource/search/patch/privacy regressions green.
+- [ ] Every rule and public replacement has appropriate templates; all references resolve.
+- [ ] S benchmarks meet doc 03 table; M/L and limitations reported.
+- [ ] Clean packed-library consumer works without fixtures, DB, web or provider dependency.
+- [ ] Synthetic import/export validated/bounded/in-memory; no payload or staff-detail URL leaks.
+- [ ] Static demo observed on desktop/mobile; keyboard/focus/contrast checked.
+- [ ] No unresolved blocker/major findings; minor accepted risks explicit.
+- [ ] README, GIF/screenshots, runbook, architecture and technical write-up reflect actual behavior.
+- [ ] MIT license, no secrets, accurate environment/command documentation.
+- [ ] Real helpfulness/adoption feedback recorded or conspicuously marked pending; no fabricated approval.
+- [ ] Release notes prepared; tag v1.0.0 only after release PR is merged.
+
+Technical readiness is separate from usefulness validation. External adoption evidence remains a goal, not a manufactured release artifact.
 
 ## Change control
 
-- Scope changes → add an entry to [08 — Decision log](08-decisions.md) first, then edit the affected docs and session cards, then code.
-- If a session reveals the spec is wrong or ambiguous: **stop**, write the question in `docs/QUESTIONS.md`, and finish only the unambiguous part. Never guess silently.
+Record a decision before modifying architecture, rules or expected outcomes. Update affected specs, cards, skills and progress together. Write unresolved issues in QUESTIONS, implement only unambiguous work, and never silently weaken tests. Record regular checkpoint commits and mandatory end-of-session push in every handoff.

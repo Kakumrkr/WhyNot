@@ -1,37 +1,20 @@
 ---
 name: whynot-engine
-description: Use for any change in packages/engine or packages/contracts of WhyNot — rules, rule catalog, time handling, candidates, violation matrix, explanation (hitting set), alternatives, admin fix, audience projection. Not for API routes or UI.
+description: Implement WhyNot contracts or pure appointment-engine rules, explanations, alternatives, projection, policy previews and ranges. Excludes API orchestration and UI.
 ---
 
-# Working on the WhyNot engine
+# Engine work
 
-Spec: `docs/02-domain-and-rules.md`, `docs/03-engine-algorithms.md`, `docs/04-explanation-and-ai.md` (contract + projection). Follow them exactly.
+Read docs 02/03/04 and active card. All shared schemas are contracts Zod, infer types. Pure engine imports only contracts, local modules and Luxon (time.ts only); no actual clock, logging, process, timers, I/O or Node built-ins. Runtime timing stays outside results.
 
-## Purity checklist (every change)
+Canonical codepoint IDs/order, injected UTC-minute now, frozen inputs. Follow doc 03 time/grid/DST and validation rules. 23 internal catalog IDs include resource-missing; public synthetic replacements use separate schema.
 
-- [ ] No imports except `@whynot/contracts` and `luxon` (luxon only in `src/time.ts`).
-- [ ] No `Date`, `Date.now`, `Math.random`, `process`, `console`, timers, globals, I/O.
-- [ ] Inputs are never mutated (tests deep-freeze them).
-- [ ] All iteration over collections uses canonical order (sorted by `id`); tie-breaks by ID string compare (`a < b`), never by locale compare.
-- [ ] Instants are integer epoch minutes; durations are integer minutes.
+Rule changes need catalog/version, check, meaningful boundary tests, generated coverage, golden and both-audience templates when template subsystem exists. Earlier rule sessions defer templates explicitly to 2.2.
 
-## Adding or changing a rule (end-to-end)
+Missing pools return structural evidence, not fake candidates. Matrix facts factor by G/P/R/E. Explanation is sufficient/irredundant; optimal only on completed B&B. Keep canonical equal-weight ties; always assert invariants and throw on bugs.
 
-1. Catalog entry in `src/catalog.ts`: `id`, `version`, `family`, `kind`, `weight`, `visibility`, `relaxableBy` — values from doc 02's table. Changing semantics ⇒ bump `version`.
-2. Check function in the right `src/rules/<family>.ts`. Signature returns grounded `Fact`s (with stable `id` built by `factId(ruleId, {key: value,...})` — keys sorted).
-3. Fact `params` must contain every value the templates and verifier need (times as clinic-local `HH:mm`, durations, names). Nothing private in public-visibility params.
-4. Add it to the reference implementation (`src/reference/`) in the naive style.
-5. Templates (both audiences) in `packages/narrator/src/templates/` — the catalog-coverage test will fail otherwise.
-6. Tests: unit (violated / not violated / boundary-exact cases), and make sure property generators can produce situations that trigger it.
-7. A golden scenario that features the rule.
+Alternatives are actual changed requests, rechecked; bounded search metadata is part of contract. Diversity is not global sorted-top-k. Concrete policy patches target actual settings, coalesce changes and must re-evaluate the original request. No relax-by-deleting-facts shortcut.
 
-## Algorithms
+Projection uses separate public contracts and remaps every reference; no raw staff identifiers. Range commonCause contains actual FactIds and per-slot sufficiency; merged start windows never imply one continuous booking.
 
-- Matrix: compute families per resource once; `V(a) = G ∪ P(p) ∪ R(r) ∪ E(e)`.
-- Explanation: reduce (dedupe + drop supersets) → forced singletons → exact branch-and-bound (node cap 50,000) → else greedy + prune-to-irredundant, `optimal: false`. Always run the internal sufficiency + irredundancy assertion before returning.
-- Alternatives: lazy cost-ordered generators per category, `isBookable` fast path, `budgetEvals` cap, diversity selection. Every returned alternative must be re-evaluated bookable.
-- Admin fix: candidates whose `V(a)` is entirely admin-relaxable; minimum admin cost; compute concrete setting changes.
-
-## Performance
-
-Run `pnpm bench` after algorithm changes. Don't regress S-dataset p95 by > 50% versus `engine/bench/baseline.json`. Update the baseline only when a session card says so.
+Use whynot-testing and independent test/reference checker. Benchmark changes externally per doc 03. Update baseline only with card permission and evidence. No production export of generators/reference code.

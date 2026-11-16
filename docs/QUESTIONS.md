@@ -1,6 +1,29 @@
 # QUESTIONS
 
-Open questions raised during sessions. Agents: add a question here instead of guessing; the human answers it (alone, or in a separate Codex "planning task" that only reads docs and proposes options — no code changes), then the answer becomes a decision in `docs/08-decisions.md` and the question is marked resolved.
+Record unresolved material ambiguity here instead of inventing architecture, rule semantics or expectations. Resolve through an approved doc 08 decision and update affected specs/cards/skills together.
 
-| # | Date | Session | Question | Options considered | Status |
+## Open blockers
+
+None for Session 0.1. Deferred version/design/DB/model/hosting decisions belong to their named sessions in doc 08; they are not reasons to block foundation work.
+
+## Planning resolutions — 2026-11-16
+
+| ID | Issue | Resolution | Decision |
+| --- | --- | --- | --- |
+| R-001 | Static demo/staff work delayed by DB and AI | Engine/playground first; P/H/A follow-ons | D-050 |
+| R-002 | Runtime timings violate deterministic purity | External wrappers; frozen injected clock | D-051 |
+| R-003 | Partial search described as no openings | Finite-domain completion/budget/window metadata and truthful copy | D-051 |
+| R-004 | Empty pools yield no explanation | resource-missing structural basis; no fake assignments | D-052 |
+| R-005 | H1 opening conflicts with fully blocked H11 | Isolated named snapshot overrides and scenario hand-checks | D-052 |
+| R-006 | Deleting violations does not verify setting changes | Apply typed concrete patches and re-evaluate | D-053 |
+| R-007 | Redaction drops necessary facts or leaks references | Distinct patient schema, allowlists, replacements, complete remapping | D-054 |
+| R-008 | End-of-session state and pushes ambiguous | Checkpoint commits, mandatory verified push, separate implementation/review/merge | D-055 |
+| R-009 | Heuristic prose checks cannot prove meaning | Templates first, explicit later AI decision/eval | D-056 |
+| R-010 | Reusable package adoption unspecified | Clean own-data Node example, package validation, bounded synthetic import | D-057 |
+| R-011 | Historical settings cannot be reconstructed from current state | Immutable full input bundles and explicit unsupported versions | D-058 |
+| R-012 | Skills/agents tied to old roadmap | Eight scoped skills, optional reviewer roles, just-in-time capability checks | D-059 |
+
+## New issues
+
+| ID | Date | Session | Question | Options/evidence | Status |
 | --- | --- | --- | --- | --- | --- |

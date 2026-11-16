@@ -1,5 +1,7 @@
 # 08 — Decision log
 
+> Active revision: D-050–D-059 below governs the current plan. Earlier entries and original Open assignments are historical wherever superseded; use the Revised deferred decisions table.
+
 Format: **ID · Decision** — *Why* — *Rejected alternatives* — *Revisit if*. New decisions are appended; superseded ones are marked, never deleted.
 
 ## Product

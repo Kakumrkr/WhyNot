@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 5 — AI narration (OpenAI)
 
 Exit gate (checked in Session 5.3): verifier adversarial suite green; narration eval ≥ 90% first-pass verification and **0 privacy failures** across all goldens × both audiences; model choice recorded (Q-4 → D-046); static demo shows verified AI narrations for H1–H8.

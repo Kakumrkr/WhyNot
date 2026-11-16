@@ -1,93 +1,80 @@
 # AGENTS.md — WhyNot
 
-Standing instructions for every coding agent working in this repository. Read fully before any change.
+Standing instructions for every coding agent in this repository.
 
-## What this project is
+## Product and source of truth
 
-WhyNot is an explainable booking engine for a fictional clinic ("Riverside Family Clinic"). When a booking request fails, it returns the **minimal set of rules that block it**, **verified bookable alternatives**, and for staff a **minimal policy fix**. AI (OpenAI) only rewords results; a verifier checks every sentence.
+WhyNot is a pure TypeScript appointment engine plus a fictional Riverside Family Clinic playground. First release: minimal blockers, verified alternatives, patient/staff explanations, inspector, policy previews and range explanations. Persistence/history/optional AI are later milestones, never prerequisites.
 
-The full plan is in `docs/` — `docs/00`–`09` are the specification. **The docs are the source of truth. Code follows docs.** If they disagree, stop and write the conflict in `docs/QUESTIONS.md`.
+Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README.md. Archived phase cards are historical and must not be executed. IDs were reassigned during 0.0. Code follows docs. On conflict/ambiguity, record it in docs/QUESTIONS.md and do only unambiguous work.
 
 ## Every session
 
-1. Use `$whynot-session`. Read `docs/PROGRESS.md` and your session card in `docs/sessions/` completely.
-2. Implement **only** the card's "Build" list. Never implement items from "Out of scope" or from later sessions "while you're there".
-3. Run `pnpm verify` and make it green. Never finish with red checks.
-4. Update `docs/PROGRESS.md` (tick + 2–4 line hand-off note: what was done, anything surprising, what the next session should know).
-5. Commit on branch `session/<id>-<slug>`, push, open a PR.
-
-If the spec is ambiguous, contradictory, or seems wrong: **stop, write the question in `docs/QUESTIONS.md`, and do only the unambiguous part.** Never guess about architecture, contracts, rule semantics, or test expectations.
+1. Use whynot-session; documentation-only planning also uses whynot-planning. Read PROGRESS, QUESTIONS, selected card and its required documents fully.
+2. Confirm prerequisites are **merged**, not merely implemented. Resume incomplete work instead of silently skipping it. Stop after the selected card.
+3. Check required skills when needed. Missing design/browser/security capabilities block their owning work, not unrelated earlier cards. Optional convenience skills have native-tool fallbacks.
+4. Stay within Build; do not implement later sessions. Record architectural/spec changes as decisions first.
+5. Run required checks. Session 0.0 uses documentation checks before tooling exists. From 0.1, pnpm verify must be green for completion; browser/real-PG gates apply as introduced.
+6. Commit logical verified increments during work. Push checkpoints during longer sessions and **all commits before ending**. Verify remote HEAD equals local HEAD; open/update PR.
+7. Record implemented/reviewed/merged separately, plus branch, final commit, PR, evidence, remaining work and exact next prompt. Never self-claim independent review or merge.
+8. If blocked/incomplete, save a coherent checkpoint/draft and honest failure report. Never mark complete with red checks. Do not lose work simply because the session cannot complete.
 
 ## Commands
 
-(Filled in precisely by Session 0.1. Target set:)
+No package manifest exists before 0.1. That session replaces this target table with actual working commands.
 
-| Command | Does |
+| Target command | Introduced purpose |
 | --- | --- |
-| `pnpm install` | Install workspace |
-| `pnpm verify` | format check → lint → typecheck → test → build. **The gate.** |
-| `pnpm test` | All Vitest suites (unit, property, golden, integration on PGlite) |
-| `pnpm test:e2e` | Playwright (needs built web app) |
-| `pnpm bench` | Engine benchmarks |
-| `pnpm dev` | API + web in watch mode (needs Postgres from `docker compose up -d`) |
-| `pnpm db:migrate` / `pnpm db:seed` | Apply migrations / seed Riverside clinic |
-| `pnpm eval:narration` | Narration eval (needs `OPENAI_API_KEY`) |
+| pnpm install | 0.1 workspace |
+| pnpm verify | 0.1 format check -> lint -> typecheck -> test -> build |
+| pnpm test | 0.1 onward current unit/property/golden suites; DB tests only later |
+| pnpm dev | 0.1 static web; no Docker |
+| pnpm bench | 1.6 real external benchmarks |
+| pnpm test:e2e | 3.1 built static browser suite |
+| pnpm db:migrate / pnpm db:seed | P1/P2 persistence milestone |
+| pnpm eval:narration | A2 optional experiment |
 
-## Architecture invariants (never violate)
+No passing placeholder commands. Before 0.1, do not claim pnpm verify ran.
 
-1. **The engine decides; nothing else does.** Feasibility, reasons, alternatives and admin fixes come only from `packages/engine`. API, web and AI must never compute, filter, reorder or override them (presentation formatting is fine).
-2. **`packages/engine` is pure.** No I/O, no `Date.now()`, no `Math.random()`, no `process`, no Node built-ins, no network, no DB. Allowed imports: `@whynot/contracts`, `luxon` (only inside `src/time.ts`). `now` is always a parameter.
-3. **Deterministic.** Sort inputs canonically; break ties by stable IDs. Same input ⇒ deep-equal output.
-4. **Time:** inside the engine, instants are integer **epoch minutes UTC**. Wall-clock conversion happens only in `engine/src/time.ts`. On the wire: ISO-8601 with offset.
-5. **Contracts first.** Shared types are zod schemas in `packages/contracts`. Never redefine a contract type elsewhere; infer with `z.infer`.
-6. **Privacy:** anything shown to a patient goes through `projectForAudience(…, 'patient')`. Never send staff-only facts, other patients' data, booking IDs, or `reason` fields to patient surfaces.
-7. **Templates first.** Every rule has patient and staff templates. AI narration is optional and must pass `verify()`; otherwise use templates.
-8. **No secrets in the browser.** `OPENAI_API_KEY` exists only in `apps/api`. `apps/web` never imports `narrator/src/openai.ts`.
-9. **Dependency direction:** `contracts ← engine ← narrator ← apps`. `fixtures` is dev/test only. Enforced by ESLint; never disable those rules.
-10. **No new infrastructure** (queues, caches, microservices, vector DBs, agent frameworks, state libraries beyond TanStack Query) without a decision-log entry approved by the human.
+## Architecture invariants
 
-## Testing rules
+1. Engine alone computes feasibility, facts, explanations/groups, alternatives/order and policy fixes. UI/API/templates render.
+2. Engine pure: imports only contracts, local engine modules and Luxon (Luxon only in src/time.ts). No I/O, Date, real clock, randomness, process, Node built-ins, logging/timers/network.
+3. Deterministic canonical codepoint-ID ordering. Inject now; no runtime timings in results. Deep-frozen inputs remain unchanged.
+4. Integer UTC epoch minutes internally; timezone conversion only in time.ts; explicit-offset ISO externally. Follow doc 03 DST/grid semantics.
+5. Contracts first: shared Zod schemas, inferred types, no duplicate contract definitions.
+6. Patient outputs pass projectForAudience before rendering/serialization. No raw booking IDs, staff reasons or other patients. Use separate patient schema and remap all references.
+7. Every catalog rule/public replacement has appropriate templates. AI is later and optional; heuristic checks cannot prove semantic truth.
+8. No secrets/server/provider clients in browser. Future OPENAI_API_KEY enters only API server configuration.
+9. Dependency direction contracts <- engine; templates depend on contracts. Fixtures test/dev-only except static adapter and later seed; generators/reference checker never production exports.
+10. No new infrastructure, external solver, queues, caches, agent frameworks or state libraries beyond TanStack Query without approved decision.
+11. Re-evaluate alternatives and actual policy patches. Report incomplete search honestly. Internal invariant failures throw; never return known-invalid output.
+12. Static imports are bounded synthetic data, memory-only; no upload/logging/persistence or imported-content share links.
 
-- New behaviour ⇒ new tests in the same PR. Engine changes ⇒ unit + property tests (see `$whynot-testing`).
-- **Golden scenarios** (`packages/fixtures/scenarios/*.json`) encode human expectations. **Never edit an expectation to make a test pass.** Only change one together with an entry in `docs/08-decisions.md` explaining why the expectation was wrong, and say so in the PR description.
-- Never use `.skip`, `.only`, `it.todo`, `@ts-ignore`, `@ts-expect-error` (except in type tests), `eslint-disable`, or lowered property-run counts to get green.
-- Property tests print their seed; on failure, add the shrunk counterexample as a regular unit test.
-- Do not mock the engine in API or web tests; use real fixtures. Mock only OpenAI (with recorded/adversarial responses).
+## Testing and conventions
 
-## Code conventions
+- New behavior gets meaningful tests. Engine changes need unit/property checks; use whynot-testing.
+- Golden expectations never change just to pass. A correction needs doc 08 decision and explicit PR explanation.
+- Never skip/focus/todo tests, lower property counts, disable lint, use any or suppression comments to pass. Type-test-only ts-expect-error is the sole stated exception.
+- Print property failure seed and add shrunk counterexample as normal regression. Independent checker must not reuse optimized rules.
+- No engine mocks in API/web tests; use real synthetic fixtures. Mock provider responses only in later AI work.
+- TypeScript strict ESM, named exports; camelCase.ts, PascalCase.tsx, rule family per engine file.
+- Pure functions over engine classes; small functions, ~300 lines per file unless reason documented. Public functions get TSDoc.
+- Business outcomes return invalid_request/blocked; invariant bugs throw.
+- Prettier defaults, printWidth 100; use formatter once available. Comments explain why.
 
-- TypeScript `strict`, no `any` (use `unknown` + zod). Named exports only. ESM.
-- Files: `camelCase.ts`; React components `PascalCase.tsx`. One rule family per file in `engine/src/rules/`.
-- Pure functions over classes in the engine. Fastify plugins per route group in the API.
-- Errors: engine never throws for business outcomes (returns `invalid_request`/`blocked`); throws only on bugs/invariant violations.
-- Comments explain *why*, not *what*. Public engine functions get TSDoc.
-- Keep functions small; no file over ~300 lines without a reason.
-- Formatting: Prettier defaults (+ `printWidth: 100`). Don't hand-format.
+## Git, PR and review
 
-## Git & PR conventions
+Branch session/<id>-<slug>, never commit to main. Commit imperative/scoped logical checkpoints; one commit is enough for a small coherent task, never an arbitrary timer. Check relevant behavior before checkpoints; full gate before completion. Stage only intended changes; preserve user work; no secrets/generated junk.
 
-- Branch: `session/<id>-<slug>` (e.g. `session/1.4-resource-rules`). Never commit directly to `main`.
-- Commits: imperative, scoped: `engine: add practitioner buffer rule`. Small logical commits are fine; PRs are squash-merged.
-- **Do not add `Co-authored-by` trailers or any AI-tool attribution to commits, PRs or code.** The human is the sole author.
-- PR description: session ID, what was built, how it was verified (paste `pnpm verify` summary), anything left in `docs/QUESTIONS.md`.
-- Don't modify `docs/00`–`09` unless the session card says so or a decision-log entry requires it.
+Push checkpoints during long work and all remaining commits before every handoff, even if incomplete. No force-push or rewriting published work without explicit need/authorization. If blocked by auth/network, report exact error and unpushed commits; do not claim remote success.
 
-## Skills
+PR includes ID, behavior, verification summary, unresolved questions and UI evidence. Use native Git/GitHub if optional yeet/CI/comment skills absent. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
 
-Project skills live in `.agents/skills/`. Use them:
+One implementer then a fresh review task by default. Use whynot-review; optional focused correctness/UX roles at gates. Role definitions in .codex/agents are instructions, not distinct permission sandboxes. Do not delegate unless requested or an applicable card explicitly requires it. Parallel implementers need separate ownership/worktrees and stable contracts. No automatic merge.
 
-- `$whynot-session` — every session (always).
-- `$whynot-engine` — `packages/engine`, `packages/contracts`.
-- `$whynot-testing` — any test work.
-- `$whynot-api` — `apps/api`.
-- `$whynot-ui` — `apps/web` (together with `ui-ux-pro-max`).
-- `$whynot-narration` — `packages/narrator`, `tools/eval-narration`.
-- `$whynot-review` — reviewing a finished session in a fresh task.
+## Skills and exclusions
 
-**Before starting any session, check that every skill the session card lists is available. If one is missing, stop and tell the human which one and how to install it (`docs/09-codex-workflow.md`).**
+Project skills: whynot-session, whynot-planning, whynot-engine, whynot-testing, whynot-ui, whynot-narration, whynot-api, whynot-review. Install/availability guidance: docs/09-codex-workflow.md. Read only relevant skills.
 
-External skills (install per `docs/09-codex-workflow.md`): `ui-ux-pro-max`, `playwright`, `playwright-interactive`, `screenshot`, `security-best-practices`, `security-threat-model`, `openai-docs`, `gh-fix-ci`, `gh-address-comments`, `yeet`.
-
-## Things that are deliberately out of scope
-
-Real auth, real patient data, payments, notifications, calendar sync, multi-clinic, recurring bookings, third-party scheduler integration, AI making decisions or bookings. Don't add them.
+Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group booking, third-party scheduler integration, generic constraint framework, AI decisions/bookings. No application code in 0.0.

@@ -1,3 +1,5 @@
+> HISTORICAL ONLY — superseded by D-050. Do not execute these cards. Use docs/sessions/README.md.
+
 # Phase 2 — Alternatives, admin fix, privacy, wording
 
 Exit gate (checked in Session 2.5): P6, P7, P10, P11, P13, P14 pass; H9–H11 range goldens pass; `explainRange` bench within target; and P6, P7, P10, P11 pass at 5,000 runs (plus all Phase 1 properties still pass); H1–H8 goldens fully pass including alternatives, admin fix and patient text; every catalog rule has both templates; ≥ 16 edge goldens pass; bench S `evaluate` with alternatives p95 ≤ 400 ms.
