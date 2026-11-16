@@ -8,9 +8,13 @@ test("fixtures built package entry loads in native Node ESM", () => {
     [
       "--input-type=module",
       "--eval",
-      'const entry = await import("@whynot/fixtures"); console.log(JSON.stringify(Object.keys(entry)));',
+      'const entry = await import("@whynot/fixtures"); console.log(JSON.stringify({ exports: Object.keys(entry).sort(), now: entry.demoNow, snapshot: entry.buildMinimalSnapshot().clinic.id }));',
     ],
     { cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8" },
   );
-  expect(output.trim()).toBe("[]");
+  expect(JSON.parse(output)).toEqual({
+    exports: ["buildMinimalRequest", "buildMinimalSnapshot", "demoNow"],
+    now: 29913660,
+    snapshot: "clinic-test",
+  });
 });
