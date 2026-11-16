@@ -35,12 +35,12 @@
 
 ## Done when
 
-- [ ] Planning decisions persisted; all active cards complete and linked; validation recorded honestly.
-- [ ] Commit/push checkpoint increments, verify remote HEAD and open PR; leave reviewed/merged pending.
-- [ ] All Build items have evidence; required checks are green.
-- [ ] Implementation status/handoff updated; reviewed/merged remain pending until independently established.
-- [ ] Logical checkpoint commits made; all session commits pushed; remote HEAD equals local HEAD; PR opened/updated.
-- [ ] PR includes session ID, verification summary, unresolved questions and screenshot evidence when applicable.
+- [x] Planning decisions persisted; all active cards complete and linked; validation recorded honestly.
+- [x] Commit/push checkpoint increments, verify remote HEAD and open PR; leave reviewed/merged pending.
+- [x] All Build items have evidence; required checks are green.
+- [x] Implementation status/handoff updated; reviewed/merged remain pending until independently established.
+- [x] Logical checkpoint commits made; all session commits pushed; remote HEAD equals local HEAD; PR opened/updated.
+- [x] PR includes session ID, verification summary, unresolved questions and screenshot evidence when applicable.
 
 ## Out of scope
 

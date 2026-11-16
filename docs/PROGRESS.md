@@ -4,7 +4,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Application implementation h
 
 | Session | Title | Implemented | Reviewed | Merged | PR |
 | --- | --- | --- | --- | --- | --- |
-| [0.0](sessions/session-0.0.md) | Planning handoff | in progress | pending | pending | — |
+| [0.0](sessions/session-0.0.md) | Planning handoff | done | pending | pending | [#1](https://github.com/Kakumrkr/WhyNot/pull/1) |
 | [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries | pending | pending | pending | — |
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts | pending | pending | pending | — |
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures | pending | pending | pending | — |
@@ -41,7 +41,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Application implementation h
 
 | Gate | State | Evidence |
 | --- | --- | --- |
-| Planning 0.0 | in progress | Documentation validation and PR pending |
+| Planning 0.0 | implemented; review/merge pending | [Validation report](validation/session-0.0.md); PR #1 |
 | Foundation 0.1 | pending | No package manifest or verification script yet |
 | Core 1.6 | pending | — |
 | Alternatives 2.3 | pending | — |
@@ -58,6 +58,6 @@ Old cards are archived. Session IDs have been reassigned: consult active index.
 
 ### 0.0 — Planning handoff (2026-11-16)
 - Built: revised engine/playground-first specification and D-050–D-059; complete active cards, skills and Codex review guidance.
-- Evidence: validation pending until final handoff; first specification checkpoint 3a1bf33 pushed.
+- Branch: session/0.0-planning-handoff; PR https://github.com/Kakumrkr/WhyNot/pull/1. Checkpoints 3a1bf33 and 7027328 pushed; final HEAD recorded in PR/session response. Documentation gate passed; see validation report.
 - Reviewed/merged: pending; do not start 0.1 from unmerged planning.
 - Next: 0.1 foundation; use its complete card and prompt. No application code or dependencies added.
