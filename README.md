@@ -4,7 +4,7 @@
 
 An open-source TypeScript appointment engine and static playground for fictional Riverside Family Clinic. The engine computes sufficient, irredundant blockers, rechecked alternatives and staff policy previews. Templates explain them; no model decides.
 
-> Status: Sessions through 1.2 are reviewed and merged. Workflow automation maintenance is in progress; Session 1.3 has not started. See [progress](docs/PROGRESS.md) and the [automation plan](docs/workflow-automation.md).
+> Status: Sessions 0.1, 1.1 and 1.2 are reviewed and merged. Workflow automation maintenance is in progress; Session 1.3 has not started. See [progress](docs/PROGRESS.md) and the [automation plan](docs/workflow-automation.md).
 
 ## First release
 
