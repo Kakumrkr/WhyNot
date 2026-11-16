@@ -27,3 +27,5 @@ None for Session 1.2. Q-1 is resolved by D-043 (pinned compatible toolchain); MI
 
 | ID  | Date | Session | Question | Options/evidence | Status |
 | --- | ---- | ------- | -------- | ---------------- | ------ |
+
+| Q-AUTO-1 | 2026-11-16 | Workflow maintenance | Hosted route, schedule/timezone, merge authority and spending bound | User preferences requested; GitHub Actions requires separately authorized API billing/secret; subscription-backed scheduling needs account-specific verification | Open; blocks activation only, not workflow documentation |

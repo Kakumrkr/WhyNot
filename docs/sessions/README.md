@@ -51,6 +51,6 @@ Implement only the selected card; contracts/functions are introduced by owning s
 
 ## Starting and resuming
 
-Read [progress](../PROGRESS.md), [questions](../QUESTIONS.md), AGENTS.md and the whole selected card. Choose the first incomplete eligible first-release card; if it is already partially implemented resume its branch/checkpoint. Dependencies must be merged, not just checked implemented. A blocked session records remaining work and uses a draft PR.
+Read [progress](../PROGRESS.md), [questions](../QUESTIONS.md), AGENTS.md and the whole selected card. Choose the first incomplete eligible first-release card; if it is already partially implemented resume its branch/checkpoint. Dependencies must be merged, not just checked implemented. A blocked session records remaining work and uses a draft PR. D-064 and [workflow automation](../workflow-automation.md) require ownership through recoverable failures, independent review, confirmed merge and a durable handoff. Hosted continuation resumes that same phase; it does not skip the card.
 
-Session 0.1 is the next implementation after planning PR 0.0 is merged. Its prompt is embedded in its card; no prior chat context is required.
+Historical initial selection: Session 0.1 followed planning PR 0.0. Determine the current eligible card from live merge evidence and PROGRESS. Its prompt is embedded in its card; no prior chat context is required.

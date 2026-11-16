@@ -1,13 +1,13 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 time handling and minimal fixtures are implemented on session/1.2-time-fixtures with verification green; independent review and merge remain pending through PR #4. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Workflow automation maintenance is in progress; Session 1.3 has not started. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
 | [0.0](sessions/session-0.0.md) | Planning handoff                                 | done        | pending  | done    | [#1](https://github.com/Kakumrkr/WhyNot/pull/1) |
 | [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | done    | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
-| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | pending  | pending | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
+| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | pending     | pending  | pending | —                                               |
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | pending     | pending  | pending | —                                               |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
@@ -168,3 +168,12 @@ Read the full card and required documents/skills. Implement only its Build list.
 Commit logical verified checkpoints, run required checks, push all commits,
 verify remote HEAD and open a PR. Do not start another session.
 ```
+
+### Workflow maintenance — 2026-11-16
+
+- Scope: unattended hosted execution planning, persistent recovery, review/merge lifecycle and durable handoffs. No Session 1.3 or application behavior changes.
+- Reconciled Session 1.2: GitHub PR #4 confirms fresh follow-up review, reviewed head 488baa1923d3720df490d749c9d11e34a786955f, successful final-head CI run 43967944890 and merge at 94f71d918417acd7db02fc8f13578222cf628c87 on 2026-11-16T22:15:05Z. Earlier pending notes are historical.
+- Branch: session/workflow-cloud-automation. D-064 replaces premature stop-at-PR/two-attempt handoffs with continued ownership and gated merge/handoff. See [automation plan](workflow-automation.md).
+- Baseline pnpm verify passed on Node 24.22.3/pnpm 12.21.0: 88 tests/11 files, formatting, lint, types and builds. Final verification, independent review and this maintenance PR's merge remain pending.
+- Hosted activation remains pending execution-route, schedule, merge-policy and cost/access setup. No scheduled executor has been created or activated; no unattended run is claimed.
+- Next action: finish this maintenance task's configuration and activation gates. Do not start 1.3 in this task. Once maintenance is merged and activation passes, a later authorized trigger may select 1.3 using its full card and verified PR #4 prerequisite.

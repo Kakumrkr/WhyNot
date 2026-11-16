@@ -11,13 +11,13 @@ Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README
 ## Every session
 
 1. Use whynot-session; documentation-only planning also uses whynot-planning. Read PROGRESS, QUESTIONS, selected card and its required documents fully.
-2. Confirm prerequisites are **merged**, not merely implemented. Resume incomplete work instead of silently skipping it. Stop after the selected card.
+2. Confirm prerequisites are **merged**, not merely implemented. Resume incomplete work instead of silently skipping it. Own the selected card through verification, fresh review, confirmed merge and handoff; stop before the next card. Follow D-064 and docs/workflow-automation.md for continuation.
 3. Check required skills when needed. Missing design/browser/security capabilities block their owning work, not unrelated earlier cards. Optional convenience skills have native-tool fallbacks.
 4. Stay within Build; do not implement later sessions. Record architectural/spec changes as decisions first.
 5. Run required checks. Session 0.0 uses documentation checks before tooling exists. From 0.1, pnpm verify must be green for completion; browser/real-PG gates apply as introduced.
 6. Commit logical verified increments during work. Push checkpoints during longer sessions and **all commits before ending**. Verify remote HEAD equals local HEAD; open/update PR.
 7. Record implemented/reviewed/merged separately, plus branch, final commit, PR, evidence, remaining work and exact next prompt. Never self-claim independent review or merge.
-8. If blocked/incomplete, save a coherent checkpoint/draft and honest failure report. Never mark complete with red checks. Do not lose work simply because the session cannot complete.
+8. Diagnose and fix recoverable failures; do not end a card because it is complex or two attempts failed. Continue through review fixes and CI. At an external blocker or runtime limit, push a coherent checkpoint/draft and persist the exact phase for automatic resumption of the same card. Never mark complete with red checks.
 
 ## Commands
 
@@ -73,7 +73,7 @@ Push checkpoints during long work and all remaining commits before every handoff
 
 PR includes ID, behavior, verification summary, unresolved questions and UI evidence. Use native Git/GitHub if optional yeet/CI/comment skills absent. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
 
-One implementer then a fresh review task by default. Use whynot-review; optional focused correctness/UX roles at gates. Role definitions in .codex/agents are instructions, not distinct permission sandboxes. Do not delegate unless requested or an applicable card explicitly requires it. Parallel implementers need separate ownership/worktrees and stable contracts. No automatic merge.
+One implementer then a fresh review task by default. Use whynot-review; optional focused correctness/UX roles at gates. Role definitions in .codex/agents are instructions, not distinct permission sandboxes. Do not delegate unless requested or an applicable card explicitly requires it. Parallel implementers need separate ownership/worktrees and stable contracts. Automatic merge requires explicit recorded user authorization and D-064's current-head review/check/protection gates; otherwise wait for human merge. Confirm actual merge and post-merge checks before releasing the next card.
 
 ## Skills and exclusions
 

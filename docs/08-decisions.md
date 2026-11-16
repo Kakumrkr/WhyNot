@@ -157,3 +157,32 @@ Time helpers use explicitly anchored Luxon instances rather than `fromISO`/`from
 
 **D-063 · Build package declarations before workspace typechecks.**
 The first real cross-package contracts imports exposed a clean-checkout CI failure: package exports resolve types from dist, while root test typechecking previously ran before any package build. Existing local artifacts concealed the missing prerequisite. The root typecheck command now builds library packages in dependency order before checking root tests and package sources. Keep native ESM/declaration exports and strict checking; do not replace production resolution with source aliases or skip dependency checks. Validate pnpm verify after removing only ignored workspace dist outputs, and retain frozen-install CI as the clean-checkout gate. No dependency graph or runtime behavior changes.
+
+## Workflow maintenance — 2026-11-16
+
+**D-064 · Persist through verification, independent review, merge and handoff.**
+Supersedes the stop-at-PR/human-only-merge wording in D-055/D-059 and doc 09 where
+it conflicts. The user requested unattended hosted sessions with automatic pickup,
+failure recovery and completion through merge. Each worker owns one selected card
+through its lifecycle; recoverable failures and review findings remain work on that
+card. Two failed attempts trigger diagnosis and an evidence note, not an automatic
+end of the session. Runtime limits trigger durable continuation of the same phase.
+
+Independent review remains required in fresh context, with corrections and repeat
+verification as necessary. Completion requires confirmed GitHub merge, post-merge
+checks and a durable handoff. Automatic merge is permitted only when the user has
+explicitly selected it and all current-head review/check/protection gates pass;
+otherwise the coordinator waits for human merge without starting another card.
+No protection bypass or self-claimed review. First-release authorization stops at
+5.2; no automatic P/H/A work. Session 1.3 is excluded from this maintenance task.
+
+Hosted execution, schedule/timezone, credentials, model access and cost limits must
+be verified before activation. No new paid service or API billing is selected by
+this decision. The [automation plan](workflow-automation.md) defines lifecycle,
+recovery, activation gates and durable state requirements. It is a plan until a
+hosted executor passes those gates; repository text is not a running scheduler.
+
+_Why:_ prior handoffs required repeated user intervention and left merge evidence
+stale. _Rejected:_ pretending complexity or a fixed retry count means completion;
+endless identical paid retries; weakening checks; starting later cards before merge.
+_Revisit if:_ the user changes merge authority, milestone scope or execution route.
