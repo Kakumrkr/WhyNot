@@ -313,3 +313,20 @@ benchmark-only runtime configuration, not an engine/global cache or deployment
 setting. Retain all 300 individual wall-time samples, 1000 warm-ups, p95 calculation
 and absolute 2/20 ms gates; no samples, GC pauses or scheduling delays are removed.
 Publish final measurements only with these conditions and matching baselines.
+
+**D-070 · Avoid successful-validation diagnostic allocations.**
+The explicit heap configuration still missed the S gate on EPYC 7763. Snapshot
+validation may reuse each collection's duplicate-detection set for reference
+validation and construct booking-reference error paths only on failure. Keep the
+same schema, issue order, duplicate/reference paths and messages, including
+multiple simultaneous errors. This bounded Session 1.6 correction touches
+contracts/src/snapshot.ts and regression tests; no validation is skipped and no
+benchmark target or sample changes.
+
+Schedule conversion may also construct a candidate directly from the shared UTC
+calendar and the matching wall-time +/- one-day offset probes. Accept it only if
+the resulting local date/hour/minute match exactly and the instant is a safe
+integer minute. Equal probes make Luxon's ambiguity candidates identical. Any
+unequal probe or failed round trip retains the original keepLocalTime/gap/fold
+path. This removes intermediate calendar objects without assuming fixed DST or
+transition spacing; retain the independent full-Luxon equivalence property.

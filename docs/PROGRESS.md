@@ -376,3 +376,24 @@ Persist the durable handoff and stop before Session 2.2.
 - Windows baseline is committed and measured with D-069 flags (S p95 1.0266/2.5631 ms). The sole untracked file packages/engine/bench/baseline-linux.json is an OLD report from 7572f42, with different flags; it must not be staged as current evidence. Replace it only with a passing report from the eventual final source/configuration.
 - The two independent review tasks are session_review and correctness_review; reuse them for exact-head refresh. All committed work is pushed. Native toolchain: prepend .tools and .tools/node_modules/.bin to PATH; use pnpm.cmd in PowerShell. GitHub connector tools work for reads/PR edits and avoid repeated shell-network approval prompts. For tool schemas, inspect the complete relevant ALL_TOOLS description. GitHub fetch can GET actions/runs collections; parse structuredContent.content and print only selected fields. Job logs are in structuredContent.content; retry transient missing content once. Current failed job ID is 134166754865.
 - Continue this same card through measured repair, full 5000-run gate, current-condition Linux baseline, final exact-head reviews, green required CI, D-065 merge and confirmed main CI. The user's permission to complete and merge remains explicit; do not ask again for routine session authority.
+
+#### Session 1.6 resumed performance repair
+
+- Checkpoint 4b3e68e passed both CI runs 44124297627 and 44124280730,
+  but earlier slow-runner failures still justify reducing work rather than assuming
+  that any random runner establishes adequate margin. D-070 reuses schema ID sets,
+  builds reference diagnostics only on failure, and directly constructs schedule
+  boundaries only after equal ambiguity probes and an exact local round trip.
+  Unequal probes or failed round trips retain the original path. No targets,
+  timed samples, scenarios or validation rules changed.
+- The full 5000-run gate passed 164 tests across 24 files before the final
+  defensive seconds/milliseconds guard suggested by focused independent review.
+  The exact final guarded source also passed the full 5000-run gate: 164 tests
+  across 24 files, formatting, lint, strict types, native smoke checks and builds.
+  Initial focused source
+  review found no demonstrated defect; final committed-head reviews remain pending.
+- Isolated final-source Windows report is committed in baseline-win32.json:
+  S p50/p95 isBookable 0.7781/0.9439 ms, evaluate 1.6498/2.4550 ms;
+  M p95 1.4482/9.4730 ms; L p95 1.3891/133.1099 ms. Same D-069 flags,
+  1000 warm-ups and 300 individual timed samples. Linux final-source baseline,
+  fresh exact-head reviews, CI, merge and main checks remain pending.

@@ -198,6 +198,24 @@ function calendarBoundary(
 ): TimeResult<number> {
   const hour = Number(clock.slice(0, 2));
   const minute = Number(clock.slice(3, 5));
+  const wallMillis = base.toMillis() + (hour * 60 + minute) * 60000;
+  const resolvedZone = IANAZone.create(zone);
+  const before = resolvedZone.offset(wallMillis - 86400000);
+  const after = resolvedZone.offset(wallMillis + 86400000);
+  if (before === after) {
+    const candidateMillis = wallMillis - before * 60000;
+    const candidate = DateTime.fromMillis(candidateMillis, { zone, locale: "en" });
+    // Round-trip before accepting: offset probes alone are not a local-time proof.
+    if (
+      candidate.toISODate() === date &&
+      candidate.hour === hour &&
+      candidate.minute === minute &&
+      candidate.second === 0 &&
+      candidate.millisecond === 0 &&
+      Number.isSafeInteger(candidateMillis / 60000)
+    )
+      return success(candidateMillis / 60000);
+  }
   const wall = base.set({ hour, minute });
   const value = wall.setZone(zone, { keepLocalTime: true });
   if (!value.isValid) return failure("Unknown timezone", ["timezone"]);
@@ -210,9 +228,7 @@ function calendarBoundary(
   // Luxon's ambiguity search compares offsets one day either side of the UTC-
   // encoded wall time. Equal probes produce identical candidate instants, so
   // the remaining duplicate offset lookups cannot discover a second candidate.
-  const wallMillis = wall.toMillis();
-  const stableOffset =
-    value.zone.offset(wallMillis - 86400000) === value.zone.offset(wallMillis + 86400000);
+  const stableOffset = before === after;
   if (!stableOffset && value.getPossibleOffsets().length !== 1)
     return failure(
       "Ambiguous recurring wall boundary",
