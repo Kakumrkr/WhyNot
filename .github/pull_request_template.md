@@ -1,13 +1,13 @@
-## Session and behavior
+## Session
 
-Session ID and active card:
+Session ID and card:
 
-Describe the concrete change and scope.
+What changed (behavior, not file list):
 
 ## Verification
 
-List actual commands/results and evidence. Include screenshots for UI changes.
+Commands run and results (pnpm verify; 5000-run/benchmark/Deep run if the card requires it). Screenshots for UI.
 
-## Remaining work
+## Open questions / review
 
-Unresolved questions, limitations, and review/merge status:
+Open questions, review verdict and how findings were addressed:

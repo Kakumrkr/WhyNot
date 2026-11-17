@@ -1,42 +1,19 @@
 # AGENTS.md — WhyNot
 
-Standing instructions for every coding agent in this repository.
-
-## Product and source of truth
-
 WhyNot is a pure TypeScript appointment engine plus a fictional Riverside Family Clinic playground. First release: minimal blockers, verified alternatives, patient/staff explanations, inspector, policy previews and range explanations. Persistence/history/optional AI are later milestones, never prerequisites.
 
-Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README.md. Archived phase cards are historical and must not be executed. IDs were reassigned during 0.0. Code follows docs. On conflict/ambiguity, record it in docs/QUESTIONS.md and do only unambiguous work.
+Docs 00–09 are authoritative and code follows them; active cards are indexed by docs/sessions/README.md. Archived material is historical, never instructions. On conflict/ambiguity, record it in docs/QUESTIONS.md and do only unambiguous work.
 
-## Every session
+## Sessions (D-071/D-072; procedure in the whynot-session skill and docs/09)
 
-1. Use whynot-session; documentation-only planning also uses whynot-planning. Read PROGRESS, QUESTIONS, selected card and its required documents fully.
-2. Confirm prerequisites are **merged**, not merely implemented. Resume incomplete work instead of silently skipping it. Own the selected card through verification, fresh review, confirmed merge and handoff; stop before the next card. Follow D-064/D-065 for completion, standing merge authority and corrections.
-3. Check required skills when needed. Missing design/browser/security capabilities block their owning work, not unrelated earlier cards. Optional convenience skills have native-tool fallbacks.
-4. Stay within Build; do not implement later sessions. Record architectural/spec changes as decisions first.
-5. Run required checks. Session 0.0 uses documentation checks before tooling exists. From 0.1, pnpm verify must be green for completion; browser/real-PG gates apply as introduced.
-6. Commit logical verified increments during work. Push checkpoints during longer sessions and **all commits before ending**. Verify remote HEAD equals local HEAD; open/update PR.
-7. Record implemented/reviewed/merged separately, plus branch, final commit, PR, evidence, remaining work and exact next prompt. Never self-claim independent review or merge.
-8. Diagnose and fix recoverable failures; do not end a card because it is complex or two attempts failed. Continue through review fixes and CI. At an external blocker or runtime limit, push a coherent checkpoint/draft and persist the exact phase for resumption of the same card without repeating discovery. Never mark complete with red checks.
+- One card per session: read PROGRESS "Current state", QUESTIONS "Open", the card, its Read-first docs and listed skills only. Stay within Build; record spec changes as doc 08 decisions first.
+- Affected tests while working; `pnpm verify` once before the PR. Milestone deep gate (`pnpm test:deep` + `pnpm bench`, locally) only at gate cards 1.6/2.3/3.3/4.3/5.2.
+- Commit locally; push once to publish and once per fix batch. One fresh whynot-review; merge under D-065 on green PR CI without asking again. Handoff goes in PROGRESS on the session branch; no handoff-only PRs.
+- Never claim review/merge/remote success without evidence; never mark complete with red checks. Fix recoverable failures; at a genuine external blocker record the error and resume point, then stop.
 
 ## Commands
 
-Use Node 24.22.3 and pnpm 12.21.0 (see .node-version and packageManager).
-
-| Command                        | Current behavior                                                                                   |
-| ------------------------------ | -------------------------------------------------------------------------------------------------- |
-| pnpm install                   | Install the workspace and update the lockfile                                                      |
-| pnpm install --frozen-lockfile | Install exactly the committed dependency graph; used in CI                                         |
-| pnpm format                    | Format current source/configuration and maintained handoff documents                               |
-| pnpm format:check              | Check that formatting without writing                                                              |
-| pnpm lint                      | Enforce TypeScript, source boundaries, engine purity and complete tests                            |
-| pnpm typecheck                 | Build library declarations, then check strict TypeScript across source, tests and configuration    |
-| pnpm test                      | Compile package prerequisites, then run native ESM entry smoke imports and ESLint boundary samples |
-| pnpm build                     | Compile package ESM/declarations and build the static React page                                   |
-| pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast                               |
-| pnpm dev                       | Start the static Vite app at http://127.0.0.1:5173; no Docker                                      |
-
-Benchmarks, browser suites, DB and narration commands arrive with their owning sessions. No passing placeholders.
+Node 24.22.3, pnpm 12.21.0. `pnpm install [--frozen-lockfile]`, `pnpm format`, `pnpm verify` (format:check → lint → typecheck → test → build), `pnpm test:quick <files>` (affected tests), `pnpm test:deep` (5000 runs), `pnpm bench` (S/M/L benchmark vs local baseline), `pnpm dev` (static app at http://127.0.0.1:5173). Browser, DB and narration commands arrive with their owning cards; no passing placeholders.
 
 ## Architecture invariants
 
@@ -65,18 +42,10 @@ Benchmarks, browser suites, DB and narration commands arrive with their owning s
 - Business outcomes return invalid_request/blocked; invariant bugs throw.
 - Prettier defaults, printWidth 100; use formatter once available. Comments explain why.
 
-## Git, PR and review
+## Git and PRs
 
-Branch session/<id>-<slug>, never commit to main. Commit imperative/scoped logical checkpoints; one commit is enough for a small coherent task, never an arbitrary timer. Check relevant behavior before checkpoints; full gate before completion. Stage only intended changes; preserve user work; no secrets/generated junk.
+Branch session/<id>-<slug>; never commit or push to main, force-push published work or bypass protections. Stage only intended files; preserve user work; no secrets/generated junk. Imperative scoped commits. PR has ID, behavior, verification, open questions and UI evidence. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.** No delegation beyond the one review unless requested; parallel implementers need separate worktrees and stable contracts.
 
-Push checkpoints during long work and all remaining commits before every handoff, even if incomplete. No force-push or rewriting published work without explicit need/authorization. If blocked by auth/network, report exact error and unpushed commits; do not claim remote success.
+## Exclusions
 
-PR includes ID, behavior, verification summary, unresolved questions and UI evidence. Use native Git/GitHub if optional yeet/CI/comment skills absent. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
-
-One implementer then a fresh review task by default. Use whynot-review; optional focused correctness/UX roles at gates. Role definitions in .codex/agents are instructions, not distinct permission sandboxes. Do not delegate unless requested or an applicable card explicitly requires it. Parallel implementers need separate ownership/worktrees and stable contracts. The user grants standing authorization (D-065) to merge each selected session and necessary corrective PRs after fresh independent review and all required checks pass. Do not ask again per merge. Never push directly to main or bypass protections. Fix post-merge failures through another reviewed, verified PR and merge it before declaring the session complete. Confirm actual merge and post-merge checks before releasing the next card.
-
-## Skills and exclusions
-
-Project skills: whynot-session, whynot-planning, whynot-engine, whynot-testing, whynot-ui, whynot-narration, whynot-api, whynot-review. Install/availability guidance: docs/09-codex-workflow.md. Read only relevant skills.
-
-Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group booking, third-party scheduler integration, generic constraint framework, AI decisions/bookings. No application code in 0.0.
+Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group booking, third-party scheduler integration, generic constraint framework, AI decisions/bookings.

@@ -1,15 +1,19 @@
+# Fast PR gate (D-071). One run per PR update; superseded runs are cancelled.
+# Property tests use the default 500 runs. The 5000-run properties and the
+# wall-clock benchmark live in deep.yml, run manually at milestone gates.
 name: CI
 on:
-  push:
-    branches: [main, "session/**"]
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
-    env:
-      FC_NUM_RUNS: "5000"
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,9 +23,3 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
-      - run: pnpm bench --write benchmark.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: core-benchmark
-          path: benchmark.json

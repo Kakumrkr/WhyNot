@@ -1,8 +1,10 @@
 # 08 — Decision log
 
-> Active revision: D-050–D-059 below governs the current plan. Earlier entries and original Open assignments are historical wherever superseded; use the Revised deferred decisions table.
+Read this file by searching for a specific D-number cited by a card or doc; it is not required session reading. Later decisions supersede earlier wording where they say so. Full text of condensed entries: [archive](archive/decisions-full-text-2026-11-17.md).
 
-Format: **ID · Decision** — _Why_ — _Rejected alternatives_ — _Revisit if_. New decisions are appended; superseded ones are marked, never deleted.
+> Active revision: D-050–D-059 govern the current plan, refined by D-060 onward. Earlier entries are historical wherever superseded; open items are in the Revised deferred decisions table.
+
+Format: **ID · Decision** — _Why_ — _Rejected alternatives_ — _Revisit if_. New decisions are appended; superseded ones are marked. Condensed entries keep their binding rules here and full text in the archive.
 
 ## Product
 
@@ -65,16 +67,6 @@ _Revisit if:_ never for v1.
 
 **D-042 · License: MIT for original code** (confirm in Session 0.1). No GPL dependencies in `packages/engine`.
 
-## Open (to decide in the named session)
-
-| ID  | Question                                              | Session |
-| --- | ----------------------------------------------------- | ------- |
-| Q-1 | Exact pinned versions of Node, pnpm, and libraries    | 0.1     |
-| Q-2 | PGlite support for `btree_gist` exclusion constraints | 3.1     |
-| Q-3 | Visual design direction (style, palette, typography)  | 4.1     |
-| Q-4 | OpenAI model for narration                            | 5.3     |
-| Q-5 | Full-stack hosting provider (or none)                 | 7.2     |
-
 ## Approved revision — 2026-11-16 (Session 0.0)
 
 The following decisions supersede conflicting earlier wording. Earlier entries remain historical; the active specification is docs 00–09 plus the new session index. Old phase cards are archived and must not be executed.
@@ -111,7 +103,7 @@ Update seven project skills; add whynot-planning. Main implementer plus fresh-ta
 
 ## Revised deferred decisions
 
-This table replaces the earlier Open table's obsolete session assignments; those rows above are historical.
+Q-1–Q-5 with current owners (the original table with obsolete session numbers was removed by D-071).
 
 | ID  | Decision to resolve                                                               | Owner                              |
 | --- | --------------------------------------------------------------------------------- | ---------------------------------- |
@@ -160,66 +152,9 @@ The first real cross-package contracts imports exposed a clean-checkout CI failu
 
 ## Workflow maintenance — 2026-11-16
 
-**D-064 · Persist through verification, independent review, merge and handoff.**
-Clarifies D-055/D-059: opening a PR is a checkpoint, not completion of session
-ownership. Each implementer owns one selected card through green checks, fresh
-independent review, corrections, confirmed merge, post-merge checks and a durable
-handoff. Recoverable failures and complexity remain work on that card. Two failed
-attempts trigger diagnosis and an evidence note, not an automatic end of session.
-Do not ask the user to start the same card again merely because tests, CI or review
-require fixes. New commits require fresh review of the exact head and base.
+**D-064 · Persist through verification, review, merge and handoff.** Opening a PR is a checkpoint, not completion; the implementer owns the card through green checks, review, fixes, merge and handoff. Recoverable failures stay work on the card; two failed attempts mean diagnose, not stop. External blockers get a coherent pushed checkpoint and exact resume point. Cloud automation/scheduling withdrawn. Process details streamlined by D-071.
 
-Human merge remains the default. Do not merge without explicit user authorization,
-bypass protections or self-claim independent review. While waiting, retain the
-branch/PR and monitor merge status when the session can remain active. Only actual
-GitHub merge evidence and successful required post-merge checks release the next
-card; stop after the selected card and after 5.2 until a follow-on is selected.
-
-External blockers or hard runtime limits require a coherent pushed checkpoint,
-truthful incomplete status and the exact branch, PR, phase, evidence, remaining
-work and continuation prompt. This preserves context for resumption; it does not
-promise execution beyond the host's limits. Never mark red checks complete.
-
-The user withdrew cloud automation and scheduling. Remove the unactivated hosted
-plan and requested schedule; no cloud executor, trigger, API billing or automatic
-session pickup is part of this decision. Keep session completion and recovery
-guidance in [the session workflow](09-codex-workflow.md). This maintenance does not
-start Session 1.3 or change application behavior.
-
-_Why:_ prior sessions stopped at recoverable failures or PR creation and left the
-user to restart work. _Rejected:_ treating complexity or a fixed retry count as
-completion; weakening checks; starting later cards before merge.
-
-**D-065 · Standing authorization to merge completed sessions and corrective PRs.**
-The user explicitly reapproved merging to main at the end of every selected
-session, including further fix PRs needed to finish that session. This supersedes
-the human-merge default in D-064 and earlier no-automatic-merge wording in
-D-055/D-059. The implementer must use this standing authorization without asking
-again for each merge, unless the user revokes it or the work exceeds the selected
-card and its necessary corrections.
-
-Implement on a session branch, push all commits and open/update a PR. Merge the
-exact independently reviewed head only after all required local and GitHub
-checks pass, findings are resolved, and repository protections are satisfied.
-Never push directly to main, bypass protections or self-claim independent review.
-If the base changes, reconcile and refresh review/check evidence as needed before
-merging. Confirm GitHub's actual merge SHA and wait for required CI on main.
-
-Any session-related failure before merge remains work on the same PR. A failure
-discovered after merge requires a correction branch from current main, meaningful
-verification, a fresh independent review and a new PR merged under the same
-authorization. Repeat until the selected card and its required post-merge checks
-are green. Do not close the session as complete at PR creation or while known
-session failures remain. Preserve honest incomplete checkpoints only for genuine
-external blockers or hard host limits, as required by D-064.
-
-Save a concise next-session handoff with branch/PR, implemented/reviewed/merged
-status, verification, remaining issues and exact next prompt. Record actual merge
-and post-merge CI evidence durably in the PR; the next session reconciles PROGRESS
-from that evidence rather than creating an endless chain of handoff-only PRs.
-This authority does not select another card, start Session 1.3 here, reinstate
-cloud scheduling or authorize new paid services. Stop after the selected card;
-follow-on milestones after 5.2 still require human selection.
+**D-065 · Standing authorization to merge completed sessions and corrective PRs.** The user authorizes merging each selected session PR and necessary corrective PRs to main without asking again, after review findings are resolved and required checks pass. Never push directly to main, bypass protections or self-claim review. Does not select new cards, reinstate scheduling or authorize paid services; follow-ons after 5.2 need human selection. Check/review timing streamlined by D-071.
 
 ## Session 1.6 explanation expectations
 
@@ -241,92 +176,85 @@ the context sentence never requires all capability facts to be primary. H1/H5
 headlines, every other hero expectation and planned alternative openings remain
 unchanged. Tests assert exact primary sets and the retained capability evidence.
 
-**D-067 · Complete the core performance gate using factorized boolean feasibility.**
-The first external S benchmark measured isBookable p95 4.43 ms, exceeding the
-unchanged 2 ms gate. Its boolean-only path need not construct the full Cartesian
-matrix or rank a witness. After complete input validation, check globals and the
-existence of a zero-violation member in each independent practitioner/room/equipment
-dimension, including requested-practitioner facts and structural emptiness. This
-is exactly the factorization specified in doc 03. evaluate retains the real matrix
-and canonical load-ranked witness. Reuse conversions for identical booking start
-minutes within one validation call only; no persistent cache or infrastructure.
-These bounded corrections may touch feasibility.ts and validateRequest.ts in
-Session 1.6. Retain every existing independent differential/property check, and
-measure again without changing targets or removing scenarios.
+**D-067 · Factorized boolean feasibility for the core performance gate.** After full input validation, isBookable checks globals and the existence of a zero-violation member per independent practitioner/room/equipment dimension (including requested-practitioner and structural emptiness), and may stop at the first violation per resource; `evaluate` keeps the real matrix, collects all facts and keeps the canonical load-ranked witness. The matrix canonicalizes the fact dictionary once and sorts numeric indices per row; reduction compares only kept minimal rows. An internal time.ts batch helper converts distinct booking starts once per call (explicit Gregorian/Latin/en-US formatter; nonzero local seconds reject fractional-minute offsets; unexpected formatter output throws) and resolves schedule boundaries once per date; Luxon's ambiguity search is skipped only when both offset probes are equal. No public export, clock or persistent cache. The individual Luxon helpers stay the independent equivalence path; all differential/property checks retained; targets unchanged (1000 warm-ups, 300 timed samples).
 
-The same core-gate work may touch matrix.ts: canonicalize the fact dictionary once
-and sort its numeric indices per row, preserving exact fact-ID output order.
-Explanation reduction processes deduplicated rows by size and compares only kept
-minimal rows, avoiding quadratic comparisons against rows already dominated.
-These are local algorithm changes with unchanged canonical output, bounded search
-and assertions; brute-force and shuffled-input properties remain independent gates.
+**D-068 · Native canonical timezone catalog for schema validation.** Snapshot validation may recognize `Intl.supportedValuesOf("timeZone")` entries via a static module-load lookup; aliases and runtimes without it keep the DateTimeFormat fallback. Not a cache; schema and accepted inputs unchanged.
 
-A second measured S isBookable p95 was 2.60 ms. Profiling found booking-date
-conversion dominates validation. An internal batch helper in time.ts resolves the
-zone once per call and retains safe-instant, supported-year and sub-minute-offset
-guards for every distinct confirmed start. It adds no public export, clock or
-persistent cache; local-date equivalence is checked independently at boundaries.
-Batch conversion formats each distinct start with an explicit Gregorian calendar,
-Latin digits, en-US locale and requested timezone. The date/era and seconds are
-decoded together; nonzero local seconds reject historical fractional-minute
-offsets. Unexpected formatter representation throws instead of guessing. DST
-folds/gaps retain their actual instant's date. The individual Luxon localDate
-helper remains the independent equivalence path.
-Validation also resolves shared schedule boundaries once per affected date and
-passes validated working intervals to practitioner.ts rather than repeating those
-conversions during rule checks. Boolean checks may return after the first skill
-or hours violation; full evaluation still collects all facts.
+**D-069 · Fixed benchmark young-generation size.** Benchmarks run with `--max-semi-space-size=64` and record execArgv and heap limit; relative comparisons require matching flags. All samples kept; absolute 2/20 ms gates unchanged. Benchmark-only configuration.
 
-The corrected Linux run on EPYC 9V74 passed at 1.76 ms, while EPYC 7763 still
-missed at 2.18 ms. Retain the target and repair that remaining cost. Reuse the
-already validated UTC-encoded calendar when resolving batch schedule boundaries;
-preserve every gap/fold/year check. Extend internal stop-at-first behavior to
-leave/break, room capability/maintenance and equipment type/maintenance, avoiding
-unused occupancy work for the boolean path. Full matrix checks still collect all
-facts. This permits bounded edits to room.ts/equipment.ts as part of D-067, with
-unchanged rule versions, expectations and independent differential gates.
-For ordinary schedule boundaries, short-circuit Luxon's ambiguity search when its
-two wall-time +/- one-day offset probes are equal: both subsequent candidate
-instants are necessarily identical. Otherwise retain getPossibleOffsets unchanged.
-This removes duplicate offset work with the same gap/fold result; generated
-comparison against Luxon's full getPossibleOffsets path checks the shortcut.
+**D-070 · No diagnostic allocations on successful validation.** Validation reuses duplicate-detection sets for references and builds error paths only on failure (same issues/order/messages). Schedule conversion may build candidates directly when equal ambiguity probes and an exact local round trip agree; otherwise the original Luxon path is used. Keep the full-Luxon equivalence property.
 
-**D-068 · Use the native canonical timezone catalog for schema validation.**
-Profiling still attributes substantial S cost to repeated construction of an Intl
-formatter just to validate the same canonical timezone. The snapshot contract may
-recognize native Intl.supportedValuesOf("timeZone") entries through a static lookup
-created at module load. Unlisted aliases/case variants retain the existing
-DateTimeFormat fallback, as do runtimes without supportedValuesOf. This is an
-immutable runtime capability catalog, not a cache of snapshots/results or evolving
-validation state. Input schema, accepted aliases, reference validation and schema
-version remain unchanged. The bounded Session 1.6 performance repair may touch
-contracts/src/snapshot.ts and its tests. Keep the 2 ms gate and differential checks.
+## Workflow streamlining — 2026-11-17
 
-**D-069 · Fix and record the benchmark Node young-generation configuration.**
-The latest Linux report has 0.84 ms median but 2.10 ms p95 isBookable on EPYC
-9V45, while another runner passes. Allocation/runtime variation remains material
-after deterministic source optimizations. Benchmark wrappers use an explicit
-`--max-semi-space-size=64` (MiB) so Node's automatic young-generation sizing does
-not vary with runner memory limits. Record process.execArgv and V8 heap limit in
-every report and require matching flags for relative comparisons. This is a
-benchmark-only runtime configuration, not an engine/global cache or deployment
-setting. Retain all 300 individual wall-time samples, 1000 warm-ups, p95 calculation
-and absolute 2/20 ms gates; no samples, GC pauses or scheduling delays are removed.
-Publish final measurements only with these conditions and matching baselines.
+**D-071 · Lean session workflow: one gate, one push, one review, no handoff PRs.**
+Sessions 0.1–1.6 took 12 PRs and 78 CI runs (about 150 runner-minutes) for eight
+cards. Causes: every PR push ran CI twice (push and pull_request triggers) with
+5000-run properties and a wall-clock benchmark; 13 runs failed, mostly the S
+benchmark varying between shared runners on identical source; every new head
+required a fresh full review; three docs-only "completion handoff" PRs each
+needed their own review, CI and merge; and every session read a 60 KB PROGRESS
+log plus long restated rules. Product semantics, invariants, goldens and
+benchmark targets are unchanged. This supersedes the conflicting process parts
+of D-040, D-055, D-059, D-064 and D-065; their merge authority stands.
 
-**D-070 · Avoid successful-validation diagnostic allocations.**
-The explicit heap configuration still missed the S gate on EPYC 7763. Snapshot
-validation may reuse each collection's duplicate-detection set for reference
-validation and construct booking-reference error paths only on failure. Keep the
-same schema, issue order, duplicate/reference paths and messages, including
-multiple simultaneous errors. This bounded Session 1.6 correction touches
-contracts/src/snapshot.ts and regression tests; no validation is skipped and no
-benchmark target or sample changes.
+- PR CI runs `pnpm verify` once per PR update at the default 500 property runs
+  and cancels superseded runs. There is no separate push or post-merge main run.
+- The 5000-run properties and benchmark report run in the manual Deep
+  verification workflow (`deep.yml`), required at milestone gate cards 1.6, 2.3,
+  3.3, 4.3 (formerly 4.4, see D-072) and 5.2 and otherwise optional every few sessions. A card whose Done
+  when names 5000 cases also runs those property files once locally at 5000.
+  Run counts in code are never lowered.
+- Doc 03 S targets remain gates. They are enforced by `pnpm bench` on the
+  machine that owns the committed baseline (currently baseline-win32.json),
+  when a card touches engine hot paths and at milestone gates. On shared CI
+  runners the benchmark is an informational report; a runner-only miss is
+  re-measured locally before any optimization.
+- While working, run affected tests; run the full gate once before the PR and
+  again only after source changes. Commit locally at coherent points and push
+  once when publishing, then once per batch of fixes.
+- One fresh-context whynot-review per session PR, using its correctness/UX
+  checklists at the cards that previously required separate reviewers. Re-review
+  only a delta that changes source behavior, not docs/formatting/handoff edits.
+- Merge under D-065 when PR CI is green and findings are resolved. The session
+  handoff is written into PROGRESS on the session branch before merge; no
+  separate completion PR. The next session marks the previous card merged in its
+  own branch from live merge evidence.
+- PROGRESS keeps a short current-state section and status table; long history is
+  archived. Skills are reduced to whynot-session, whynot-engine (absorbing
+  narration), whynot-testing, whynot-ui, whynot-review and whynot-api (follow-ons
+  only); planning guidance folds into whynot-session; one reviewer role remains.
+  External skills (ui-ux-pro-max, security, provider docs) are optional aids and
+  never block a card; browser checks use the @playwright/test package from 3.1.
+  The Windows-only planning validator is removed; Prettier and review cover docs.
 
-Schedule conversion may also construct a candidate directly from the shared UTC
-calendar and the matching wall-time +/- one-day offset probes. Accept it only if
-the resulting local date/hour/minute match exactly and the instant is a safe
-integer minute. Equal probes make Luxon's ambiguity candidates identical. Any
-unequal probe or failed round trip retains the original keepLocalTime/gap/fold
-path. This removes intermediate calendar objects without assuming fixed DST or
-transition spacing; retain the independent full-Luxon equivalence property.
+_Rejected:_ removing the 5000-run or benchmark checks (they still guard
+correctness/performance at milestones); weakening benchmark targets; dropping
+independent review.
+
+**D-072 · Fewer cards, skills and always-loaded text.**
+Extends D-071; product scope, rules, goldens and targets are unchanged.
+
+- Cards: the thin UI cards 4.2 (staff policy playground) and 4.4 (empty-calendar
+  journey) merge into 4.3 "Policy playground and empty-calendar journey", keeping
+  every Build/test/Done item, after range engine work, which moves from 4.3 to 4.2.
+  The milestone gate formerly at 4.4 is now 4.3; the correctness checklist moves with
+  range work to 4.2. 5.1 depends on 4.3. 2.1/2.2 and 5.1/5.2 stay separate because
+  each is already a full session.
+- Skills: whynot-api is removed; its guardrails live in doc 05 §Implementation
+  guardrails, and P/H/A cards use whynot-engine/whynot-testing with that section.
+  Five project skills remain (session, engine, testing, ui, review) plus one
+  reviewer role.
+- AGENTS.md (loaded every turn) keeps the product summary, invariants, testing rules
+  and Git rules, and points to the session skill for procedure.
+- Long workflow and performance entries D-064, D-065 and D-067–D-070 are condensed
+  to their binding rules; their full text is in docs/archive/. GitHub access
+  troubleshooting is removed because access is fixed; generic Git tips remain.
+- 3.1 adds Playwright/axe as ordinary pinned dev dependencies and records its design
+  decision under the next free number (the old "D-045" placeholder was out of
+  sequence). Doc 08's obsolete Open table is removed; the revised Q-1–Q-5 table
+  stays.
+- Milestone gate cards run `pnpm test:deep` and `pnpm bench` locally and record the
+  results in the PR, so no gate depends on someone dispatching a workflow; the Deep
+  verification workflow is optional (amends D-071's milestone requirement).
+- Scripts: `pnpm test:quick <files>` runs selected tests after building packages;
+  `pnpm test:deep` runs the whole suite at FC_NUM_RUNS=5000.
