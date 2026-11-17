@@ -2,40 +2,40 @@
 
 Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 is implemented, independently reviewed and confirmed merged through PR #8 at d8f8a73621be3e99f0d9ab5f3326e950b7ba08a6 with green main CI. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
-| Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
-| ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
-| [0.0](sessions/session-0.0.md) | Planning handoff                                 | done        | pending  | done    | [#1](https://github.com/Kakumrkr/WhyNot/pull/1) |
-| [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | done    | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
-| [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
-| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
-| [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | done     | done    | [#6](https://github.com/Kakumrkr/WhyNot/pull/6) |
-| [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | done     | done    | [#8](https://github.com/Kakumrkr/WhyNot/pull/8) |
-| [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | done     | pending | —                                               |
-| [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                               |
-| [2.1](sessions/session-2.1.md) | Patient and staff output projection              | pending     | pending  | pending | —                                               |
-| [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | pending     | pending  | pending | —                                               |
-| [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | pending     | pending  | pending | —                                               |
-| [3.1](sessions/session-3.1.md) | Static playground design and shell               | pending     | pending  | pending | —                                               |
-| [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | pending     | pending  | pending | —                                               |
-| [3.3](sessions/session-3.3.md) | Inspector and first public preview               | pending     | pending  | pending | —                                               |
-| [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | pending     | pending  | pending | —                                               |
-| [4.2](sessions/session-4.2.md) | Staff policy playground                          | pending     | pending  | pending | —                                               |
-| [4.3](sessions/session-4.3.md) | Range explanations and next-available search     | pending     | pending  | pending | —                                               |
-| [4.4](sessions/session-4.4.md) | Empty-calendar patient journey                   | pending     | pending  | pending | —                                               |
-| [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | pending     | pending  | pending | —                                               |
-| [5.2](sessions/session-5.2.md) | First release, evidence and handoff              | pending     | pending  | pending | —                                               |
-| [P1](sessions/session-P1.md)   | Persistence schema and database verification     | pending     | pending  | pending | —                                               |
-| [P2](sessions/session-P2.md)   | Seed, frozen clock and snapshot loader           | pending     | pending  | pending | —                                               |
-| [P3](sessions/session-P3.md)   | Projected read API and immutable input capture   | pending     | pending  | pending | —                                               |
-| [P4](sessions/session-P4.md)   | Transactional booking, policy versions and reset | pending     | pending  | pending | —                                               |
-| [P5](sessions/session-P5.md)   | HTTP adapter and full local application          | pending     | pending  | pending | —                                               |
-| [H1](sessions/session-H1.md)   | Historical replay inputs and trace access        | pending     | pending  | pending | —                                               |
-| [H2](sessions/session-H2.md)   | Descriptive insight aggregates                   | pending     | pending  | pending | —                                               |
-| [H3](sessions/session-H3.md)   | Independent historical policy replay             | pending     | pending  | pending | —                                               |
-| [H4](sessions/session-H4.md)   | Insights dashboard and historical simulator UI   | pending     | pending  | pending | —                                               |
-| [A1](sessions/session-A1.md)   | Optional AI wording experiment design            | pending     | pending  | pending | —                                               |
-| [A2](sessions/session-A2.md)   | Provider prototype and adversarial evaluation    | pending     | pending  | pending | —                                               |
-| [A3](sessions/session-A3.md)   | Optional narration integration and fallback      | pending     | pending  | pending | —                                               |
+| Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                                |
+| ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ------------------------------------------------- |
+| [0.0](sessions/session-0.0.md) | Planning handoff                                 | done        | pending  | done    | [#1](https://github.com/Kakumrkr/WhyNot/pull/1)   |
+| [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | done    | [#2](https://github.com/Kakumrkr/WhyNot/pull/2)   |
+| [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3)   |
+| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4)   |
+| [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | done     | done    | [#6](https://github.com/Kakumrkr/WhyNot/pull/6)   |
+| [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | done     | done    | [#8](https://github.com/Kakumrkr/WhyNot/pull/8)   |
+| [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | done     | pending | [#10](https://github.com/Kakumrkr/WhyNot/pull/10) |
+| [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                                 |
+| [2.1](sessions/session-2.1.md) | Patient and staff output projection              | pending     | pending  | pending | —                                                 |
+| [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | pending     | pending  | pending | —                                                 |
+| [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | pending     | pending  | pending | —                                                 |
+| [3.1](sessions/session-3.1.md) | Static playground design and shell               | pending     | pending  | pending | —                                                 |
+| [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | pending     | pending  | pending | —                                                 |
+| [3.3](sessions/session-3.3.md) | Inspector and first public preview               | pending     | pending  | pending | —                                                 |
+| [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | pending     | pending  | pending | —                                                 |
+| [4.2](sessions/session-4.2.md) | Staff policy playground                          | pending     | pending  | pending | —                                                 |
+| [4.3](sessions/session-4.3.md) | Range explanations and next-available search     | pending     | pending  | pending | —                                                 |
+| [4.4](sessions/session-4.4.md) | Empty-calendar patient journey                   | pending     | pending  | pending | —                                                 |
+| [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | pending     | pending  | pending | —                                                 |
+| [5.2](sessions/session-5.2.md) | First release, evidence and handoff              | pending     | pending  | pending | —                                                 |
+| [P1](sessions/session-P1.md)   | Persistence schema and database verification     | pending     | pending  | pending | —                                                 |
+| [P2](sessions/session-P2.md)   | Seed, frozen clock and snapshot loader           | pending     | pending  | pending | —                                                 |
+| [P3](sessions/session-P3.md)   | Projected read API and immutable input capture   | pending     | pending  | pending | —                                                 |
+| [P4](sessions/session-P4.md)   | Transactional booking, policy versions and reset | pending     | pending  | pending | —                                                 |
+| [P5](sessions/session-P5.md)   | HTTP adapter and full local application          | pending     | pending  | pending | —                                                 |
+| [H1](sessions/session-H1.md)   | Historical replay inputs and trace access        | pending     | pending  | pending | —                                                 |
+| [H2](sessions/session-H2.md)   | Descriptive insight aggregates                   | pending     | pending  | pending | —                                                 |
+| [H3](sessions/session-H3.md)   | Independent historical policy replay             | pending     | pending  | pending | —                                                 |
+| [H4](sessions/session-H4.md)   | Insights dashboard and historical simulator UI   | pending     | pending  | pending | —                                                 |
+| [A1](sessions/session-A1.md)   | Optional AI wording experiment design            | pending     | pending  | pending | —                                                 |
+| [A2](sessions/session-A2.md)   | Provider prototype and adversarial evaluation    | pending     | pending  | pending | —                                                 |
+| [A3](sessions/session-A3.md)   | Optional narration integration and fallback      | pending     | pending  | pending | —                                                 |
 
 ## Milestone evidence
 
@@ -288,6 +288,11 @@ Persist the durable handoff and stop before Session 1.6.
 - Fresh independent whynot-review of e4f698a53b8bd31bf4c5e76d20dd928e78e8108b against base 5ab8ad93f5e28dec77ba042eda1e9f3bc5594c54 found no findings. Reviewer independently passed format/lint/strict types, all 124 behavioral tests with FC_NUM_RUNS=5000, and package/web builds. The reviewer's sandbox full command had exactly four native smoke EPERM failures; all four unchanged smoke tests independently passed outside the sandbox. Final documentation formatting and full-base diff checks passed. Recommendation: merge only after write access and current-head required CI; actual merge/main CI remain pending. The implementer's complete single-command pnpm verify passed outside the sandbox as stated above.
 - Remaining phase: finish independent review and any fixes, restore GitHub write access, push all local commits, verify remote HEAD, open the Session 1.5 PR, pass required CI, merge the exact reviewed head under D-065 and confirm main CI. Save final completion evidence before releasing 1.6. Stop at this external blocker if access is not restored; do not mark the session complete.
 
+#### Session 1.5 publication resumed — 2026-11-17
+
+- The user updated GitHub app repository access. Native Git successfully pushed all three checkpoint commits to session/1.5-feasibility; local and remote HEAD matched at independently reviewed 35f8b63dab0d11e636b3b4d67164d5ad75de3e96. [PR #10](https://github.com/Kakumrkr/WhyNot/pull/10) is open. Q-1.5-WRITE is resolved; earlier blocked/unpushed notes are historical.
+- Application source and tests are unchanged since the verified implementation. This handoff reconciliation changes only PROGRESS/QUESTIONS. Fresh review of the changed head and required current-head CI are required before merging under D-065. Merge and post-merge main CI are still pending. No unresolved material questions remain and Session 1.6 has not started.
+
 Exact continuation for this same card:
 
 ```text
@@ -295,8 +300,8 @@ $whynot-session
 Resume Session 1.5 on session/1.5-feasibility in /workspace/WhyNot.
 Read current PROGRESS, QUESTIONS and docs/sessions/session-1.5.md.
 Implementation and the 5000-run local gate are complete; check final review evidence in the latest handoff.
-Resolve Q-1.5-WRITE, push every local commit and verify remote HEAD equality.
-Open the PR, finish fresh exact-head review and green required CI, merge under D-065,
+GitHub write access is restored and PR #10 is open; check live branch/PR head equality.
+Push every remaining commit, finish fresh exact-head review and green required CI, merge under D-065,
 confirm main CI and persist the durable completion handoff. Do not start Session 1.6 here.
 ```
 
