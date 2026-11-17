@@ -57,3 +57,15 @@ Reported blocking rules count chosen explanations, not every causal blocker or l
 Replay uses the stored snapshot/now/options and exact engine version. If that engine version is unavailable, return unsupported_version; do not silently substitute. Apply patch to the stored copy and compare results independently. Maximum 2000 evaluations per run; synchronous target <3 seconds on demo history. Unsupported/incomplete records are counted separately, never treated as bookable or no history.
 
 Always label estimate: independent replays ignore knock-on occupancy, demand, clinical suitability and actual conversion. Synthetic history is visibly synthetic. No recovered-booking or revenue claims.
+
+## Implementation guardrails (P/H/A cards)
+
+Formerly the whynot-api skill (folded in by D-072). Use only P/H/A cards, not superseded phase-3 cards. The API orchestrates engine decisions and never recomputes or reorders them.
+
+- Shared request/response schemas live in contracts; validate both in development/tests. Explicit-offset ISO at the boundary, frozen clock helper, actual evaluation bundles, durations measured in wrappers.
+- Project before any patient serialization; allowlist errors; no raw trace/fix/booking identifiers in explanations. Staff-only guards and fictional booking ownership for cancellation. Demo headers/role switch are not auth.
+- Body-size and rate limits, explicit CORS, safe logs: never log patient names, payloads or narration.
+- P1 probes PGlite extensions/concurrency and adds a dedicated real-Postgres CI job where needed; no silently skipped constraints/races. Append-only migrations after merge; normalized source settings and immutable policy versions.
+- Booking: SERIALIZABLE → load inside tx → evaluate → insert or projected 409; up to three retries, honest contention after exhaustion. Exclusion constraints are a backstop; buffer rules stay engine-owned. Soft cancel; deterministic reset.
+- P3 stores immutable full snapshot/request/now/options/schema/engine-version bundles; H1 traces and H3 replay use them, not current settings or booking timestamps. Unsupported engine version is explicit. Range and slot evaluations are distinct.
+- Insights describe reported blockers with denominators, not lost-business causation. Replay estimates are always labelled. The AI endpoint exists only after the A1/A2 decision; keys are read from API configuration only.

@@ -21,10 +21,9 @@ This is the only active session index. Superseded phase cards are retained under
 | [3.2](session-3.2.md) | Patient and staff explanation journey | 3.1 |
 | [3.3](session-3.3.md) | Inspector and first public preview | 3.2 |
 | [4.1](session-4.1.md) | Verified policy patch engine | 3.3 |
-| [4.2](session-4.2.md) | Staff policy playground | 4.1 |
-| [4.3](session-4.3.md) | Range explanations and next-available search | 4.2 |
-| [4.4](session-4.4.md) | Empty-calendar patient journey | 4.3 |
-| [5.1](session-5.1.md) | Developer adoption and package validation | 4.4 |
+| [4.2](session-4.2.md) | Range explanations and next-available search | 4.1 |
+| [4.3](session-4.3.md) | Policy playground and empty-calendar journey | 4.2 |
+| [5.1](session-5.1.md) | Developer adoption and package validation | 4.3 |
 | [5.2](session-5.2.md) | First release, evidence and handoff | 5.1 |
 | [P1](session-P1.md) | Persistence schema and database verification | 5.2 |
 | [P2](session-P2.md) | Seed, frozen clock and snapshot loader | P1 |
@@ -39,7 +38,7 @@ This is the only active session index. Superseded phase cards are retained under
 | [A2](session-A2.md) | Provider prototype and adversarial evaluation | A1, P5 |
 | [A3](session-A3.md) | Optional narration integration and fallback | A2 |
 
-First release has 20 cards including documentation bootstrap 0.0 (19 implementation sessions). Follow-ons have 12 cards. This is 32 revised cards, not the original 32-card roadmap.
+First release has 19 cards including documentation bootstrap 0.0 (18 implementation sessions); D-072 merged the former 4.2 and 4.4 UI cards into 4.3 and moved range engine work to 4.2. Follow-ons have 12 cards.
 
 After 5.2, stop for human selection of a follow-on milestone; do not automatically start P1 or AI. A1 may be considered after 5.2; A2 also needs P5. A2/A3 can be explicitly declined without a false completion mark.
 
@@ -47,10 +46,8 @@ After 5.2, stop for human selection of a follow-on milestone; do not automatical
 
 Each card has goal, branch, milestone, merged dependencies, readings, skills, files/interfaces, Build, Tests/verification, Done when, Out of scope, handoff and starter prompt. Common Git/verification rules in [workflow](../09-codex-workflow.md) apply to every card.
 
-Implement only the selected card; contracts/functions are introduced by owning sessions. Future test commands are added with actual suites, not passing placeholders. Missing required skills block their relevant implementation, not unrelated earlier cards.
+Implement only the selected card; contracts/functions are introduced by owning sessions. Future test commands are added with actual suites, not passing placeholders. External skills are optional and never block a card (D-071).
 
 ## Starting and resuming
 
-Read [progress](../PROGRESS.md), [questions](../QUESTIONS.md), AGENTS.md and the whole selected card. Choose the first incomplete eligible first-release card; if it is already partially implemented resume its branch/checkpoint. Dependencies must be merged, not just checked implemented. A blocked session records remaining work and uses a draft PR. D-064/D-065 and the [session workflow](../09-codex-workflow.md) require ownership through recoverable failures, independent review, confirmed merge and a durable handoff. If interrupted, resume that same phase without skipping the card.
-
-Historical initial selection: Session 0.1 followed planning PR 0.0. Determine the current eligible card from live merge evidence and PROGRESS. Its prompt is embedded in its card; no prior chat context is required.
+Read the "Current state" section of [progress](../PROGRESS.md), open [questions](../QUESTIONS.md) and the whole selected card. Choose the first incomplete first-release card whose dependency is merged; if it is partially implemented, resume its branch. A blocked session records the exact phase to resume in PROGRESS. The [session workflow](../09-codex-workflow.md) (D-071, with D-065 merge authority) covers gates, the single review, merge and handoff.

@@ -18,17 +18,7 @@ Open this repository in Codex and paste:
 
 ```text
 $whynot-session
-Start the next eligible WhyNot development session.
-Read AGENTS.md, docs/PROGRESS.md, docs/QUESTIONS.md and docs/sessions/README.md.
-Select the first incomplete session whose dependencies are merged.
-Read its entire card and required docs; confirm required skills.
-Implement only its Build list and satisfy verification and acceptance criteria.
-Make logical checkpoint commits, update the handoff, push all session commits,
-verify remote HEAD and open/update the PR. Do not start another session.
-Continue through recoverable failures, CI and independent review fixes.
-Use standing merge authorization in D-065 after green checks and fresh review.
-Fix any post-merge failures through another reviewed PR; confirm main CI and save the handoff.
-Finish with evidence, commit, PR, merge status and the exact next-session prompt.
+Select the next card from docs/PROGRESS.md "Current state" and run it.
 ```
 
 Select current work from [progress](docs/PROGRESS.md) and [active cards](docs/sessions/README.md). Archived phase cards are superseded.

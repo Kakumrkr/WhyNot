@@ -7,7 +7,7 @@ description: Write or repair WhyNot unit, property, differential, golden, browse
 
 Read doc 06 and active feature spec. New behavior needs meaningful tests. Never change goldens to fit output, skip/focus/todo suites, suppress type/lint errors or lower property counts. Corrections require decision-log entry and explicit PR disclosure.
 
-fast-check default 500 locally, FC_NUM_RUNS=5000 in CI. Print failure seed; save shrunk case as regular unit regression. Deep-freeze inputs. Generators are test-only fixture exports; structural-empty pools are generated, not filtered away. Tiny brute-force P5 bounds fact count, not run count.
+fast-check default 500 locally and in PR CI. 5000 runs (`pnpm test:deep`) run locally at milestone gate cards and, for cards whose Done when names 5000 cases, once locally on the affected property files (D-071). The count in code never drops. Print failure seed; save shrunk case as regular unit regression. Deep-freeze inputs. Generators are test-only fixture exports; structural-empty pools are generated, not filtered away. Tiny brute-force P5 bounds fact count, not run count.
 
 Reference checker lives in engine/test/reference and directly implements domain rules independently of optimized checks. Test it on hand-computed cases. No runtime imports/exports.
 
@@ -21,4 +21,4 @@ Browser: built app, role/label selectors, real scenarios, desktop/mobile, keyboa
 
 Pack libraries into a clean temporary consumer; do not rely on workspace links. Benchmark timings outside engine. Report required environment/tool failures, never manufacture passing results.
 
-0.0 uses documentation checks before tooling exists; 0.1 onward full pnpm verify for completion, browser/PG gates as introduced.
+While working, run only affected test files (`pnpm test:quick <paths>`; deep: `pnpm test:deep [paths]`); run full pnpm verify once before the PR and again only after source changes. Browser/PG gates as introduced.

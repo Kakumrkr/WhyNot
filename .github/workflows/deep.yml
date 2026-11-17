@@ -1,0 +1,36 @@
+# Optional deep verification (D-071/D-072): 5000-run properties plus a benchmark
+# report on a clean runner. Run manually (Actions -> Deep verification -> Run
+# workflow) every few sessions. Milestone gates run the same checks locally
+# (`pnpm test:deep`, `pnpm bench`). Shared runners vary, so the benchmark here
+# is informational; the S targets are enforced on the baseline-owning machine.
+name: Deep verification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deep-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - run: pnpm test:deep
+      - name: Benchmark report (informational on shared runners)
+        continue-on-error: true
+        run: pnpm bench --write benchmark.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-benchmark
+          path: benchmark.json
+          if-no-files-found: ignore

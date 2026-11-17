@@ -45,7 +45,7 @@ No unresolved question blocks foundation. Future tool versions remain Q-1 owned 
 - Final handoff commit: identified by PR head and final session response to avoid self-reference.
 
 Review this PR independently using whynot-review and merge it before beginning
-[Session 0.1](../sessions/session-0.1.md). Review/merge are not claimed by this authoring task.
+[Session 0.1](../../sessions/session-0.1.md). Review/merge are not claimed by this authoring task.
 
 ~~~text
 $whynot-session
