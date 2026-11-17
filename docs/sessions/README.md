@@ -47,10 +47,8 @@ After 5.2, stop for human selection of a follow-on milestone; do not automatical
 
 Each card has goal, branch, milestone, merged dependencies, readings, skills, files/interfaces, Build, Tests/verification, Done when, Out of scope, handoff and starter prompt. Common Git/verification rules in [workflow](../09-codex-workflow.md) apply to every card.
 
-Implement only the selected card; contracts/functions are introduced by owning sessions. Future test commands are added with actual suites, not passing placeholders. Missing required skills block their relevant implementation, not unrelated earlier cards.
+Implement only the selected card; contracts/functions are introduced by owning sessions. Future test commands are added with actual suites, not passing placeholders. External skills are optional and never block a card (D-071).
 
 ## Starting and resuming
 
-Read [progress](../PROGRESS.md), [questions](../QUESTIONS.md), AGENTS.md and the whole selected card. Choose the first incomplete eligible first-release card; if it is already partially implemented resume its branch/checkpoint. Dependencies must be merged, not just checked implemented. A blocked session records remaining work and uses a draft PR. D-064/D-065 and the [session workflow](../09-codex-workflow.md) require ownership through recoverable failures, independent review, confirmed merge and a durable handoff. If interrupted, resume that same phase without skipping the card.
-
-Historical initial selection: Session 0.1 followed planning PR 0.0. Determine the current eligible card from live merge evidence and PROGRESS. Its prompt is embedded in its card; no prior chat context is required.
+Read the "Current state" section of [progress](../PROGRESS.md), open [questions](../QUESTIONS.md) and the whole selected card. Choose the first incomplete first-release card whose dependency is merged; if it is partially implemented, resume its branch. A blocked session records the exact phase to resume in PROGRESS. The [session workflow](../09-codex-workflow.md) (D-071, with D-065 merge authority) covers gates, the single review, merge and handoff.

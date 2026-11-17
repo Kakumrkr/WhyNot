@@ -330,3 +330,50 @@ integer minute. Equal probes make Luxon's ambiguity candidates identical. Any
 unequal probe or failed round trip retains the original keepLocalTime/gap/fold
 path. This removes intermediate calendar objects without assuming fixed DST or
 transition spacing; retain the independent full-Luxon equivalence property.
+
+## Workflow streamlining — 2026-11-17
+
+**D-071 · Lean session workflow: one gate, one push, one review, no handoff PRs.**
+Sessions 0.1–1.6 took 12 PRs and 78 CI runs (about 150 runner-minutes) for eight
+cards. Causes: every PR push ran CI twice (push and pull_request triggers) with
+5000-run properties and a wall-clock benchmark; 13 runs failed, mostly the S
+benchmark varying between shared runners on identical source; every new head
+required a fresh full review; three docs-only "completion handoff" PRs each
+needed their own review, CI and merge; and every session read a 60 KB PROGRESS
+log plus long restated rules. Product semantics, invariants, goldens and
+benchmark targets are unchanged. This supersedes the conflicting process parts
+of D-040, D-055, D-059, D-064 and D-065; their merge authority stands.
+
+- PR CI runs `pnpm verify` once per PR update at the default 500 property runs
+  and cancels superseded runs. There is no separate push or post-merge main run.
+- The 5000-run properties and benchmark report run in the manual Deep
+  verification workflow (`deep.yml`), required at milestone gate cards 1.6, 2.3,
+  3.3, 4.4 and 5.2 and otherwise optional every few sessions. A card whose Done
+  when names 5000 cases also runs those property files once locally at 5000.
+  Run counts in code are never lowered.
+- Doc 03 S targets remain gates. They are enforced by `pnpm bench` on the
+  machine that owns the committed baseline (currently baseline-win32.json),
+  when a card touches engine hot paths and at milestone gates. On shared CI
+  runners the benchmark is an informational report; a runner-only miss is
+  re-measured locally before any optimization.
+- While working, run affected tests; run the full gate once before the PR and
+  again only after source changes. Commit locally at coherent points and push
+  once when publishing, then once per batch of fixes.
+- One fresh-context whynot-review per session PR, using its correctness/UX
+  checklists at the cards that previously required separate reviewers. Re-review
+  only a delta that changes source behavior, not docs/formatting/handoff edits.
+- Merge under D-065 when PR CI is green and findings are resolved. The session
+  handoff is written into PROGRESS on the session branch before merge; no
+  separate completion PR. The next session marks the previous card merged in its
+  own branch from live merge evidence.
+- PROGRESS keeps a short current-state section and status table; long history is
+  archived. Skills are reduced to whynot-session, whynot-engine (absorbing
+  narration), whynot-testing, whynot-ui, whynot-review and whynot-api (follow-ons
+  only); planning guidance folds into whynot-session; one reviewer role remains.
+  External skills (ui-ux-pro-max, security, provider docs) are optional aids and
+  never block a card; browser checks use the @playwright/test package from 3.1.
+  The Windows-only planning validator is removed; Prettier and review cover docs.
+
+_Rejected:_ removing the 5000-run or benchmark checks (they still guard
+correctness/performance at milestones); weakening benchmark targets; dropping
+independent review.

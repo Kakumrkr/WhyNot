@@ -1,0 +1,37 @@
+# Deep verification (D-071): full 5000-run properties plus the benchmark report.
+# Run manually (Actions -> Deep verification -> Run workflow) at milestone gate
+# cards 1.6, 2.3, 3.3, 4.4 and 5.2, or every few sessions. Shared runners vary,
+# so the benchmark here is an informational report; the absolute S targets are
+# enforced with `pnpm bench` on the machine that owns the committed baseline.
+name: Deep verification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deep-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FC_NUM_RUNS: "5000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - name: Benchmark report (informational on shared runners)
+        continue-on-error: true
+        run: pnpm bench --write benchmark.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-benchmark
+          path: benchmark.json
+          if-no-files-found: ignore

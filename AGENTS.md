@@ -10,14 +10,15 @@ Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README
 
 ## Every session
 
-1. Use whynot-session; documentation-only planning also uses whynot-planning. Read PROGRESS, QUESTIONS, selected card and its required documents fully.
-2. Confirm prerequisites are **merged**, not merely implemented. Resume incomplete work instead of silently skipping it. Own the selected card through verification, fresh review, confirmed merge and handoff; stop before the next card. Follow D-064/D-065 for completion, standing merge authority and corrections.
-3. Check required skills when needed. Missing design/browser/security capabilities block their owning work, not unrelated earlier cards. Optional convenience skills have native-tool fallbacks.
-4. Stay within Build; do not implement later sessions. Record architectural/spec changes as decisions first.
-5. Run required checks. Session 0.0 uses documentation checks before tooling exists. From 0.1, pnpm verify must be green for completion; browser/real-PG gates apply as introduced.
-6. Commit logical verified increments during work. Push checkpoints during longer sessions and **all commits before ending**. Verify remote HEAD equals local HEAD; open/update PR.
-7. Record implemented/reviewed/merged separately, plus branch, final commit, PR, evidence, remaining work and exact next prompt. Never self-claim independent review or merge.
-8. Diagnose and fix recoverable failures; do not end a card because it is complex or two attempts failed. Continue through review fixes and CI. At an external blocker or runtime limit, push a coherent checkpoint/draft and persist the exact phase for resumption of the same card without repeating discovery. Never mark complete with red checks.
+Lean workflow (D-071); details in docs/09-codex-workflow.md.
+
+1. Use whynot-session. Read only PROGRESS "Current state" + status table, QUESTIONS "Open", the selected card, its Read-first docs and listed skills. Do not read archives or the full decision log by default.
+2. Confirm the prerequisite PR is merged with one lookup. Resume an incomplete card's branch instead of restarting. Own the card through gate, one review, merge and handoff; stop before the next card. D-065 standing merge authority applies.
+3. Stay within Build; do not implement later sessions. Record architectural/spec changes as decisions first. External skills are optional and never block a card.
+4. Run affected tests while working; run pnpm verify once before the PR and again only after source changes. Deep verification (5000 runs + benchmark) only at milestone gates 1.6/2.3/3.3/4.4/5.2.
+5. Commit locally at coherent points; push once when publishing and once per batch of fixes (each push runs CI). Write the PROGRESS handoff on the session branch; never open a handoff-only PR.
+6. Record implemented/reviewed/merged separately and never claim review or merge in advance.
+7. Fix recoverable failures as part of the card. At a genuine external blocker (e.g. GitHub 403), record the exact error, unpushed commits and resume phase once, then stop. Never mark complete with red checks.
 
 ## Commands
 
@@ -35,8 +36,9 @@ Use Node 24.22.3 and pnpm 12.21.0 (see .node-version and packageManager).
 | pnpm build                     | Compile package ESM/declarations and build the static React page                                   |
 | pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast                               |
 | pnpm dev                       | Start the static Vite app at http://127.0.0.1:5173; no Docker                                      |
+| pnpm bench                     | Build packages and run the external S/M/L benchmark; enforces S targets against the local baseline |
 
-Benchmarks, browser suites, DB and narration commands arrive with their owning sessions. No passing placeholders.
+PR CI runs pnpm verify at 500 property runs. The manual Deep verification workflow runs FC_NUM_RUNS=5000 plus the benchmark report. Browser suites, DB and narration commands arrive with their owning sessions. No passing placeholders.
 
 ## Architecture invariants
 
@@ -67,16 +69,16 @@ Benchmarks, browser suites, DB and narration commands arrive with their owning s
 
 ## Git, PR and review
 
-Branch session/<id>-<slug>, never commit to main. Commit imperative/scoped logical checkpoints; one commit is enough for a small coherent task, never an arbitrary timer. Check relevant behavior before checkpoints; full gate before completion. Stage only intended changes; preserve user work; no secrets/generated junk.
+Branch session/<id>-<slug>, never commit to main. Commit imperative/scoped logical checkpoints; one commit is enough for a small coherent task. Stage only intended changes; preserve user work; no secrets/generated junk.
 
-Push checkpoints during long work and all remaining commits before every handoff, even if incomplete. No force-push or rewriting published work without explicit need/authorization. If blocked by auth/network, report exact error and unpushed commits; do not claim remote success.
+Push all commits before every handoff, even if incomplete, but batch pushes: one when publishing, one per fix batch. No force-push or rewriting published work without explicit need/authorization. If blocked by auth/network, report the exact error and unpushed commits; do not claim remote success (see docs/09 §GitHub troubleshooting).
 
-PR includes ID, behavior, verification summary, unresolved questions and UI evidence. Use native Git/GitHub if optional yeet/CI/comment skills absent. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
+PR includes ID, behavior, verification summary, unresolved questions and UI evidence. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
 
-One implementer then a fresh review task by default. Use whynot-review; optional focused correctness/UX roles at gates. Role definitions in .codex/agents are instructions, not distinct permission sandboxes. Do not delegate unless requested or an applicable card explicitly requires it. Parallel implementers need separate ownership/worktrees and stable contracts. The user grants standing authorization (D-065) to merge each selected session and necessary corrective PRs after fresh independent review and all required checks pass. Do not ask again per merge. Never push directly to main or bypass protections. Fix post-merge failures through another reviewed, verified PR and merge it before declaring the session complete. Confirm actual merge and post-merge checks before releasing the next card.
+One implementer, then one fresh-context whynot-review per session PR (correctness/UX checklists at the cards that name them). Re-review only deltas that change source behavior. Do not delegate beyond that unless requested. Parallel implementers need separate ownership/worktrees and stable contracts. Under D-065 merge each selected session and necessary corrective PRs after the review and green PR CI, without asking again. Never push directly to main or bypass protections. No post-merge main CI wait; a later-discovered failure is fixed by a reviewed corrective PR.
 
 ## Skills and exclusions
 
-Project skills: whynot-session, whynot-planning, whynot-engine, whynot-testing, whynot-ui, whynot-narration, whynot-api, whynot-review. Install/availability guidance: docs/09-codex-workflow.md. Read only relevant skills.
+Project skills: whynot-session, whynot-engine (incl. templates), whynot-testing, whynot-ui, whynot-review; whynot-api for follow-on P/H/A cards only. Read only the skills a card lists.
 
 Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group booking, third-party scheduler integration, generic constraint framework, AI decisions/bookings. No application code in 0.0.

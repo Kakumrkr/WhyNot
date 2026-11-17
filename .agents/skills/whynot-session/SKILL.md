@@ -1,24 +1,30 @@
 ---
 name: whynot-session
-description: Run a bounded WhyNot development session, verify its acceptance criteria, commit checkpoints, push all work, and prepare the next-session handoff. Use whynot-planning as well for documentation-only revisions.
+description: Run one WhyNot session card end to end (branch, implement, verify, one review, merge, handoff) with minimal reading, CI and pushes. Also covers documentation-only planning changes.
 ---
 
 # Session protocol
 
-Read AGENTS.md, docs/PROGRESS.md, docs/QUESTIONS.md, active index and selected card fully. Archived phase cards are not instructions. Check dependency PRs are merged, not merely implemented. Resume incomplete branch/checkpoint; stop after one card.
+Full rules: docs/09-codex-workflow.md. This is the checklist.
 
-Before edits: inspect status/branch, preserve user changes, update clean main by fast-forward and create the card's session branch. Read required docs/area skills. Missing required skills block relevant work; optional convenience skills have native fallbacks.
+1. **Orient (keep it short).** Read the "Current state" section at the top of docs/PROGRESS.md, docs/QUESTIONS.md "Open" section, and the whole selected card. Do not read PROGRESS history, archived cards or the full decision log unless the card points you there.
+2. **Prerequisite.** Confirm the dependency is merged with one `git fetch origin main && git log origin/main --oneline -5` (or one GitHub PR lookup). Do not re-verify older sessions.
+3. **Branch.** If the card's branch exists, resume it. Otherwise branch from updated main. Preserve any user changes.
+4. **Read.** The card's "Read first" docs and only the skills it lists. Skim sections you need; you do not have to reread docs you already loaded in this task.
+5. **Implement** only the Build list. Run only the affected tests while working (`pnpm vitest run <files>`). Commit locally at coherent points; no pushing per commit.
+6. **Gate once.** Run `pnpm verify` once on the finished work. If a card's Done when names 5000 property cases, also run those property files once locally with `FC_NUM_RUNS=5000`. Run `pnpm bench` only if the card touches engine hot paths or is a milestone gate.
+7. **Publish once.** Write the PROGRESS handoff (see docs/09 §Handoff) as part of the session branch, push all commits in one push, open the PR. Every further push re-runs CI, so batch fixes.
+8. **Review once.** One fresh-context whynot-review of the PR. Fix real findings in one commit, rerun the affected tests plus `pnpm verify`, push once. Re-review only if the fix changed source behavior.
+9. **Merge.** Under D-065, merge when PR CI is green and review findings are resolved. Do not wait for or re-check main CI. Do not open a separate "completion/handoff" PR; the next session updates the status table in its own branch.
+10. **Stop** before the next card. After 5.2, stop for human selection of a follow-on.
 
-Baseline pnpm verify once tooling exists. Session 0.0 is documentation bootstrap; 0.1 creates the gate. Do not fix unrelated baseline failures silently. Briefly map Build items to verification and files before implementation.
+## Failures
 
-Implement logical increments with meaningful tests. Relevant typecheck/tests before checkpoint commits. Commit checkpoints during work; push during longer sessions. Do not stage unrelated user changes or generate dummy passing checks.
+- Recoverable test/CI/review failures are part of the card: diagnose and fix; two failed attempts mean change approach, not stop.
+- A failing benchmark on a GitHub runner alone is not a code failure (D-071). Re-measure locally before optimizing.
+- Push rejected (HTTP 403, "Resource not accessible by integration") is an access problem, not a code problem. Do not retry in a loop. Follow docs/09 §GitHub troubleshooting once, then record the blocker and unpushed commits in the handoff and stop.
+- Genuine spec ambiguity: record it in docs/QUESTIONS.md, do only unambiguous work.
 
-For completion: every card criterion evidenced; pnpm verify green from 0.1; browser checks from 3.1, required real-PG checks from P1. Do not claim external review, deployment or live eval without evidence.
+## Documentation-only changes
 
-Update PROGRESS implemented/reviewed/merged independently. Record branch, stable checkpoint commit, PR, checks/evidence, decisions, unresolved work and exact next card. Final HEAD belongs in PR/final response rather than self-referential tracked text.
-
-Before ending push every session commit and verify remote HEAD equals local. Open/update PR using native tool if yeet unavailable. No attribution trailers or force-push. Follow D-064/D-065: the user grants standing authorization to merge each selected session and necessary correction PRs without asking again. Require current-head independent review, resolved findings, green required checks and satisfied branch protections; merge the reviewed head through its PR. Never push directly to main or bypass protections. Wait for main CI; fix post-merge failures from current main in another verified, independently reviewed PR and merge again until the selected card is complete.
-
-If blocked/incomplete, save coherent checkpoint/draft and report failures/remaining work; never tick complete with red checks. Auth/network errors must name unpushed commits. Record material ambiguity or repeated failure after two genuine attempts in QUESTIONS, change the diagnostic approach and continue unambiguous work. Two attempts are not a stop rule. Fix recoverable failures and review findings, rerun gates and obtain fresh review of changed heads. At runtime limits persist the exact branch/PR/phase for continuation without repeating discovery; never require the user to restate the same card. Golden corrections require decisions.
-
-Own the card through independent review, confirmed merge, post-merge checks and durable handoff, not merely PR creation. Follow D-064/D-065 and docs/09-codex-workflow.md. Independent review happens in a fresh task using whynot-review. Do not self-mark reviewed. Next card waits for merge evidence. Stop after 5.2 until human selects a follow-on.
+Record any semantic change as a doc 08 decision before editing affected docs/cards/skills, and update them together. Run `pnpm format:check`. No application code in a docs-only change.

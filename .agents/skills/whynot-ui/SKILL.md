@@ -5,7 +5,7 @@ description: Build WhyNot static playground and later full-mode UI, including ex
 
 # UI
 
-Read docs 00/01/04/05 and active card. Use ui-ux-pro-max for visual decisions; verify availability before owning UI work. Design tokens are established in 3.1 at docs/design/design-system.md, reused thereafter. No old 4.1 dependencies.
+Read docs 00/01/04/05 and active card. ui-ux-pro-max is helpful for visual decisions if installed, but never blocks UI work; docs/design/design-system.md is the source of truth once 3.1 creates it. Browser checks use the @playwright/test dev dependency added in 3.1, not a separate skill. Design tokens are established in 3.1 at docs/design/design-system.md, reused thereafter. No old 4.1 dependencies.
 
 UI renders engine output; no computing/filtering/reordering reasons, alternatives or policy fixes. Patient components receive projected output only. Staff inspector gets explicit trace, not unguarded raw data on patient surfaces.
 
