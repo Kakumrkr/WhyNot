@@ -157,3 +157,66 @@ Time helpers use explicitly anchored Luxon instances rather than `fromISO`/`from
 
 **D-063 · Build package declarations before workspace typechecks.**
 The first real cross-package contracts imports exposed a clean-checkout CI failure: package exports resolve types from dist, while root test typechecking previously ran before any package build. Existing local artifacts concealed the missing prerequisite. The root typecheck command now builds library packages in dependency order before checking root tests and package sources. Keep native ESM/declaration exports and strict checking; do not replace production resolution with source aliases or skip dependency checks. Validate pnpm verify after removing only ignored workspace dist outputs, and retain frozen-install CI as the clean-checkout gate. No dependency graph or runtime behavior changes.
+
+## Workflow maintenance — 2026-11-16
+
+**D-064 · Persist through verification, independent review, merge and handoff.**
+Clarifies D-055/D-059: opening a PR is a checkpoint, not completion of session
+ownership. Each implementer owns one selected card through green checks, fresh
+independent review, corrections, confirmed merge, post-merge checks and a durable
+handoff. Recoverable failures and complexity remain work on that card. Two failed
+attempts trigger diagnosis and an evidence note, not an automatic end of session.
+Do not ask the user to start the same card again merely because tests, CI or review
+require fixes. New commits require fresh review of the exact head and base.
+
+Human merge remains the default. Do not merge without explicit user authorization,
+bypass protections or self-claim independent review. While waiting, retain the
+branch/PR and monitor merge status when the session can remain active. Only actual
+GitHub merge evidence and successful required post-merge checks release the next
+card; stop after the selected card and after 5.2 until a follow-on is selected.
+
+External blockers or hard runtime limits require a coherent pushed checkpoint,
+truthful incomplete status and the exact branch, PR, phase, evidence, remaining
+work and continuation prompt. This preserves context for resumption; it does not
+promise execution beyond the host's limits. Never mark red checks complete.
+
+The user withdrew cloud automation and scheduling. Remove the unactivated hosted
+plan and requested schedule; no cloud executor, trigger, API billing or automatic
+session pickup is part of this decision. Keep session completion and recovery
+guidance in [the session workflow](09-codex-workflow.md). This maintenance does not
+start Session 1.3 or change application behavior.
+
+_Why:_ prior sessions stopped at recoverable failures or PR creation and left the
+user to restart work. _Rejected:_ treating complexity or a fixed retry count as
+completion; weakening checks; starting later cards before merge.
+
+**D-065 · Standing authorization to merge completed sessions and corrective PRs.**
+The user explicitly reapproved merging to main at the end of every selected
+session, including further fix PRs needed to finish that session. This supersedes
+the human-merge default in D-064 and earlier no-automatic-merge wording in
+D-055/D-059. The implementer must use this standing authorization without asking
+again for each merge, unless the user revokes it or the work exceeds the selected
+card and its necessary corrections.
+
+Implement on a session branch, push all commits and open/update a PR. Merge the
+exact independently reviewed head only after all required local and GitHub
+checks pass, findings are resolved, and repository protections are satisfied.
+Never push directly to main, bypass protections or self-claim independent review.
+If the base changes, reconcile and refresh review/check evidence as needed before
+merging. Confirm GitHub's actual merge SHA and wait for required CI on main.
+
+Any session-related failure before merge remains work on the same PR. A failure
+discovered after merge requires a correction branch from current main, meaningful
+verification, a fresh independent review and a new PR merged under the same
+authorization. Repeat until the selected card and its required post-merge checks
+are green. Do not close the session as complete at PR creation or while known
+session failures remain. Preserve honest incomplete checkpoints only for genuine
+external blockers or hard host limits, as required by D-064.
+
+Save a concise next-session handoff with branch/PR, implemented/reviewed/merged
+status, verification, remaining issues and exact next prompt. Record actual merge
+and post-merge CI evidence durably in the PR; the next session reconciles PROGRESS
+from that evidence rather than creating an endless chain of handoff-only PRs.
+This authority does not select another card, start Session 1.3 here, reinstate
+cloud scheduling or authorize new paid services. Stop after the selected card;
+follow-on milestones after 5.2 still require human selection.

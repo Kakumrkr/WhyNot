@@ -1,13 +1,13 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 time handling and minimal fixtures are implemented on session/1.2-time-fixtures with verification green; independent review and merge remain pending through PR #4. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is in progress; Session 1.3 has not started. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
 | [0.0](sessions/session-0.0.md) | Planning handoff                                 | done        | pending  | done    | [#1](https://github.com/Kakumrkr/WhyNot/pull/1) |
 | [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | done    | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
-| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | pending  | pending | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
+| [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | pending     | pending  | pending | —                                               |
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | pending     | pending  | pending | —                                               |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
@@ -168,3 +168,20 @@ Read the full card and required documents/skills. Implement only its Build list.
 Commit logical verified checkpoints, run required checks, push all commits,
 verify remote HEAD and open a PR. Do not start another session.
 ```
+
+### Session completion guidance maintenance — 2026-11-16
+
+- Scope: persistent ownership through failures, verification, independent review, merge monitoring and durable handoff. No Session 1.3 or application behavior changes.
+- Reconciled Session 1.2: PR #4 confirms fresh follow-up review of 488baa1923d3720df490d749c9d11e34a786955f, successful final-head CI run 43967944890 and merge at 94f71d918417acd7db02fc8f13578222cf628c87 on 2026-11-16T22:15:05Z. Earlier pending notes are historical.
+- Branch: session/workflow-cloud-automation (existing branch name retained); [PR #5](https://github.com/Kakumrkr/WhyNot/pull/5). Previous checkpoint 24d612983d490618226a830c1b7cfbc96a4ef4e5 was pushed and verified. Final HEAD and current verification/review evidence belong in PR #5 and the session response.
+- User cancelled cloud automation and scheduling. Removed the unactivated automation guide, requested daily schedule and setup questions. No executor, schedule, cloud resource or API credential was created, so no hosted resource needs disabling. D-064 covers session completion only; its earlier human-merge default is superseded by the later D-065 standing authorization below.
+- Retained: fix recoverable failures and review findings instead of asking to restart the card; green required gates, fresh review of changed heads, pushed checkpoints, merge evidence and exact continuation/handoff notes. Hard runtime limits and genuine external blockers must be recorded honestly rather than claimed complete.
+- Current cleanup passed pnpm verify on Node 24.22.3/pnpm 12.21.0 (88 tests/11 files, formatting, lint, strict types and builds), planning validation (32 cards, 254 links, 8 skills, 3 agent configurations, 23 rules) and git diff --check. Fresh review and final-head CI evidence belong in PR #5; maintenance remains unmerged.
+- Next: finish verification and fresh review of this documentation cleanup, then merge under D-065 standing authorization and verify main CI. Session 1.3 remains pending and is not started by this task.
+
+#### Standing merge authorization — 2026-11-16
+
+- User explicitly reapproved merging every selected session to main through a PR after independent review and green gates, including further corrective PRs if checks fail after merge. D-065 records this durable authorization; future sessions need no repeated merge approval.
+- Updated AGENTS, session/review skills, workflow, README and all 32 active cards, including final completion checkboxes. Cloud automation remains cancelled. Session 1.3 remains unstarted.
+- This authorization update passed pnpm verify (88 tests/11 files), planning validation (32 cards, 254 links) and git diff --check. Fresh exact-head review and final CI evidence belong in PR #5. Merge and post-merge evidence will be recorded there after success; do not infer merge from this note.
+- Exact next prompt after confirmed PR #5 merge and main CI: Start Session 1.3 using its full card, reconcile PROGRESS from PR #5 evidence, confirm merged prerequisites, and use D-065 to complete its verification/review/merge/correction/handoff loop. Do not execute that prompt in this maintenance task.

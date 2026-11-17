@@ -23,7 +23,6 @@ None for Session 1.2. Q-1 is resolved by D-043 (pinned compatible toolchain); MI
 | R-011 | Historical settings cannot be reconstructed from current state | Immutable full input bundles and explicit unsupported versions                    | D-058    |
 | R-012 | Skills/agents tied to old roadmap                              | Eight scoped skills, optional reviewer roles, just-in-time capability checks      | D-059    |
 
-## New issues
+## Workflow maintenance resolution — 2026-11-16
 
-| ID  | Date | Session | Question | Options/evidence | Status |
-| --- | ---- | ------- | -------- | ---------------- | ------ |
+Q-AUTO-1 is withdrawn: the user cancelled cloud automation and scheduling. No executor or schedule was activated. D-064 retains session completion, failure recovery, review, merge monitoring and handoff requirements; there is no remaining cloud setup blocker.

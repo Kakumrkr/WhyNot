@@ -36,6 +36,8 @@
 
 ## Done when
 
+- [ ] Session PR and any necessary correction PRs merged under D-065; required main CI green and durable handoff saved.
+
 - [ ] Only actually bookable concrete fixes returned; preview matches direct evaluation; pnpm verify green.
 - [ ] All Build items have evidence; required checks are green.
 - [ ] Implementation status/handoff updated; reviewed/merged remain pending until independently established.
@@ -48,7 +50,7 @@
 
 ## Handoff
 
-Record branch, final commit, PR, verification/evidence, unresolved items, decisions and next session. Resume this card if incomplete. If complete, next eligible card must wait for this PR's review/merge. Never merge automatically or label external validation done without evidence.
+Record branch, final commit, PR, verification/evidence, unresolved items, decisions and next session. Resume this card if incomplete. If complete, next eligible card must wait for this PR's review/merge. Follow D-064/D-065: standing user authorization permits merging this session and necessary correction PRs after green checks and fresh independent review. Confirm merge and main CI; repair post-merge failures through another reviewed PR before declaring completion. Never label external validation done without evidence.
 
 ## Starter prompt
 
@@ -62,6 +64,10 @@ Implement only the Build list; do not start another session.
 Make logical verified checkpoint commits and push checkpoints during longer work.
 Run the required gates, record implemented/reviewed/merged honestly, and update the handoff.
 Before ending push all session commits, verify remote HEAD and open/update the PR.
-Finish with evidence, final commit, PR and exact next-session prompt.
+Continue through recoverable failures, CI and fresh independent review; fix findings and recheck.
+Use D-065 standing authorization to merge after green checks and fresh review; confirm main CI.
+Fix post-merge failures through a new reviewed correction PR and merge again before completion.
+Follow D-064/D-065 and docs/09-codex-workflow.md; save the durable next-session handoff.
+Finish with evidence, final commit, PR, merge status and exact next-session prompt.
 If blocked, save a coherent checkpoint/draft and report remaining work; never claim completion.
 ~~~
