@@ -26,6 +26,11 @@ regression; different hardware is reported as incomparable and still runs the
 absolute gates. CI stores its measured report as core-benchmark. No timing enters
 engine results.
 
+The wrapper uses `--max-semi-space-size=64` to fix Node's young-generation
+configuration across hosts; flags and V8 heap limit are recorded. Measurements
+are individual wall-time calls, including GC/scheduling delays. The fixed flag
+is part of these benchmark conditions, not an application runtime requirement.
+
 The time module is slightly above the usual 300-line guideline because all Luxon
 and timezone conversion must remain confined to time.ts. Its two internal batch
 helpers share work only within one call and are excluded from package exports.

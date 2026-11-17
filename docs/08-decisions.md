@@ -301,3 +301,15 @@ immutable runtime capability catalog, not a cache of snapshots/results or evolvi
 validation state. Input schema, accepted aliases, reference validation and schema
 version remain unchanged. The bounded Session 1.6 performance repair may touch
 contracts/src/snapshot.ts and its tests. Keep the 2 ms gate and differential checks.
+
+**D-069 · Fix and record the benchmark Node young-generation configuration.**
+The latest Linux report has 0.84 ms median but 2.10 ms p95 isBookable on EPYC
+9V45, while another runner passes. Allocation/runtime variation remains material
+after deterministic source optimizations. Benchmark wrappers use an explicit
+`--max-semi-space-size=64` (MiB) so Node's automatic young-generation sizing does
+not vary with runner memory limits. Record process.execArgv and V8 heap limit in
+every report and require matching flags for relative comparisons. This is a
+benchmark-only runtime configuration, not an engine/global cache or deployment
+setting. Retain all 300 individual wall-time samples, 1000 warm-ups, p95 calculation
+and absolute 2/20 ms gates; no samples, GC pauses or scheduling delays are removed.
+Publish final measurements only with these conditions and matching baselines.

@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import process from "node:process";
 import console from "node:console";
 import { URL } from "node:url";
+import { getHeapStatistics } from "node:v8";
 import { evaluate, isBookable } from "../dist/index.js";
 import { buildScenario, riversideMinute } from "../../fixtures/dist/index.js";
 
@@ -57,6 +58,8 @@ const environment = {
   cpu: cpus()[0]?.model,
   logicalCpus: cpus().length,
   memoryBytes: totalmem(),
+  nodeFlags: process.execArgv,
+  heapLimitBytes: getHeapStatistics().heap_size_limit,
 };
 const datasets = {};
 for (const [name, resources, bookings] of [
@@ -127,9 +130,10 @@ try {
   if (error.code !== "ENOENT") throw error;
 }
 if (baseline !== undefined) {
-  const comparable = ["node", "platform", "arch", "cpu", "logicalCpus"].every(
-    (key) => baseline.environment[key] === environment[key],
-  );
+  const comparable =
+    ["node", "platform", "arch", "cpu", "logicalCpus"].every(
+      (key) => baseline.environment[key] === environment[key],
+    ) && JSON.stringify(baseline.environment.nodeFlags) === JSON.stringify(environment.nodeFlags);
   if (comparable) {
     for (const operation of ["isBookable", "evaluate"])
       if (datasets.S[operation].p95Ms > baseline.datasets.S[operation].p95Ms * 1.5)
