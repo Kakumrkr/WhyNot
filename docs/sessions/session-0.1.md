@@ -6,7 +6,7 @@
 **Depends on:** [0.0](session-0.0.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [01-architecture](../01-architecture.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md), [08-decisions](../08-decisions.md), [09-codex-workflow](../09-codex-workflow.md).
 **Required skills:** $whynot-session, $whynot-testing.
-**Review:** fresh-task whynot-review; correctness review at 1.6/2.3/4.1/4.3/5.2; UX review at 3.3/4.4/5.2.
+**Review:** one fresh whynot-review before merge.
 
 ## Files and interfaces
 
@@ -34,19 +34,14 @@
 
 - Meaningful package smoke imports, web build; ESLint programmatic samples fail for forbidden imports/globals and pass for allowed relative/time imports.
 - pnpm install then pnpm verify; second frozen-lockfile install; CI same commands. No domain tests or redundant VERSION assertions across every package.
-- Run pnpm verify; from 3.1 onward run applicable built-app browser checks; from P1 onward run required real-Postgres checks. At 0.1 create the gate before its first run.
-- Checkpoint tests target changed behavior; final gate covers the complete current workspace. Record actual commands/results.
+- Gates: see docs/09-codex-workflow.md (pnpm verify; built-app browser checks from 3.1; real-Postgres checks from P1).
+- During work run only the affected tests; run the full gate once before opening the PR.
 
 ## Done when
 
-- [ ] Session PR and any necessary correction PRs merged under D-065; required main CI green and durable handoff saved.
-
+- [x] Common completion checklist in docs/09-codex-workflow.md satisfied.
 - [ ] Clean installation and full verification green locally and CI; supported versions and commands recorded.
 - [ ] All boundary samples demonstrate enforcement; no runtime domain behavior/API scaffold.
-- [ ] All Build items have evidence; required checks are green.
-- [ ] Implementation status/handoff updated; reviewed/merged remain pending until independently established.
-- [ ] Logical checkpoint commits made; all session commits pushed; remote HEAD equals local HEAD; PR opened/updated.
-- [ ] PR includes session ID, verification summary, unresolved questions and screenshot evidence when applicable.
 
 ## Out of scope
 
@@ -54,24 +49,11 @@
 
 ## Handoff
 
-Record branch, final commit, PR, verification/evidence, unresolved items, decisions and next session. Resume this card if incomplete. If complete, next eligible card must wait for this PR's review/merge. Follow D-064/D-065: standing user authorization permits merging this session and necessary correction PRs after green checks and fresh independent review. Confirm merge and main CI; repair post-merge failures through another reviewed PR before declaring completion. Never label external validation done without evidence.
+Follow docs/09-codex-workflow.md §Handoff. Stop before the next card.
 
 ## Starter prompt
 
 ~~~text
 $whynot-session
-Session 0.1 — Foundation and architectural boundaries.
-Read AGENTS.md, docs/PROGRESS.md, docs/QUESTIONS.md and docs/sessions/session-0.1.md completely.
-Read the card's Read first documents and load its required skills.
-Confirm dependencies are merged; use branch session/0.1-foundation.
-Implement only the Build list; do not start another session.
-Make logical verified checkpoint commits and push checkpoints during longer work.
-Run the required gates, record implemented/reviewed/merged honestly, and update the handoff.
-Before ending push all session commits, verify remote HEAD and open/update the PR.
-Continue through recoverable failures, CI and fresh independent review; fix findings and recheck.
-Use D-065 standing authorization to merge after green checks and fresh review; confirm main CI.
-Fix post-merge failures through a new reviewed correction PR and merge again before completion.
-Follow D-064/D-065 and docs/09-codex-workflow.md; save the durable next-session handoff.
-Finish with evidence, final commit, PR, merge status and exact next-session prompt.
-If blocked, save a coherent checkpoint/draft and report remaining work; never claim completion.
+Session 0.1 — Foundation and architectural boundaries. Card: docs/sessions/session-0.1.md
 ~~~

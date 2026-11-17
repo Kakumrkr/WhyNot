@@ -6,9 +6,9 @@ Session 0.0 has no package manifest: validate document links, card completeness,
 
 From 0.1, pnpm verify runs format:check, lint, typecheck, test and build, failing fast. Run baseline on untouched branches after scaffold exists. Session 0.1 creates the gate and demonstrates it green. No success-returning test:e2e/bench placeholders; introduce commands with real suites.
 
-CI sets FC_NUM_RUNS=5000; local default 500. Print failure seeds and save shrunk counterexamples as normal tests. No skip/only/todo, lowered counts, disabled lint or weakened assertions.
+Default 500 runs locally and in PR CI; FC_NUM_RUNS=5000 in the manual Deep verification workflow at milestone gates (D-071). Print failure seeds and save shrunk counterexamples as normal tests. No skip/only/todo, lowered counts, disabled lint or weakened assertions.
 
-Browser CI starts at 3.1 against built static app, full mode at P5, real-Postgres job at P1. Report unavailable required environments; do not silently omit checks.
+Browser checks start at 3.1 against built static app, full mode at P5, real-Postgres job at P1. Report unavailable required environments; do not silently omit checks.
 
 ## Test layers and generators
 

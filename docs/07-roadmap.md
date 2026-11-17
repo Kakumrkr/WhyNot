@@ -19,7 +19,7 @@ The early preview follows 3.3 rather than waiting for a DB/AI. Small verified ca
 ## First-release checklist
 
 - [ ] 0.0–5.2 implemented, independently reviewed and merged; evidence in PROGRESS.
-- [ ] pnpm verify, properties at 5000 in CI, built static browser/axe suites green.
+- [ ] pnpm verify, properties at 5000 in a green Deep verification run, built static browser/axe suites green.
 - [ ] H1–H11, E01–E16 and explicit empty-resource/search/patch/privacy regressions green.
 - [ ] Every rule and public replacement has appropriate templates; all references resolve.
 - [ ] S benchmarks meet doc 03 table; M/L and limitations reported.
