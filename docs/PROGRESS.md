@@ -1,5 +1,7 @@
 # PROGRESS
 
+Session 1.5 is implemented, independently reviewed and confirmed merged through [PR #10](https://github.com/Kakumrkr/WhyNot/pull/10) at da72bd157650f8b1136c7f721478483320ae0527 with green post-merge main CI. Its completion evidence and exact Session 1.6 prompt are recorded at the end of this file. Earlier pending/blocked notes are historical.
+
 Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 is implemented, independently reviewed and confirmed merged through PR #8 at d8f8a73621be3e99f0d9ab5f3326e950b7ba08a6 with green main CI. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                                |
@@ -10,7 +12,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are ind
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4)   |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | done     | done    | [#6](https://github.com/Kakumrkr/WhyNot/pull/6)   |
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | done     | done    | [#8](https://github.com/Kakumrkr/WhyNot/pull/8)   |
-| [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | done     | pending | [#10](https://github.com/Kakumrkr/WhyNot/pull/10) |
+| [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | done     | done    | [#10](https://github.com/Kakumrkr/WhyNot/pull/10) |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                                 |
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | pending     | pending  | pending | —                                                 |
 | [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | pending     | pending  | pending | —                                                 |
@@ -293,7 +295,7 @@ Persist the durable handoff and stop before Session 1.6.
 - The user updated GitHub app repository access. Native Git successfully pushed all three checkpoint commits to session/1.5-feasibility; local and remote HEAD matched at independently reviewed 35f8b63dab0d11e636b3b4d67164d5ad75de3e96. [PR #10](https://github.com/Kakumrkr/WhyNot/pull/10) is open. Q-1.5-WRITE is resolved; earlier blocked/unpushed notes are historical.
 - Application source and tests are unchanged since the verified implementation. This handoff reconciliation changes only PROGRESS/QUESTIONS. Fresh review of the changed head and required current-head CI are required before merging under D-065. Merge and post-merge main CI are still pending. No unresolved material questions remain and Session 1.6 has not started.
 
-Exact continuation for this same card:
+Historical continuation for this same card (superseded by confirmed completion below):
 
 ```text
 $whynot-session
@@ -315,3 +317,11 @@ Read the full card and required documents/skills; implement only its Build list.
 Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
 Persist the durable handoff and stop before Session 2.1.
 ```
+
+#### Session 1.5 final review, merge and completion — 2026-11-17
+
+- Fresh independent whynot-review of final head c99c2f7639222797f410775617cc8c1f7489ca27 against base 5ab8ad93f5e28dec77ba042eda1e9f3bc5594c54 found no findings. The reviewer independently confirmed local, remote branch and live PR heads matched; documentation formatting and full-base diff checks passed. Source/tests were unchanged from the independently checked implementation; review evidence and complete validation details are recorded in PR #10 and above.
+- Required exact-head CI passed at [run 44009025513](https://github.com/Kakumrkr/WhyNot/actions/runs/44009025513) and [run 44009034658](https://github.com/Kakumrkr/WhyNot/actions/runs/44009034658). Both execute the locked install and full pnpm verify gate with FC_NUM_RUNS=5000. Under D-065, PR #10 merged the exact reviewed head without bypassing protections. GitHub confirms merge at da72bd157650f8b1136c7f721478483320ae0527 on 2026-11-17T03:19:22Z.
+- Required post-merge main CI passed at [run 44009375244](https://github.com/Kakumrkr/WhyNot/actions/runs/44009375244). Clean local main was fast-forwarded to that merge before creating session/1.5-completion-handoff. No application changes, post-merge corrections, golden changes or unresolved material questions remain. Q-1.5-WRITE is resolved and all implementation commits are pushed.
+- Session 1.5's Build and verification criteria are satisfied: canonical real candidates, factorized matrix/structural emptiness, public boolean feasibility, deterministic load-ranked valid witness, independent test-only checker, P1/P2/P8/P9 and authored edge cases. Local full verification passed 128 tests across 20 files with 5000-run properties, native ESM imports and all builds. Implementation, independent review and merge are established separately; earlier pending notes do not describe current status.
+- This documentation-only completion handoff changes PROGRESS only. Final handoff commit, fresh review, PR, CI and merge evidence belong in that PR and the final response, avoiding a self-referential commit hash. The next eligible card is Session 1.6 using the exact prompt above; it has not started and requires a separate selected task. Stop here after the handoff PR is reviewed, verified, merged and main CI is green.
