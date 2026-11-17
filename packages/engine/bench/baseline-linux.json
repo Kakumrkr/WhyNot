@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "environment": {
+    "node": "v24.22.3",
+    "pnpm": "12.21.0",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "logicalCpus": 4,
+    "memoryBytes": 16759439360,
+    "nodeFlags": ["--max-semi-space-size=64"],
+    "heapLimitBytes": 4496293888
+  },
+  "warmup": 1000,
+  "samples": 300,
+  "dataset": "H1–H8 round robin; M 3x resources/2x bookings, L 10x resources/1x bookings",
+  "datasets": {
+    "S": {
+      "resources": 1,
+      "bookings": 1,
+      "scenarioBookingCounts": [330, 312, 320, 321, 270, 323, 323, 294],
+      "isBookable": {
+        "p50Ms": 1.2808509999999842,
+        "p95Ms": 1.5708810000000994
+      },
+      "evaluate": {
+        "p50Ms": 2.7811890000002677,
+        "p95Ms": 4.257790000000568
+      }
+    },
+    "M": {
+      "resources": 3,
+      "bookings": 2,
+      "scenarioBookingCounts": [660, 624, 640, 642, 540, 646, 646, 588],
+      "isBookable": {
+        "p50Ms": 1.8652509999992617,
+        "p95Ms": 2.8284400000011374
+      },
+      "evaluate": {
+        "p50Ms": 6.521957000000839,
+        "p95Ms": 15.328841000002285
+      }
+    },
+    "L": {
+      "resources": 10,
+      "bookings": 1,
+      "scenarioBookingCounts": [330, 312, 320, 321, 270, 323, 323, 294],
+      "isBookable": {
+        "p50Ms": 1.625704999998561,
+        "p95Ms": 2.19813399999839
+      },
+      "evaluate": {
+        "p50Ms": 39.67184399999678,
+        "p95Ms": 231.4180550000019
+      }
+    }
+  },
+  "evidence": {
+    "head": "dc35f9c1822a9f35d0feeedf81c9f6b6227a424b",
+    "run": "https://github.com/Kakumrkr/WhyNot/actions/runs/44126309537"
+  }
+}

@@ -397,3 +397,38 @@ Persist the durable handoff and stop before Session 2.2.
   M p95 1.4482/9.4730 ms; L p95 1.3891/133.1099 ms. Same D-069 flags,
   1000 warm-ups and 300 individual timed samples. Linux final-source baseline,
   fresh exact-head reviews, CI, merge and main checks remain pending.
+
+#### Session 1.6 final source verification and pre-merge handoff
+
+- Final application source is dc35f9c1822a9f35d0feeedf81c9f6b6227a424b.
+  Full FC_NUM_RUNS=5000 pnpm verify passed 164 tests/24 files and all phases.
+  Fresh independent session review independently passed that complete gate;
+  fresh focused correctness review passed 35 tests/3 files at 5000 runs,
+  including independent feasibility and full-Luxon time equivalence. Both found
+  no findings. Planning and full-base diff checks passed; local/remote/PR heads
+  matched. No benchmark result is attributed to the reviewers.
+- Both exact-source CI runs passed on EPYC 7763:
+  [44126309537](https://github.com/Kakumrkr/WhyNot/actions/runs/44126309537)
+  measured S isBookable p50/p95 1.2809/1.5709 ms and evaluate 2.7812/4.2578 ms;
+  [44126295724](https://github.com/Kakumrkr/WhyNot/actions/runs/44126295724)
+  measured S p95 1.6523/4.3076 ms. All 164 tests and unchanged 2/20 ms gates
+  passed in both. The matching first Linux report replaces the old untracked
+  report in baseline-linux.json with exact source/run provenance. Q-1.6-PERF is
+  resolved. Windows S p95 is 0.9439/2.4550 ms under the same documented flags.
+- This final evidence-only checkpoint changes baselines and handoff documents,
+  leaving the independently reviewed application source unchanged. Implementation
+  and source review are established; final evidence-head review/current CI and
+  actual merge/main CI are pending as of this tracked pre-merge note. Continue
+  under D-065 without renewed permission. Record final reviewed head, confirmed
+  merge SHA and successful main CI in [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12)
+  as required by docs/09; reconcile these pre-merge statuses from that live
+  evidence at the next session. Do not create an endless documentation-only
+  completion PR chain or start 2.1 before main checks pass.
+- All Session 1.6 Build items have source/test evidence: minimum explanation and
+  fallback invariants, real structural witnesses, H1–H8 goldens, capped trace,
+  disabled later fields, P3/P4/P5/P12 and prior independent checks, and S/M/L
+  baselines. D-066 golden corrections remain explicitly disclosed in PR #12.
+  No remaining semantic questions or UI/PG gates apply. All commits must be
+  pushed and remote HEAD confirmed before merge/handoff. The exact next-session
+  prompt remains the Session 2.1 prompt above, eligible after confirmed merge
+  and green main CI; stop before implementing that card.
