@@ -1,6 +1,6 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 has not started. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 is implemented on PR #8; independent review and merge are pending. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
@@ -9,7 +9,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are ind
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | done     | done    | [#6](https://github.com/Kakumrkr/WhyNot/pull/6) |
-| [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | pending     | pending  | pending | —                                               |
+| [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | pending  | pending | [#8](https://github.com/Kakumrkr/WhyNot/pull/8) |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                               |
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | pending     | pending  | pending | —                                               |
@@ -235,3 +235,35 @@ Persist the durable handoff and stop before Session 1.5.
 - Required post-merge main CI passed at [run 43993740038](https://github.com/Kakumrkr/WhyNot/actions/runs/43993740038). Clean local main was fast-forwarded to that merge before creating session/1.3-completion-handoff for this evidence reconciliation. No application changes or further behavior corrections were needed after merge.
 - Session 1.3 is implemented, independently reviewed and merged; earlier pending-review/merge notes are historical. Its Done when criteria are satisfied. Final handoff reconciliation verification/review/PR evidence belongs in its PR and the final response. No unresolved material questions or unpushed implementation commits remain.
 - Next eligible card: Session 1.4, practitioner/room/equipment rules, using the exact prompt above. Session 1.4 has not started and must be a separate task.
+
+### 1.4 - Practitioner, room and equipment rules (2026-11-16)
+
+- Built: all fourteen resource catalog checks: practitioner skill/hours/break/leave/busy/buffer/daily cap; room capability/maintenance/busy/turnover; equipment type/maintenance/busy. Checks are internal, without matrix/evaluation/explanation/template or coupled-resource behavior. Existing catalog metadata and public exports are unchanged.
+- Occupancy: sorted per-resource interval lookup uses prefix maximum ends to retain nested long overlaps. Both existing-service and requested-service trailing buffers/turnover are checked; a direct overlap emits busy alone for that booking. Stable facts identify actual bookings/windows and the service whose buffer applies. Confirmed starts count on clinic dates; cancelled bookings are ignored. Validation additionally rejects unsafe buffered endpoints before interval arithmetic.
+- Branch: session/1.4-resource-rules; [PR #8](https://github.com/Kakumrkr/WhyNot/pull/8). Verified implementation checkpoint 4ec74a2 pushed. Final HEAD and remote equality belong in PR/final response.
+- Prerequisite: live GitHub metadata confirms PR #6 merged at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e; clean main was current at e3a99a8 (PR #7 completion handoff) before branching.
+- Verification: existing 107-test suite passed; implementation pnpm verify passed on Node 24.22.3/pnpm 12.21.0 (122 tests across 19 files, formatting, lint, strict types, native ESM smoke checks and builds). Thirteen authored tests cover exact adjacency, one-minute overlaps/buffer endpoints, requested buffers reaching next bookings, separate service settings, zero buffers, missing capabilities/types, long overlaps, local midnight, adjacent/split working hours, breaks, leave/maintenance windows, default/override/zero/exact caps, cancellations and safe arithmetic. Generated independent arithmetic checks cover every resource rule, frozen-input preservation, repeated equality and shuffled/nested input order. The fixed seed 14014026 corpus reaches all fourteen rules. New property passed 5000 runs in 16.42 seconds; local default remains 500 and CI 5000, with failure seeds/counterexamples retained by fast-check. No property failures or golden corrections.
+- Planning validation passed (32 cards, 254 local links, 8 skills, 3 agent configurations, 23 rules); git diff --check passed. No UI/screenshot/browser/PostgreSQL gate applies. No dependencies or specification semantics changed. Generators remain in fixtures/test/generate.ts, preserving the test-only boundary established in 1.2/1.3.
+- Status: implemented; fresh independent review, required CI and merge pending. No unresolved material questions. Continue this card through review/merge/main CI under D-065; stop before 1.5.
+
+Exact continuation if interrupted:
+
+```text
+$whynot-session
+Resume Session 1.4 on session/1.4-resource-rules, PR #8.
+Read PROGRESS, QUESTIONS and docs/sessions/session-1.4.md fully.
+Continue fresh exact-head whynot-review, resolve findings, verify and push every commit.
+Merge under D-065 only after green required checks and independent review.
+Confirm main CI and persist the durable handoff; do not start Session 1.5 here.
+```
+
+Next prompt only after confirmed Session 1.4 merge and green main CI:
+
+```text
+$whynot-session
+Start Session 1.5 using docs/sessions/session-1.5.md.
+Confirm Session 1.4 prerequisite PRs are merged and reconcile PROGRESS with evidence.
+Read the full card and required documents/skills; implement only its Build list.
+Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
+Persist the durable handoff and stop before Session 1.6.
+```

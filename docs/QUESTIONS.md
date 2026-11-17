@@ -4,7 +4,7 @@ Record unresolved material ambiguity here instead of inventing architecture, rul
 
 ## Open blockers
 
-None for Session 1.3. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. D-060/D-062 record the type-library adjustments required by Zod declarations. D-061's end-only midnight boundary is implemented by local calendar arithmetic. Deferred design/DB/model/hosting decisions belong to their named sessions in doc 08; they do not block request-rule work.
+None for Session 1.4. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. D-060/D-062 record the type-library adjustments required by Zod declarations. D-061's end-only midnight boundary is implemented by local calendar arithmetic. Deferred design/DB/model/hosting decisions belong to their named sessions in doc 08; they do not block request-rule work.
 
 ## Planning resolutions — 2026-11-16
 
