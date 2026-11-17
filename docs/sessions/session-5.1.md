@@ -3,7 +3,7 @@
 **Goal:** Developer adoption and package validation; deliver the behavior below without implementing later cards.
 **Branch:** session/5.1-developer-package
 **Milestone:** First release
-**Depends on:** [4.4](session-4.4.md) — merged.
+**Depends on:** [4.3](session-4.3.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [00-product-brief](../00-product-brief.md), [01-architecture](../01-architecture.md), [03-engine-algorithms](../03-engine-algorithms.md), [04-explanation-and-ai](../04-explanation-and-ai.md), [05-api-and-data](../05-api-and-data.md).
 **Required skills:** $whynot-session, $whynot-engine, $whynot-ui, $whynot-testing.
 **Helpful external skills (optional, never blocking):** $ui-ux-pro-max, $playwright.

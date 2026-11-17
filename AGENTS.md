@@ -1,44 +1,19 @@
 # AGENTS.md — WhyNot
 
-Standing instructions for every coding agent in this repository.
-
-## Product and source of truth
-
 WhyNot is a pure TypeScript appointment engine plus a fictional Riverside Family Clinic playground. First release: minimal blockers, verified alternatives, patient/staff explanations, inspector, policy previews and range explanations. Persistence/history/optional AI are later milestones, never prerequisites.
 
-Docs 00–09 are authoritative; active cards are indexed by docs/sessions/README.md. Archived phase cards are historical and must not be executed. IDs were reassigned during 0.0. Code follows docs. On conflict/ambiguity, record it in docs/QUESTIONS.md and do only unambiguous work.
+Docs 00–09 are authoritative and code follows them; active cards are indexed by docs/sessions/README.md. Archived material is historical, never instructions. On conflict/ambiguity, record it in docs/QUESTIONS.md and do only unambiguous work.
 
-## Every session
+## Sessions (D-071/D-072; procedure in the whynot-session skill and docs/09)
 
-Lean workflow (D-071); details in docs/09-codex-workflow.md.
-
-1. Use whynot-session. Read only PROGRESS "Current state" + status table, QUESTIONS "Open", the selected card, its Read-first docs and listed skills. Do not read archives or the full decision log by default.
-2. Confirm the prerequisite PR is merged with one lookup. Resume an incomplete card's branch instead of restarting. Own the card through gate, one review, merge and handoff; stop before the next card. D-065 standing merge authority applies.
-3. Stay within Build; do not implement later sessions. Record architectural/spec changes as decisions first. External skills are optional and never block a card.
-4. Run affected tests while working; run pnpm verify once before the PR and again only after source changes. Deep verification (5000 runs + benchmark) only at milestone gates 1.6/2.3/3.3/4.4/5.2.
-5. Commit locally at coherent points; push once when publishing and once per batch of fixes (each push runs CI). Write the PROGRESS handoff on the session branch; never open a handoff-only PR.
-6. Record implemented/reviewed/merged separately and never claim review or merge in advance.
-7. Fix recoverable failures as part of the card. At a genuine external blocker (e.g. GitHub 403), record the exact error, unpushed commits and resume phase once, then stop. Never mark complete with red checks.
+- One card per session: read PROGRESS "Current state", QUESTIONS "Open", the card, its Read-first docs and listed skills only. Stay within Build; record spec changes as doc 08 decisions first.
+- Affected tests while working; `pnpm verify` once before the PR. Milestone deep gate (`pnpm test:deep` + `pnpm bench`, locally) only at gate cards 1.6/2.3/3.3/4.3/5.2.
+- Commit locally; push once to publish and once per fix batch. One fresh whynot-review; merge under D-065 on green PR CI without asking again. Handoff goes in PROGRESS on the session branch; no handoff-only PRs.
+- Never claim review/merge/remote success without evidence; never mark complete with red checks. Fix recoverable failures; at a genuine external blocker record the error and resume point, then stop.
 
 ## Commands
 
-Use Node 24.22.3 and pnpm 12.21.0 (see .node-version and packageManager).
-
-| Command                        | Current behavior                                                                                   |
-| ------------------------------ | -------------------------------------------------------------------------------------------------- |
-| pnpm install                   | Install the workspace and update the lockfile                                                      |
-| pnpm install --frozen-lockfile | Install exactly the committed dependency graph; used in CI                                         |
-| pnpm format                    | Format current source/configuration and maintained handoff documents                               |
-| pnpm format:check              | Check that formatting without writing                                                              |
-| pnpm lint                      | Enforce TypeScript, source boundaries, engine purity and complete tests                            |
-| pnpm typecheck                 | Build library declarations, then check strict TypeScript across source, tests and configuration    |
-| pnpm test                      | Compile package prerequisites, then run native ESM entry smoke imports and ESLint boundary samples |
-| pnpm build                     | Compile package ESM/declarations and build the static React page                                   |
-| pnpm verify                    | Run format:check -> lint -> typecheck -> test -> build, failing fast                               |
-| pnpm dev                       | Start the static Vite app at http://127.0.0.1:5173; no Docker                                      |
-| pnpm bench                     | Build packages and run the external S/M/L benchmark; enforces S targets against the local baseline |
-
-PR CI runs pnpm verify at 500 property runs. The manual Deep verification workflow runs FC_NUM_RUNS=5000 plus the benchmark report. Browser suites, DB and narration commands arrive with their owning sessions. No passing placeholders.
+Node 24.22.3, pnpm 12.21.0. `pnpm install [--frozen-lockfile]`, `pnpm format`, `pnpm verify` (format:check → lint → typecheck → test → build), `pnpm test:quick <files>` (affected tests), `pnpm test:deep` (5000 runs), `pnpm bench` (S/M/L benchmark vs local baseline), `pnpm dev` (static app at http://127.0.0.1:5173). Browser, DB and narration commands arrive with their owning cards; no passing placeholders.
 
 ## Architecture invariants
 
@@ -67,18 +42,10 @@ PR CI runs pnpm verify at 500 property runs. The manual Deep verification workfl
 - Business outcomes return invalid_request/blocked; invariant bugs throw.
 - Prettier defaults, printWidth 100; use formatter once available. Comments explain why.
 
-## Git, PR and review
+## Git and PRs
 
-Branch session/<id>-<slug>, never commit to main. Commit imperative/scoped logical checkpoints; one commit is enough for a small coherent task. Stage only intended changes; preserve user work; no secrets/generated junk.
+Branch session/<id>-<slug>; never commit or push to main, force-push published work or bypass protections. Stage only intended files; preserve user work; no secrets/generated junk. Imperative scoped commits. PR has ID, behavior, verification, open questions and UI evidence. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.** No delegation beyond the one review unless requested; parallel implementers need separate worktrees and stable contracts.
 
-Push all commits before every handoff, even if incomplete, but batch pushes: one when publishing, one per fix batch. No force-push or rewriting published work without explicit need/authorization. If blocked by auth/network, report the exact error and unpushed commits; do not claim remote success (see docs/09 §GitHub troubleshooting).
+## Exclusions
 
-PR includes ID, behavior, verification summary, unresolved questions and UI evidence. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
-
-One implementer, then one fresh-context whynot-review per session PR (correctness/UX checklists at the cards that name them). Re-review only deltas that change source behavior. Do not delegate beyond that unless requested. Parallel implementers need separate ownership/worktrees and stable contracts. Under D-065 merge each selected session and necessary corrective PRs after the review and green PR CI, without asking again. Never push directly to main or bypass protections. No post-merge main CI wait; a later-discovered failure is fixed by a reviewed corrective PR.
-
-## Skills and exclusions
-
-Project skills: whynot-session, whynot-engine (incl. templates), whynot-testing, whynot-ui, whynot-review; whynot-api for follow-on P/H/A cards only. Read only the skills a card lists.
-
-Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group booking, third-party scheduler integration, generic constraint framework, AI decisions/bookings. No application code in 0.0.
+Out of scope: real auth/patient data, payments, notifications, calendar sync, multiple clinics, recurring/group booking, third-party scheduler integration, generic constraint framework, AI decisions/bookings.

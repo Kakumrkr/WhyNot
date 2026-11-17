@@ -2,11 +2,9 @@
 
 ## Gates
 
-Session 0.0 has no package manifest: validate document links, card completeness, dependency order, skills/frontmatter, agent TOML and whitespace. Do not claim pnpm verify ran.
+From 0.1, pnpm verify runs format:check, lint, typecheck, test and build, failing fast. No separate baseline run is needed: main was green when the previous card merged. If an unrelated test fails, record it rather than silently fixing it. No success-returning test:e2e/bench placeholders; introduce commands with real suites.
 
-From 0.1, pnpm verify runs format:check, lint, typecheck, test and build, failing fast. Run baseline on untouched branches after scaffold exists. Session 0.1 creates the gate and demonstrates it green. No success-returning test:e2e/bench placeholders; introduce commands with real suites.
-
-Default 500 runs locally and in PR CI; FC_NUM_RUNS=5000 in the manual Deep verification workflow at milestone gates (D-071). Print failure seeds and save shrunk counterexamples as normal tests. No skip/only/todo, lowered counts, disabled lint or weakened assertions.
+Default 500 runs locally and in PR CI; 5000 runs (`pnpm test:deep`) locally at milestone gate cards, optionally also in the manual Deep verification workflow (D-071/D-072). Print failure seeds and save shrunk counterexamples as normal tests. No skip/only/todo, lowered counts, disabled lint or weakened assertions.
 
 Browser checks start at 3.1 against built static app, full mode at P5, real-Postgres job at P1. Report unavailable required environments; do not silently omit checks.
 
@@ -45,7 +43,7 @@ packages/engine/test/reference directly loops real candidates and checks domain 
 
 ## Golden and regression corpus
 
-H1–H8 explanations in 1.6, template expectations in 2.2, alternatives in 2.3, actual patches in 4.1; isolated H9–H11 in 4.3. Format: schemaVersion, id, named snapshot/overrides, injected now, request, expected behavior. Adding planned expectations is permitted; changing existing expectations needs a decision and PR explanation.
+H1–H8 explanations in 1.6, template expectations in 2.2, alternatives in 2.3, actual patches in 4.1; isolated H9–H11 in 4.2. Format: schemaVersion, id, named snapshot/overrides, injected now, request, expected behavior. Adding planned expectations is permitted; changing existing expectations needs a decision and PR explanation.
 
 At least 16 edge goldens: DST transition, closing boundary, break edge, exact adjacency, zero buffers, no qualified practitioner, no capable room, patient-limit plus notice, preference plus leave, equipment-only conflict, maintenance midnight, advance boundary, exact notice, exact cap, cancelled booking, equal-cost ties.
 
