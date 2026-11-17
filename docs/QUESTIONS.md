@@ -4,7 +4,15 @@ Record unresolved material ambiguity here instead of inventing architecture, rul
 
 ## Open blockers
 
-None for Session 1.4. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. D-060/D-062 record the type-library adjustments required by Zod declarations. D-061's end-only midnight boundary is implemented by local calendar arithmetic. Deferred design/DB/model/hosting decisions belong to their named sessions in doc 08; they do not block request-rule work.
+None for Session 1.5. Q-1.5-WRITE is resolved by the user's GitHub installation access update, confirmed by successful branch push and PR #10 creation. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. D-060/D-062 record the type-library adjustments required by Zod declarations. D-061's end-only midnight boundary is implemented by local calendar arithmetic. Deferred design/DB/model/hosting decisions belong to their named sessions in doc 08; they do not block request-rule work.
+
+### Q-1.5-WRITE — GitHub connection rejects writes (resolved 2026-11-17)
+
+- Repository reads and clone succeed; authenticated account is Kakumrkr and repository metadata reports push permission.
+- Pushing session/1.5-feasibility fails: `remote: Permission to Kakumrkr/WhyNot.git denied to Kakumrkr` (HTTP 403). An explicit GitHub CLI credential-helper retry fails identically.
+- The connected GitHub app also rejects creation of the session branch with `403 Resource not accessible by integration`. No remote branch or PR was created; no merge or CI success is claimed.
+- Reconnect GitHub with repository write access, then resume the same card at the publication phase. Do not change implementation semantics, bypass protections, push directly to main or start 1.6. Local verification/review and the exact checkpoint are recorded in PROGRESS and the final response.
+- Resolution: after the user changed the GitHub app's repository access, native Git successfully pushed session/1.5-feasibility at 35f8b63dab0d11e636b3b4d67164d5ad75de3e96. Remote HEAD matched local HEAD, and [PR #10](https://github.com/Kakumrkr/WhyNot/pull/10) was created. Earlier failures above are historical; CI/review/merge evidence is tracked in PROGRESS and the PR.
 
 ## Planning resolutions — 2026-11-16
 
