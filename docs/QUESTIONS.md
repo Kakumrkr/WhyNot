@@ -11,7 +11,6 @@ Add new items here as `### Q-<card>-<slug>` with the question, options considere
 ## Resolved
 
 - Q-1.6-PERF (S isBookable benchmark gate failing on CI runners): resolved by D-067–D-070 with final source dc35f9c; the CI-runner variance that caused it is handled by D-071.
-- Q-1.5-WRITE (push/branch creation HTTP 403): the Claude/Codex GitHub app installation lacked write access to this repository; fixed by updating the app's repository access. See docs/09 §GitHub troubleshooting.
 - Q-1: resolved by D-043 (pinned compatible toolchain). D-060/D-062 record Zod type-library adjustments; D-061 the end-only midnight boundary.
 
 ## Planning resolutions — 2026-11-16

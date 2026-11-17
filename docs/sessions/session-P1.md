@@ -5,7 +5,7 @@
 **Milestone:** Optional persistence follow-on
 **Depends on:** [5.2](session-5.2.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [01-architecture](../01-architecture.md), [05-api-and-data](../05-api-and-data.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md), [08-decisions](../08-decisions.md).
-**Required skills:** $whynot-session, $whynot-api, $whynot-testing.
+**Required skills:** $whynot-session, $whynot-engine, $whynot-testing. API/DB guardrails: doc 05 §Implementation guardrails.
 **Review:** one fresh whynot-review before merge.
 
 ## Files and interfaces

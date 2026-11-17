@@ -7,7 +7,7 @@
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [00-product-brief](../00-product-brief.md), [01-architecture](../01-architecture.md), [03-engine-algorithms](../03-engine-algorithms.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md), [07-roadmap](../07-roadmap.md), [09-codex-workflow](../09-codex-workflow.md).
 **Required skills:** $whynot-session, $whynot-ui, $whynot-testing.
 **Helpful external skills (optional, never blocking):** $ui-ux-pro-max, $playwright, $security-best-practices.
-**Review:** one fresh whynot-review before merge including the correctness checklist and UX checklist; milestone gate: green Deep verification run (5000 properties + benchmark).
+**Review:** one fresh whynot-review before merge including the correctness checklist and UX checklist; milestone gate: local `pnpm test:deep` and `pnpm bench` pass, recorded in the PR.
 
 ## Files and interfaces
 

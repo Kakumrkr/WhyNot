@@ -7,7 +7,7 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 - **Next card:** [2.1 — Patient and staff output projection](sessions/session-2.1.md), branch `session/2.1-projection`. Not started.
 - **Last merged:** 1.6 via [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12) at `5e8fe37` (2026-11-17); main CI [run 44128648561](https://github.com/Kakumrkr/WhyNot/actions/runs/44128648561) green.
 - **Open questions:** none (see [QUESTIONS](QUESTIONS.md)).
-- **Workflow:** D-071 lean workflow applies from 2.1 onward (one gate, one push, one review, no handoff PRs, Deep verification only at milestone gates).
+- **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
 Next prompt:
 
@@ -35,9 +35,8 @@ Session 2.1 — Patient and staff output projection. Card: docs/sessions/session
 | [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | —           | —            | —      | —                                                 |
 | [3.3](sessions/session-3.3.md) | Inspector and first public preview               | —           | —            | —      | —                                                 |
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | —           | —            | —      | —                                                 |
-| [4.2](sessions/session-4.2.md) | Staff policy playground                          | —           | —            | —      | —                                                 |
-| [4.3](sessions/session-4.3.md) | Range explanations and next-available search     | —           | —            | —      | —                                                 |
-| [4.4](sessions/session-4.4.md) | Empty-calendar patient journey                   | —           | —            | —      | —                                                 |
+| [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | —           | —            | —      | —                                                 |
+| [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | —           | —            | —      | —                                                 |
 | [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | —           | —            | —      | —                                                 |
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff              | —           | —            | —      | —                                                 |
 | [P1](sessions/session-P1.md)   | Persistence schema and database verification     | —           | —            | —      | —                                                 |
@@ -55,14 +54,14 @@ Session 2.1 — Patient and staff output projection. Card: docs/sessions/session
 
 ## Milestone gates
 
-Each gate needs a green Deep verification run (5000 properties + benchmark report) and a local `pnpm bench` against the committed baseline (D-071).
+Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally against the committed baseline and records both in its PR (D-071/D-072).
 
 | Gate             | State        | Evidence                                                                                                               |
 | ---------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | Core 1.6         | passed       | PR #12 CI ran 5000-run properties and S benchmark (runs 44126309537, 44126295724); baselines in packages/engine/bench/ |
 | Alternatives 2.3 | pending      | —                                                                                                                      |
 | Preview 3.3      | pending      | —                                                                                                                      |
-| Policy/range 4.4 | pending      | —                                                                                                                      |
+| Policy/range 4.3 | pending      | —                                                                                                                      |
 | Release 5.2      | pending      | —                                                                                                                      |
 | Optional P/H/A   | not selected | Human selection after first release                                                                                    |
 

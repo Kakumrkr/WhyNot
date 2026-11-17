@@ -5,7 +5,7 @@
 **Milestone:** Optional persistence follow-on
 **Depends on:** [P4](session-P4.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [01-architecture](../01-architecture.md), [04-explanation-and-ai](../04-explanation-and-ai.md), [05-api-and-data](../05-api-and-data.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md).
-**Required skills:** $whynot-session, $whynot-api, $whynot-ui, $whynot-testing.
+**Required skills:** $whynot-session, $whynot-ui, $whynot-testing. API/DB guardrails: doc 05 §Implementation guardrails.
 **Helpful external skills (optional, never blocking):** $ui-ux-pro-max, $playwright.
 **Review:** one fresh whynot-review before merge.
 

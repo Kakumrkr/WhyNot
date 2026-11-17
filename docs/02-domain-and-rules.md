@@ -10,9 +10,9 @@
 | **Rule** | A catalog entry: a kind of constraint (e.g. "practitioner must be within working hours"), with id, version, family, weight, visibility, relaxability |
 | **Fact** | A *grounded* rule instance that is violated: rule + subject + parameters. Example: `buffer-after:prac=dr-rao:booking=bk-0142` |
 | **Violation matrix** | For each candidate, the set of facts it violates. A request is bookable iff some candidate violates nothing |
-| **Explanation** | The minimum-weight set of facts that blocks every candidate (see doc 03) |
+| **Explanation** | A sufficient, irredundant set of facts that blocks every candidate; minimum-weight when `optimal` is true (see doc 03) |
 | **Alternative** | A modified request that is bookable, with its cost and what changed |
-| **Admin fix** | The smallest set of admin-relaxable facts whose relaxation would make the *original* request bookable |
+| **Admin fix** | The least-cost concrete, allowlisted policy patch that, applied to a copied snapshot and re-evaluated, makes the *original* request bookable (D-053, doc 03) |
 
 ## Entities (snapshot shape)
 
@@ -101,7 +101,7 @@ Unless a scenario says otherwise, `now` = Monday of the demo week, 09:00 clinic 
 
 | # | Request | Expected explanation | Expected top alternative |
 | --- | --- | --- | --- |
-| H1 | Minor procedure, Tue 14:30, any practitioner | Dr. Rao: within 15-min buffer after her 14:00–14:30 procedure. Dr. Mehta: on leave (patient sees "unavailable"). Context line: only Dr. Rao and Dr. Mehta offer minor procedures (capability facts grouped, see doc 04) | Tue 14:45 with Dr. Rao |
+| H1 | Minor procedure, Tue 14:30, any practitioner | Dr. Rao: within 15-min buffer after her 14:00–14:30 procedure. Dr. Mehta: on leave (patient sees "unavailable"). Other practitioners' primary facts are their cheaper hours facts (D-066). Context line: only Dr. Rao and Dr. Mehta offer minor procedures (capability facts grouped, see doc 04) | Tue 14:45 with Dr. Rao |
 | H2 | Ultrasound, Thu 10:00 | Ultrasound unit under maintenance until 12:00 | Thu 12:00 same sonographer |
 | H3 | GP consultation, today in 1 hour | Requires 2 hours' notice | Today, earliest slot ≥ 2 h from now |
 | H4 | Physio follow-up, new patient | Follow-ups are for returning patients (single, simple reason — proves we don't over-explain) | None — no time change can help, so the panel says so and suggests booking a Physio assessment first (static UI copy for this rule, not an engine alternative). Staff admin fix: the returning-only eligibility rule |

@@ -25,8 +25,8 @@
 
 ## Build
 
-- Verify design and browser skills before UI work; install only through a verified current source if needed, never guessed global commands.
-- Record calm accessible clinic tokens/typography as D-045 resolving Q-3; create minimal reusable controls/focus behavior.
+- Add @playwright/test and @axe-core/playwright as pinned dev dependencies (Playwright's Chromium download/cache per its docs). Design skills are optional; do not spend the session installing them.
+- Record calm accessible clinic tokens/typography as the next free doc 08 decision (D-072 is taken; use D-073 or later) resolving Q-3; create minimal reusable controls/focus behavior.
 - Implement shell, curated scenario picker, audience switch, frozen clock, validated URL selections, browser adapter and synthetic-only disclosure.
 - Use normal React state for synchronous inputs; TanStack Query only if actual asynchronous adapter handling needs it.
 - Introduce real Playwright/axe suites against built static app and CI; no future page placeholders or API client dependence.
@@ -42,7 +42,7 @@
 
 - [ ] Common completion checklist in docs/09-codex-workflow.md satisfied.
 - [ ] Usable accessible static shell with tokens and browser CI; screenshots captured.
-- [ ] D-045 recorded; no network/model/DB needed.
+- [ ] Design-token decision recorded; no network/model/DB needed.
 
 ## Out of scope
 

@@ -5,7 +5,7 @@
 **Milestone:** Optional AI experiment
 **Depends on:** [A2](session-A2.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [04-explanation-and-ai](../04-explanation-and-ai.md), [05-api-and-data](../05-api-and-data.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md), [08-decisions](../08-decisions.md).
-**Required skills:** $whynot-session, $whynot-api, $whynot-ui, $whynot-engine, $whynot-testing.
+**Required skills:** $whynot-session, $whynot-ui, $whynot-engine, $whynot-testing. API/DB guardrails: doc 05 §Implementation guardrails.
 **Helpful external skills (optional, never blocking):** $openai-docs, $playwright.
 **Review:** one fresh whynot-review before merge.
 

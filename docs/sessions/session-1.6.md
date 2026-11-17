@@ -6,7 +6,7 @@
 **Depends on:** [1.5](session-1.5.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [02-domain-and-rules](../02-domain-and-rules.md), [03-engine-algorithms](../03-engine-algorithms.md), [04-explanation-and-ai](../04-explanation-and-ai.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md).
 **Required skills:** $whynot-session, $whynot-engine, $whynot-testing.
-**Review:** one fresh whynot-review before merge including the correctness checklist; milestone gate: green Deep verification run (5000 properties + benchmark).
+**Review:** one fresh whynot-review before merge including the correctness checklist; milestone gate: local `pnpm test:deep` and `pnpm bench` pass, recorded in the PR.
 
 ## Files and interfaces
 

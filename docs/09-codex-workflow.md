@@ -19,7 +19,8 @@ Do not read the PROGRESS archive, archived phase cards, or the whole decision lo
 | whynot-testing | Test changes/failures and verification strategy |
 | whynot-ui | Playground, design and accessibility (3.1 onward) |
 | whynot-review | The one fresh-context review per session PR |
-| whynot-api | Follow-on P/H/A persistence and API cards only |
+
+Follow-on P/H/A cards use whynot-engine/whynot-testing plus doc 05 §Implementation guardrails.
 
 Skill paths: .agents/skills/<name>/SKILL.md. Load only the skills a card lists.
 
@@ -42,11 +43,12 @@ Failures during the card are part of the card: diagnose and fix; after two faile
 
 | Gate | When | Command |
 | --- | --- | --- |
-| Affected tests | While working | `pnpm vitest run <test files>` (after `pnpm -r --filter "./packages/**" build` if exports changed) |
+| Affected tests | While working | `pnpm test:quick <test files>` (no build; the four native smoke tests need `pnpm test`) |
 | Full gate | Once before the PR; again only after source changes | `pnpm verify` (format, lint, types, tests at 500 runs, build) |
-| 5000-run properties | Cards whose Done when names 5000 cases | `FC_NUM_RUNS=5000 pnpm vitest run <property test files>` once locally |
+| 5000-run properties | Cards whose Done when names 5000 cases | `pnpm test:deep <property test files>` once locally (whole suite without file arguments) |
 | Benchmark | Cards touching engine hot paths, and milestone gates | `pnpm bench` on the machine owning the committed baseline |
-| Deep verification | Milestone gates 1.6, 2.3, 3.3, 4.4, 5.2 (optional every few sessions) | GitHub Actions → Deep verification → Run workflow on the session branch |
+| Milestone deep gate | Gate cards 1.6, 2.3, 3.3, 4.3, 5.2 | `pnpm test:deep` (whole suite at 5000) and `pnpm bench`, locally; record both results in the PR |
+| Deep verification workflow | Optional, every few sessions or when local runs are impossible | GitHub Actions → Deep verification → Run workflow (a human click; Codex does not need to trigger it) |
 | Browser | From 3.1 | Built-app Playwright checks, desktop 1280 and mobile 390, axe |
 | Real Postgres | From P1 | Separate script/job added by P1 |
 
@@ -80,19 +82,11 @@ Commit after meaningful verified increments; one commit is fine for a small card
 
 PR body: session ID, concrete behavior, checks run, open questions, screenshots for UI. Use a body file or the GitHub tool for multiline text.
 
-## GitHub troubleshooting
+## Git tips
 
-Push or PR failures in earlier sessions were access problems, not code problems. Check once, then stop retrying:
-
-| Symptom | Cause | Fix |
-| --- | --- | --- |
-| `Permission to Kakumrkr/WhyNot.git denied` (HTTP 403) on push, or `403 Resource not accessible by integration` from the GitHub connector | The Codex/ChatGPT GitHub app installation does not have this repository selected, or lacks Contents/Pull requests write | Human: GitHub → Settings → Applications → Installed GitHub Apps → the Codex/ChatGPT app → Configure → Repository access includes WhyNot. Then reconnect in Codex if needed. |
-| Push needs approval every time / network prompts | Sandbox network policy | Batch: one push per publish. Approve once for the push. |
-| `rejected (fetch first)` / non-fast-forward | Remote branch has commits you lack (often your own earlier push) | `git fetch origin <branch> && git merge --no-edit FETCH_HEAD`, then push. Never force-push. |
-| Merge blocked by protection | Required check not finished or branch behind main | Wait for the `verify` check; if behind, merge main into the branch, push once. |
-| Smoke tests fail with EPERM | Sandbox blocks spawning `node` | Rerun those four smoke tests outside the sandbox; do not modify them. |
-
-If access cannot be fixed in the session: keep the commits local, record the exact error and unpushed commit list in the handoff, and stop. Do not claim remote success.
+- `rejected (fetch first)` / non-fast-forward: the remote branch has commits you lack (often your own earlier push). `git fetch origin <branch> && git merge --no-edit FETCH_HEAD`, then push. Never force-push.
+- Merge blocked by protection: wait for the `verify` check; if the branch is behind main, merge main into it and push once.
+- Native ESM smoke tests fail with EPERM inside a sandbox: it blocks spawning `node`. Rerun those four tests with sandbox escalation; do not modify them.
 
 ## Review roles
 

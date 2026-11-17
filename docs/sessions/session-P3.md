@@ -5,7 +5,7 @@
 **Milestone:** Optional persistence follow-on
 **Depends on:** [P2](session-P2.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [03-engine-algorithms](../03-engine-algorithms.md), [04-explanation-and-ai](../04-explanation-and-ai.md), [05-api-and-data](../05-api-and-data.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md).
-**Required skills:** $whynot-session, $whynot-api, $whynot-testing.
+**Required skills:** $whynot-session, $whynot-engine, $whynot-testing. API/DB guardrails: doc 05 §Implementation guardrails.
 **Helpful external skills (optional, never blocking):** $security-threat-model.
 **Review:** one fresh whynot-review before merge.
 

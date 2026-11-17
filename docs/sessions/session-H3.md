@@ -5,7 +5,7 @@
 **Milestone:** Optional historical insights follow-on
 **Depends on:** [H2](session-H2.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [03-engine-algorithms](../03-engine-algorithms.md), [05-api-and-data](../05-api-and-data.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md).
-**Required skills:** $whynot-session, $whynot-api, $whynot-engine, $whynot-testing.
+**Required skills:** $whynot-session, $whynot-engine, $whynot-testing. API/DB guardrails: doc 05 §Implementation guardrails.
 **Review:** one fresh whynot-review before merge.
 
 ## Files and interfaces
