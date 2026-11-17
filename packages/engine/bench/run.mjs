@@ -7,7 +7,7 @@ import { URL } from "node:url";
 import { evaluate, isBookable } from "../dist/index.js";
 import { buildScenario, riversideMinute } from "../../fixtures/dist/index.js";
 
-const warmup = 100;
+const warmup = 1000;
 const samples = 300;
 const now = riversideMinute(0, "09:00");
 const scenarios = Array.from({ length: 8 }, (_, i) => {

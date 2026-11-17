@@ -4,6 +4,18 @@ Record unresolved material ambiguity here instead of inventing architecture, rul
 
 ## Open blockers
 
+### Q-1.6-PERF — CI boolean performance gate (under repair)
+
+Session 1.6 checkpoint aff537f passes full local/CI correctness verification, but
+both CI runs 44113600174 and 44113724924 fail the unchanged 2 ms S isBookable
+benchmark gate. The first Linux report measures 3.95 ms p95 on AMD EPYC 7763,
+versus 1.78 ms on the recorded Windows CPU. Profiling identifies repeated booking
+date conversion; D-067 and PROGRESS record the correction and increased warm-up.
+Keep all targets, 300 timed samples and 5000-run properties. Continue the same
+card through measured repair, refreshed exact-head review and green CI; this is
+not an external blocker and does not release Session 2.1. Resolve only after a
+passing corrected-head Linux benchmark and committed matching baseline.
+
 None for Session 1.5. Q-1.5-WRITE is resolved by the user's GitHub installation access update, confirmed by successful branch push and PR #10 creation. Q-1 is resolved by D-043 (pinned compatible toolchain); MIT owner identity confirmed from GitHub. D-060/D-062 record the type-library adjustments required by Zod declarations. D-061's end-only midnight boundary is implemented by local calendar arithmetic. Deferred design/DB/model/hosting decisions belong to their named sessions in doc 08; they do not block request-rule work.
 
 ### Q-1.5-WRITE — GitHub connection rejects writes (resolved 2026-11-17)

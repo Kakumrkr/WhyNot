@@ -91,9 +91,18 @@ export function bookingLocalDates(
 ): TimeResult<Map<string, string>> {
   const resolvedZone = IANAZone.create(zone);
   if (!resolvedZone.isValid) return failure("Unsupported instant or timezone", ["timezone"]);
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: zone,
+    calendar: "gregory",
+    numberingSystem: "latn",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    era: "short",
+    second: "2-digit",
+  });
   const result = new Map<string, string>();
   const byMinute = new Map<number, string>();
-  const byLocalDay = new Map<number, string>();
   for (const booking of bookings) {
     let date = byMinute.get(booking.start);
     if (date === undefined) {
@@ -102,27 +111,22 @@ export function bookingLocalDates(
         Math.abs(booking.start * 60000) > 8640000000000000
       )
         return failure("Unsupported instant or timezone", ["timezone"]);
-      const offset = resolvedZone.offset(booking.start * 60000);
+      // Explicit locale/calendar/digits make this a date-and-seconds representation.
+      // Formatting once avoids computing an offset and constructing a second date.
+      const parts = /^(\d{2})\/(\d{2})\/(\d+) (AD|BC), (\d{1,2})$/.exec(
+        formatter.format(booking.start * 60000),
+      );
+      if (parts === null) throw new Error("Unsupported Intl booking-date representation");
+      const year = parts[4] === "BC" ? 1 - Number(parts[3]) : Number(parts[3]);
+      if (year < 0 || year > 9999) return failure("Unsupported instant or timezone", ["timezone"]);
       // Historical offsets can include seconds even though the input is a UTC minute.
-      if (!Number.isInteger(offset))
+      if (Number(parts[5]) !== 0)
         return failure(
           "Timezone offset is not minute-aligned",
           ["timezone"],
           "unsupported_wall_time",
         );
-      const day = Math.floor((booking.start + offset) / 1440);
-      date = byLocalDay.get(day);
-      if (date === undefined) {
-        // Encode this instant's local calendar day as UTC, not as an elapsed zoned day.
-        if (Math.abs(day * 86400000) > 8640000000000000)
-          return failure("Unsupported instant or timezone", ["timezone"]);
-        const calendarDay = DateTime.fromMillis(day * 86400000, { zone: "UTC", locale: "en" });
-        const formatted = calendarDay.toISODate();
-        if (!calendarDay.isValid || formatted === null || !DateSchema.safeParse(formatted).success)
-          return failure("Unsupported instant or timezone", ["timezone"]);
-        date = formatted;
-        byLocalDay.set(day, date);
-      }
+      date = `${String(year).padStart(4, "0")}-${parts[1]}-${parts[2]}`;
       byMinute.set(booking.start, date);
     }
     result.set(booking.id, date);

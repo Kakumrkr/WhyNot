@@ -266,10 +266,12 @@ conversion dominates validation. An internal batch helper in time.ts resolves th
 zone once per call and retains safe-instant, supported-year and sub-minute-offset
 guards for every distinct confirmed start. It adds no public export, clock or
 persistent cache; local-date equivalence is checked independently at boundaries.
-Batch conversion uses each instant's Luxon zone offset, rejects fractional-minute
-offsets, and formats each distinct local calendar day once. Calendar-day arithmetic
-stays in time.ts; DST folds/gaps retain their actual per-instant offsets. The
-individual Luxon localDate helper remains the independent equivalence path.
+Batch conversion formats each distinct start with an explicit Gregorian calendar,
+Latin digits, en-US locale and requested timezone. The date/era and seconds are
+decoded together; nonzero local seconds reject historical fractional-minute
+offsets. Unexpected formatter representation throws instead of guessing. DST
+folds/gaps retain their actual instant's date. The individual Luxon localDate
+helper remains the independent equivalence path.
 Validation also resolves shared schedule boundaries once per affected date and
 passes validated working intervals to practitioner.ts rather than repeating those
 conversions during rule checks. Boolean checks may return after the first skill
