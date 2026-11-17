@@ -1,5 +1,6 @@
 import fc from "fast-check";
 import type { Booking, ClinicSnapshot } from "@whynot/contracts";
+import { resolveRecurringBoundary } from "@whynot/engine";
 import { buildMinimalSnapshot, demoNow } from "../src/builders.js";
 
 /** Random schema-valid snapshots, intentionally separate from authored scenario fixtures. */
@@ -15,6 +16,11 @@ export const snapshotArbitrary: fc.Arbitrary<ClinicSnapshot> = fc
     advance: fc.integer({ min: 0, max: 30 }),
     limit: fc.integer({ min: 0, max: 5 }),
     cap: fc.integer({ min: 0, max: 8 }),
+    eligibility: fc.constantFrom("any", "returning_only", "referral_required"),
+    returning: fc.boolean(),
+    referral: fc.boolean(),
+    closed: fc.boolean(),
+    equipmentRequired: fc.boolean(),
     hours: fc.array(
       fc.record({
         weekday: fc.integer({ min: 1, max: 7 }),
@@ -77,18 +83,48 @@ export const snapshotArbitrary: fc.Arbitrary<ClinicSnapshot> = fc
         timezone: generated.zone,
         slotGridMinutes: generated.grid,
         openingHours: generated.hours,
+        closedDates: generated.closed ? ["2026-11-16"] : [],
       },
       practitioners,
       rooms,
       equipment,
       bookings,
-      services: base.services.map((service) => ({ ...service, durationMin: generated.duration })),
+      services: base.services.map((service) => ({
+        ...service,
+        durationMin: generated.duration,
+        eligibility: generated.eligibility,
+        ...(generated.equipmentRequired ? { requiredEquipmentType: "test-unit" } : {}),
+      })),
+      patients: base.patients.map((patient) => ({
+        ...patient,
+        isReturning: generated.returning,
+        referrals: generated.referral ? ["consult"] : [],
+      })),
       policy: {
         ...base.policy,
         minNoticeMin: generated.notice,
         maxAdvanceDays: generated.advance,
         patientMaxBookingsPerDay: generated.limit,
       },
+    };
+  });
+
+/** Local-noon requests exercise every request rule, including absent resource pools. */
+export const requestRuleCaseArbitrary = fc
+  .tuple(snapshotArbitrary, fc.boolean(), fc.integer({ min: -60, max: 50000 }))
+  .map(([snapshot, preferred, lead]) => {
+    const start = resolveRecurringBoundary("2026-11-16", "12:00", snapshot.clinic.timezone);
+    if (!start.ok) throw new Error("Authored generator date must resolve");
+    const practitioner = snapshot.practitioners[0];
+    return {
+      snapshot,
+      request: {
+        patientId: "patient-test",
+        serviceId: "consult",
+        start: start.value,
+        ...(preferred && practitioner !== undefined ? { practitionerId: practitioner.id } : {}),
+      },
+      now: start.value - lead,
     };
   });
 
