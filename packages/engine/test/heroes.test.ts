@@ -31,6 +31,11 @@ for (let i = 1; i <= 8; i++) {
     expect(actual.explanation.optimal).toBe(true);
     if (i === 1) {
       expect(
+        actual.explanation.facts.filter((f) =>
+          ["room-busy", "room-turnover", "equipment-busy"].includes(f.ruleId),
+        ),
+      ).toEqual([]);
+      expect(
         actual.explanation.facts
           .filter((f) => f.ruleId === "practitioner-skill")
           .map((f) => f.subject.id)

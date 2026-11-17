@@ -31,7 +31,9 @@ export function buildScenario(id: string, demoDate = "2026-11-16"): ClinicSnapsh
   );
   const add = (booking: Omit<Booking, "status">) =>
     snapshot.bookings.push({ ...booking, status: "confirmed" });
-  if (id === "H1")
+  if (id === "H1") {
+    // D-052 keeps the room free at 14:30 so the practitioner buffer owns this story.
+    snapshot.services.find((service) => service.id === "minor-procedure")!.roomTurnoverMin = 0;
     add({
       id: "h1-procedure",
       patientId: "patient-2",
@@ -42,6 +44,7 @@ export function buildScenario(id: string, demoDate = "2026-11-16"): ClinicSnapsh
       start: minute(1, "14:00"),
       end: minute(1, "14:30"),
     });
+  }
   if (id === "H5") {
     for (let i = 0; i < 6; i++)
       add({
