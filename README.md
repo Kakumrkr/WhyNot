@@ -26,7 +26,8 @@ Implement only its Build list and satisfy verification and acceptance criteria.
 Make logical checkpoint commits, update the handoff, push all session commits,
 verify remote HEAD and open/update the PR. Do not start another session.
 Continue through recoverable failures, CI and independent review fixes.
-Follow D-064 through confirmed merge and durable handoff with human merge by default.
+Use standing merge authorization in D-065 after green checks and fresh review.
+Fix any post-merge failures through another reviewed PR; confirm main CI and save the handoff.
 Finish with evidence, commit, PR, merge status and the exact next-session prompt.
 ```
 

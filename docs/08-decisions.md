@@ -189,3 +189,34 @@ start Session 1.3 or change application behavior.
 _Why:_ prior sessions stopped at recoverable failures or PR creation and left the
 user to restart work. _Rejected:_ treating complexity or a fixed retry count as
 completion; weakening checks; starting later cards before merge.
+
+**D-065 · Standing authorization to merge completed sessions and corrective PRs.**
+The user explicitly reapproved merging to main at the end of every selected
+session, including further fix PRs needed to finish that session. This supersedes
+the human-merge default in D-064 and earlier no-automatic-merge wording in
+D-055/D-059. The implementer must use this standing authorization without asking
+again for each merge, unless the user revokes it or the work exceeds the selected
+card and its necessary corrections.
+
+Implement on a session branch, push all commits and open/update a PR. Merge the
+exact independently reviewed head only after all required local and GitHub
+checks pass, findings are resolved, and repository protections are satisfied.
+Never push directly to main, bypass protections or self-claim independent review.
+If the base changes, reconcile and refresh review/check evidence as needed before
+merging. Confirm GitHub's actual merge SHA and wait for required CI on main.
+
+Any session-related failure before merge remains work on the same PR. A failure
+discovered after merge requires a correction branch from current main, meaningful
+verification, a fresh independent review and a new PR merged under the same
+authorization. Repeat until the selected card and its required post-merge checks
+are green. Do not close the session as complete at PR creation or while known
+session failures remain. Preserve honest incomplete checkpoints only for genuine
+external blockers or hard host limits, as required by D-064.
+
+Save a concise next-session handoff with branch/PR, implemented/reviewed/merged
+status, verification, remaining issues and exact next prompt. Record actual merge
+and post-merge CI evidence durably in the PR; the next session reconciles PROGRESS
+from that evidence rather than creating an endless chain of handoff-only PRs.
+This authority does not select another card, start Session 1.3 here, reinstate
+cloud scheduling or authorize new paid services. Stop after the selected card;
+follow-on milestones after 5.2 still require human selection.

@@ -37,6 +37,8 @@
 
 ## Done when
 
+- [ ] Session PR and any necessary correction PRs merged under D-065; required main CI green and durable handoff saved.
+
 - [ ] Technical release checklist has evidence; no open blocker/major correctness findings; public static demo observed.
 - [ ] External usefulness status honest; commit/push/PR handoff complete; post-merge tag recorded separately.
 - [ ] All Build items have evidence; required checks are green.
@@ -50,7 +52,7 @@
 
 ## Handoff
 
-Record branch, final commit, PR, verification/evidence, unresolved items, decisions and next session. Resume this card if incomplete. If complete, next eligible card must wait for this PR's review/merge. Follow D-064: retain ownership through fixes, fresh review, confirmed merge and durable handoff; human merge remains the default, with green checks and fresh review required before merge. Never label external validation done without evidence.
+Record branch, final commit, PR, verification/evidence, unresolved items, decisions and next session. Resume this card if incomplete. If complete, next eligible card must wait for this PR's review/merge. Follow D-064/D-065: standing user authorization permits merging this session and necessary correction PRs after green checks and fresh independent review. Confirm merge and main CI; repair post-merge failures through another reviewed PR before declaring completion. Never label external validation done without evidence.
 
 ## Starter prompt
 
@@ -65,7 +67,9 @@ Make logical verified checkpoint commits and push checkpoints during longer work
 Run the required gates, record implemented/reviewed/merged honestly, and update the handoff.
 Before ending push all session commits, verify remote HEAD and open/update the PR.
 Continue through recoverable failures, CI and fresh independent review; fix findings and recheck.
-Follow D-064 and docs/09-codex-workflow.md through confirmed merge and durable handoff.
+Use D-065 standing authorization to merge after green checks and fresh review; confirm main CI.
+Fix post-merge failures through a new reviewed correction PR and merge again before completion.
+Follow D-064/D-065 and docs/09-codex-workflow.md; save the durable next-session handoff.
 Finish with evidence, final commit, PR, merge status and exact next-session prompt.
 If blocked, save a coherent checkpoint/draft and report remaining work; never claim completion.
 ~~~

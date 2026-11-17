@@ -43,7 +43,7 @@ Before needed implementation, report missing required capability, verified insta
 
 ## Agents
 
-Normal workflow: one implementer owns a card through green checks, fresh independent review, findings resolution, confirmed merge and handoff (D-064). Human merge remains the default; do not merge without explicit user authorization. Review is independent context, not the implementer's self-check.
+Normal workflow: one implementer owns a card through green checks, fresh independent review, findings resolution, confirmed merge and handoff (D-064). D-065 records standing user authorization to merge each selected session and necessary corrective PRs after fresh review and green checks; do not ask again per merge. Review is independent context, not the implementer's self-check.
 
 Optional local custom roles:
 - .codex/agents/whynot_reviewer.toml: session diff/spec/verification review;
@@ -67,13 +67,15 @@ Official configuration checked 2026-11-16: [customization](https://learn.chatgpt
 7. Run final required checks. Record actual evidence, remaining questions and review status.
 8. Push all commits, confirm local HEAD equals remote branch HEAD, open/update PR.
 9. Fresh task with whynot-review reports severity/file/line/reproduction; implementer fixes and rechecks.
-10. Keep ownership while CI/review/merge is pending. Fix recoverable failures and repeat review after changes; two failed attempts require diagnosis, not abandonment. Merge only under recorded authority and current-head gates; otherwise watch for human merge. Confirm the merge SHA and post-merge CI, save the durable handoff, and stop before the next card. Stop after 5.2 for human selection of a follow-on.
+10. Keep ownership while CI/review/merge is pending. Fix recoverable failures and repeat review after changes; two failed attempts require diagnosis, not abandonment. Use D-065 standing authorization to merge the exact reviewed head after required checks pass and protections are satisfied. Confirm the merge SHA and post-merge CI, save the durable handoff, and stop before the next card. Stop after 5.2 for human selection of a follow-on.
 
 Never mark a session complete with red required checks. If externally blocked or at a runtime limit, save a coherent pushed checkpoint/draft PR, failures and exact phase and continuation prompt for resuming the same card without repeating discovery. A hard runtime limit or external blocker is an honest interruption, not completion. Do not ask the user to restart ordinary failed tests, CI or review corrections. Auth/network failure means report unpushed commits and blocker, never claim success.
 
+If required main CI or a session-related check fails after merge, keep the session open. Branch from current main, fix the failure, run the required gates, obtain fresh independent review, open a corrective PR and merge under D-065. Repeat until the card and post-merge checks pass. Record actual merge SHA and main CI in the PR; leave the next prompt and any caveats in the handoff. No later card begins as part of this repair loop.
+
 ## Commit and PR requirements
 
-Commit after meaningful verified increments (contracts, behavior, integration/docs as appropriate), not just one giant final commit. Small coherent sessions may have one. Final gate before completion. No AI attribution or Co-authored-by trailers. No force-push or protection bypass. Human merge remains the default; any explicitly authorized merge still requires fresh current-head review and green required checks.
+Commit after meaningful verified increments (contracts, behavior, integration/docs as appropriate), not just one giant final commit. Small coherent sessions may have one. Final gate before completion. No AI attribution or Co-authored-by trailers. No force-push or protection bypass. D-065 authorizes session and correction PR merges without renewed approval, with fresh current-head review and green required checks. Never push directly to main.
 
 PR body: session ID, concrete behavior, checks/outputs, unresolved questions, screenshots for UI and evidence links. Use structured GitHub tool or body file for multiline text; preserve actual newlines.
 
