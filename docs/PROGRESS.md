@@ -339,6 +339,17 @@ Persist the durable handoff and stop before Session 2.1.
 
 Continuation if interrupted: `$whynot-session Resume Session 1.6 on session/1.6-explanations. Read this handoff and docs/sessions/session-1.6.md; resume at verification/publication/review, preserve D-066/D-067 and all run counts, finish required CI/merge/main CI under D-065, persist evidence and stop before 2.1.`
 
+Exact next-session prompt, eligible only after PR #12 is confirmed merged and main CI is green:
+
+```text
+$whynot-session
+Start Session 2.1 using docs/sessions/session-2.1.md.
+Confirm Session 1.6 is independently reviewed and merged through PR #12 with green main CI.
+Read the full card and required documents/skills; implement only its Build list.
+Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
+Persist the durable handoff and stop before Session 2.2.
+```
+
 #### Session 1.6 verified checkpoint and publication
 
 - Implementation checkpoint aff537f318c4d14ce62a3a3f4c1cb8ec0ab812da is pushed; remote and local HEAD matched. [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12) is open. The corrected full FC_NUM_RUNS=5000 pnpm verify passed all 161 tests across 24 files, plus formatting/lint/strict types/native ESM/builds. Planning validation passed 32 cards, 254 links, eight skills, three role definitions and 23 rules; git diff --check passed. The earlier obsolete-export smoke failure is resolved.
@@ -350,3 +361,6 @@ Continuation if interrupted: `$whynot-session Resume Session 1.6 on session/1.6-
 - Both initial CI runs passed full verification (161 tests, 5000-run properties), then failed the unchanged isBookable S 2 ms gate on AMD EPYC 7763 Linux. Run 44113600174 measured 3.95 ms p95 isBookable / 6.29 ms evaluate. This is a recoverable performance failure, not completion or an external blocker.
 - Fresh session review independently passed the full 5000-run gate plus planning/diff checks at aff537f; fresh correctness review passed 39 focused tests including the independent feasibility suite at 5000 runs. Neither found a source correctness issue. Those reviews must be refreshed after this correction.
 - Profiling isolated repeated date conversion. The batch helper now formats date/era/local seconds together in one explicitly configured formatter, retaining historical-offset/year guards and the independent Luxon equivalence property. Benchmark warm-up increases from 100 to 1000 calls per operation/dataset to establish optimized steady-state execution; timed samples stay 300 and targets remain 2/20 ms. CI always uploads its diagnostic report even if a gate fails. New baselines and green exact-head gates are pending; do not use earlier reports as the corrected-head baseline.
+
+- Corrected head 7572f42842c8e13960492eea6b26ccc022d43794 passed local and independent full 5000-run verification (161 tests). Focused correctness refresh additionally passed 18 edge tests and 60 explicit year/offset boundary comparisons. Source reviews found no findings. Linux push CI 44115570837 passed on EPYC 9V74 (S p95 1.76/4.41 ms); PR CI 44115588444 passed verification but still missed the boolean gate at 2.18 ms on EPYC 7763. Neither that mixed result nor the older local reports establish session completion.
+- Further bounded repair reuses validated calendar objects, avoids duplicate stable-offset ambiguity probes, and stops boolean resource checks after known violations. D-068 records native canonical-timezone lookup in the snapshot schema, with alias/older-runtime fallback unchanged. New generated Luxon ambiguity equivalence and native timezone-acceptance checks are added at the full run count. Final corrected baselines, refreshed source reviews and all current-head CI remain required.

@@ -4,7 +4,11 @@ import type { RuleContext } from "../validateRequest.js";
 import { canonicalFacts, intervalLookup, occupancyFacts } from "./resourceIntervals.js";
 
 /** Required type, maintenance and confirmed occupancy for one equipment unit. */
-export function checkEquipment(context: RuleContext, equipment: Equipment): Fact[] {
+export function checkEquipment(
+  context: RuleContext,
+  equipment: Equipment,
+  stopAtFirst = false,
+): Fact[] {
   if (context.service.requiredEquipmentType === undefined) return [];
   const subject = { type: "equipment", id: equipment.id } as const;
   const facts: Fact[] = [];
@@ -12,6 +16,7 @@ export function checkEquipment(context: RuleContext, equipment: Equipment): Fact
     facts.push(
       makeFact("equipment-type", subject, { requiredType: context.service.requiredEquipmentType }),
     );
+  if (stopAtFirst && facts.length > 0) return facts;
   for (const window of intervalLookup(equipment.maintenance)(context.interval))
     facts.push(
       makeFact(
@@ -21,6 +26,7 @@ export function checkEquipment(context: RuleContext, equipment: Equipment): Fact
         { from: window.from, to: window.to },
       ),
     );
+  if (stopAtFirst && facts.length > 0) return facts;
   facts.push(
     ...occupancyFacts(
       context,

@@ -276,3 +276,28 @@ Validation also resolves shared schedule boundaries once per affected date and
 passes validated working intervals to practitioner.ts rather than repeating those
 conversions during rule checks. Boolean checks may return after the first skill
 or hours violation; full evaluation still collects all facts.
+
+The corrected Linux run on EPYC 9V74 passed at 1.76 ms, while EPYC 7763 still
+missed at 2.18 ms. Retain the target and repair that remaining cost. Reuse the
+already validated UTC-encoded calendar when resolving batch schedule boundaries;
+preserve every gap/fold/year check. Extend internal stop-at-first behavior to
+leave/break, room capability/maintenance and equipment type/maintenance, avoiding
+unused occupancy work for the boolean path. Full matrix checks still collect all
+facts. This permits bounded edits to room.ts/equipment.ts as part of D-067, with
+unchanged rule versions, expectations and independent differential gates.
+For ordinary schedule boundaries, short-circuit Luxon's ambiguity search when its
+two wall-time +/- one-day offset probes are equal: both subsequent candidate
+instants are necessarily identical. Otherwise retain getPossibleOffsets unchanged.
+This removes duplicate offset work with the same gap/fold result; generated
+comparison against Luxon's full getPossibleOffsets path checks the shortcut.
+
+**D-068 · Use the native canonical timezone catalog for schema validation.**
+Profiling still attributes substantial S cost to repeated construction of an Intl
+formatter just to validate the same canonical timezone. The snapshot contract may
+recognize native Intl.supportedValuesOf("timeZone") entries through a static lookup
+created at module load. Unlisted aliases/case variants retain the existing
+DateTimeFormat fallback, as do runtimes without supportedValuesOf. This is an
+immutable runtime capability catalog, not a cache of snapshots/results or evolving
+validation state. Input schema, accepted aliases, reference validation and schema
+version remain unchanged. The bounded Session 1.6 performance repair may touch
+contracts/src/snapshot.ts and its tests. Keep the 2 ms gate and differential checks.

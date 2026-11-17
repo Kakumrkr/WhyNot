@@ -53,6 +53,7 @@ export function checkPractitioner(
         { from: window.from, to: window.to },
       ),
     );
+  if (stopAtFirst && facts.length > 0) return facts;
   const bookings = snapshot.bookings.filter(
     (booking) => booking.practitionerId === practitioner.id,
   );

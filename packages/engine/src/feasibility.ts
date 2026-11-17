@@ -50,8 +50,8 @@ export function isBookable(snapshot: unknown, request: unknown, now: unknown): b
         checkPreference(context, p.id).length === 0 &&
         checkPractitioner(context, p, true).length === 0,
     ) &&
-    context.snapshot.rooms.some((r) => checkRoom(context, r).length === 0) &&
+    context.snapshot.rooms.some((r) => checkRoom(context, r, true).length === 0) &&
     (context.service.requiredEquipmentType === undefined ||
-      context.snapshot.equipment.some((e) => checkEquipment(context, e).length === 0))
+      context.snapshot.equipment.some((e) => checkEquipment(context, e, true).length === 0))
   );
 }

@@ -187,6 +187,15 @@ export function resolveRecurringBoundary(
   const base = calendar(date);
   if (base === null) return failure("Invalid calendar date", ["date"]);
   if (!IANAZone.create(zone).isValid) return failure("Unknown timezone", ["timezone"]);
+  return calendarBoundary(base, date, clock, zone);
+}
+
+function calendarBoundary(
+  base: DateTime,
+  date: string,
+  clock: string,
+  zone: string,
+): TimeResult<number> {
   const hour = Number(clock.slice(0, 2));
   const minute = Number(clock.slice(3, 5));
   const wall = base.set({ hour, minute });
@@ -198,7 +207,13 @@ export function resolveRecurringBoundary(
       ["date", date, clock],
       "unsupported_wall_time",
     );
-  if (value.getPossibleOffsets().length !== 1)
+  // Luxon's ambiguity search compares offsets one day either side of the UTC-
+  // encoded wall time. Equal probes produce identical candidate instants, so
+  // the remaining duplicate offset lookups cannot discover a second candidate.
+  const wallMillis = wall.toMillis();
+  const stableOffset =
+    value.zone.offset(wallMillis - 86400000) === value.zone.offset(wallMillis + 86400000);
+  if (!stableOffset && value.getPossibleOffsets().length !== 1)
     return failure(
       "Ambiguous recurring wall boundary",
       ["date", date, clock],
@@ -248,7 +263,10 @@ export function validatedDatedSchedules(
     const key = `${clock}/${end}`;
     let result = boundaries.get(key);
     if (result === undefined) {
-      result = resolveRecurringBoundary(date, clock, zone, end);
+      result =
+        clock === "24:00"
+          ? resolveRecurringBoundary(date, clock, zone, end)
+          : calendarBoundary(base, date, clock, zone);
       boundaries.set(key, result);
     }
     return result;

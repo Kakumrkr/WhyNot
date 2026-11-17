@@ -1,5 +1,7 @@
 import { expect, it } from "vitest";
 import fc from "fast-check";
+import { DateTime } from "luxon";
+import { resolveRecurringBoundary } from "@whynot/engine";
 import { evaluate, localDate, datedSchedule, parseOffsetInstant } from "@whynot/engine";
 import type { ClinicSnapshot, BookingRequest } from "@whynot/contracts";
 import { bookingLocalDates, validatedDatedSchedules } from "../src/time.js";
@@ -223,3 +225,43 @@ it("batched schedules preserve individual DST boundary errors and dated interval
       );
   }
 });
+
+it(
+  "recurring-boundary shortcut agrees with Luxon's full ambiguity search",
+  { timeout: 300000 },
+  () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 365 * 150 }),
+        fc.integer({ min: 0, max: 1439 }),
+        fc.constantFrom(
+          "Europe/London",
+          "America/Chicago",
+          "Pacific/Apia",
+          "Asia/Kolkata",
+          "Australia/Lord_Howe",
+        ),
+        (day, minute, zone) => {
+          const base = DateTime.fromMillis(0, { zone: "UTC" })
+            .set({ year: 1900, month: 1, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 })
+            .plus({ days: day });
+          const date = base.toISODate()!;
+          const clock = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+          const local = base
+            .set({ hour: Math.floor(minute / 60), minute: minute % 60 })
+            .setZone(zone, { keepLocalTime: true });
+          const expected =
+            local.toISODate() === date &&
+            local.hour === Math.floor(minute / 60) &&
+            local.minute === minute % 60 &&
+            local.getPossibleOffsets().length === 1 &&
+            Number.isSafeInteger(local.toMillis() / 60000);
+          const actual = resolveRecurringBoundary(date, clock, zone);
+          expect(actual.ok).toBe(expected);
+          if (actual.ok) expect(actual.value).toBe(local.toMillis() / 60000);
+        },
+      ),
+      { numRuns: Number(process.env.FC_NUM_RUNS ?? 500) },
+    );
+  },
+);

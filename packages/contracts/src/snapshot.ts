@@ -13,10 +13,17 @@ import {
   EvaluateOptionsSchema,
 } from "./primitives.js";
 
+// Native canonical identifiers are already supported. Keep aliases and older
+// runtimes on the formatter path so this optimization does not narrow acceptance.
+const canonicalTimeZones: ReadonlySet<string> = new Set(
+  typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [],
+);
+
 export const ClinicSchema = z.strictObject({
   id: IdSchema,
   name: IdSchema,
   timezone: z.string().refine((value) => {
+    if (canonicalTimeZones.has(value)) return true;
     try {
       new Intl.DateTimeFormat("en", { timeZone: value });
       return true;

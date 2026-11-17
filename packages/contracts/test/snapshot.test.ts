@@ -16,6 +16,29 @@ import {
 } from "../src/index.js";
 import { snapshot, request } from "./samples.js";
 
+it("timezone catalog validation preserves native canonical names, aliases and rejection", () => {
+  const zones = fc.oneof(
+    fc.constantFrom(...Intl.supportedValuesOf("timeZone")),
+    fc.constantFrom("UTC", "utc", "US/Eastern", "europe/london", "Not/AZone", ""),
+    fc.string(),
+  );
+  fc.assert(
+    fc.property(zones, (timezone) => {
+      let expected = true;
+      try {
+        new Intl.DateTimeFormat("en", { timeZone: timezone });
+      } catch {
+        expected = false;
+      }
+      expect(
+        ClinicSnapshotSchema.safeParse({ ...snapshot, clinic: { ...snapshot.clinic, timezone } })
+          .success,
+      ).toBe(expected);
+    }),
+    { numRuns: Number(process.env.FC_NUM_RUNS ?? 500) },
+  );
+});
+
 describe("snapshot and request contracts", () => {
   it("checks request references, coverage edges and appointment-end overflow", () => {
     const input = { snapshot, request, options: { now: 0 } };
