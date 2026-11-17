@@ -221,3 +221,9 @@ Read the full card and required documents/skills; implement only its Build list.
 Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
 Persist the durable handoff and stop before Session 1.5.
 ```
+
+#### Session 1.3 independent review correction — 2026-11-16
+
+- Fresh-task whynot-review of 5604e8ed5b222d3851d2d9c06d88ccc91f2dd046 against base 68935b41a93b8a750915b69be76699ba8bc9aab7 found one major verification issue: CI's required 5000-run property took about 9.6 seconds and exceeded Vitest's default five-second test timeout. [Run 43993033975](https://github.com/Kakumrkr/WhyNot/actions/runs/43993033975) failed with 106 passing tests and one timeout. No assertion failure or shrunk counterexample occurred; no additional implementation findings were reported.
+- Gave only that correctness property an explicit 30-second timeout, retaining all assertions and the 500-local/5000-CI counts. The 1.6 benchmark gate is unchanged. The targeted 5000-run property passed locally in 5.82 seconds. Follow-up full verification, fresh changed-head review and CI remain required before merge.
+- Reviewer independently passed pnpm verify (107 tests/16 files), planning validation and diff checks on the earlier head. That review requested changes and is not approval of the correction.
