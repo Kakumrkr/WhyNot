@@ -11,7 +11,7 @@ Check exact Build and exclusions, public schema/behavior compatibility, canonica
 
 Tests must prove acceptance and be independent: no weakened goldens, skips, lower runs, optimized/reference coupling, mock engine or unmeasured baseline updates. Check clean consumer exports when relevant.
 
-Run available required checks; 0.0 is docs bootstrap with link/dependency/frontmatter/TOML checks, not nonexistent pnpm. Report unavailable environments/evidence explicitly. Verify committed/pushed scope and progress statuses; only independent review can satisfy reviewed. Record the exact reviewed head and base plus commands/evidence; new commits require fresh review. For workflow maintenance review docs/workflow-automation.md and D-064; local checks do not prove a hosted schedule or recovery works.
+Run available required checks; 0.0 is docs bootstrap with link/dependency/frontmatter/TOML checks, not nonexistent pnpm. Report unavailable environments/evidence explicitly. Verify committed/pushed scope and progress statuses; only independent review can satisfy reviewed. Record the exact reviewed head and base plus commands/evidence; new commits require fresh review. For session workflow changes, review D-064 and docs/09-codex-workflow.md for consistent completion and handoff requirements.
 
 UI: engine-rendering only, pending/empty/error, focus/keyboard/mobile/contrast/axe, truthful wording and screenshots. Later API: projection, transaction races, stored input fidelity, limits and synthetic-only roles.
 

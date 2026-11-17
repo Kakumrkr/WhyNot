@@ -4,7 +4,7 @@
 
 AGENTS.md holds standing invariants. Docs 00–09 define product/semantics. Active cards in sessions/README.md bound each work unit; PROGRESS records implemented/reviewed/merged and QUESTIONS unresolved issues. Future tasks must work without this planning conversation. Old phase cards are archived and non-executable.
 
-Use default permissions scoped to this repository; no unrestricted mode is needed. Set project directory to WhyNot. No API key is required for the application or interactive development. An explicitly selected API-backed cloud development worker has separate secret/billing requirements; see [workflow automation](workflow-automation.md). Node/pnpm are selected in 0.1, not silently installed by planning.
+Use default permissions scoped to this repository; no unrestricted mode is needed. Set project directory to WhyNot. No API key is required for development or the first release. Node/pnpm are selected in 0.1, not silently installed by planning.
 
 ## Skills
 
@@ -43,7 +43,7 @@ Before needed implementation, report missing required capability, verified insta
 
 ## Agents
 
-Normal workflow: one implementer owns a card through green checks, fresh independent review, findings resolution, confirmed merge and handoff (D-064). Human merge remains the default until the user explicitly authorizes automatic merging under the recorded gates. Review is independent context, not the implementer's self-check.
+Normal workflow: one implementer owns a card through green checks, fresh independent review, findings resolution, confirmed merge and handoff (D-064). Human merge remains the default; do not merge without explicit user authorization. Review is independent context, not the implementer's self-check.
 
 Optional local custom roles:
 - .codex/agents/whynot_reviewer.toml: session diff/spec/verification review;
@@ -67,21 +67,17 @@ Official configuration checked 2026-11-16: [customization](https://learn.chatgpt
 7. Run final required checks. Record actual evidence, remaining questions and review status.
 8. Push all commits, confirm local HEAD equals remote branch HEAD, open/update PR.
 9. Fresh task with whynot-review reports severity/file/line/reproduction; implementer fixes and rechecks.
-10. Keep ownership while CI/review/merge is pending. Fix recoverable failures and repeat review after changes; two failed attempts require diagnosis, not abandonment. Merge only under recorded authority and current-head gates; otherwise watch for human merge. Confirm the merge SHA and post-merge CI, save the durable handoff, and let a later authorized trigger select the next card. Stop after 5.2 for human selection of a follow-on.
+10. Keep ownership while CI/review/merge is pending. Fix recoverable failures and repeat review after changes; two failed attempts require diagnosis, not abandonment. Merge only under recorded authority and current-head gates; otherwise watch for human merge. Confirm the merge SHA and post-merge CI, save the durable handoff, and stop before the next card. Stop after 5.2 for human selection of a follow-on.
 
-Never mark a session complete with red required checks. If externally blocked or at a runtime limit, save a coherent pushed checkpoint/draft PR, failures and exact phase for automatic continuation of the same card. Do not ask the user to restart ordinary failed tests, CI or review corrections. Auth/network failure means report unpushed commits and blocker, never claim success.
+Never mark a session complete with red required checks. If externally blocked or at a runtime limit, save a coherent pushed checkpoint/draft PR, failures and exact phase and continuation prompt for resuming the same card without repeating discovery. A hard runtime limit or external blocker is an honest interruption, not completion. Do not ask the user to restart ordinary failed tests, CI or review corrections. Auth/network failure means report unpushed commits and blocker, never claim success.
 
 ## Commit and PR requirements
 
-Commit after meaningful verified increments (contracts, behavior, integration/docs as appropriate), not just one giant final commit. Small coherent sessions may have one. Final gate before completion. No AI attribution or Co-authored-by trailers. No force-push or protection bypass. Automatic merge requires explicit recorded authorization and all D-064 review/check gates.
+Commit after meaningful verified increments (contracts, behavior, integration/docs as appropriate), not just one giant final commit. Small coherent sessions may have one. Final gate before completion. No AI attribution or Co-authored-by trailers. No force-push or protection bypass. Human merge remains the default; any explicitly authorized merge still requires fresh current-head review and green required checks.
 
 PR body: session ID, concrete behavior, checks/outputs, unresolved questions, screenshots for UI and evidence links. Use structured GitHub tool or body file for multiline text; preserve actual newlines.
 
 PROGRESS handoff: branch, commit, PR, tests/evidence, decisions/surprises, remaining items and exact next card. Keep implemented/reviewed/merged separate. Do not embed a commit's own hash inside that same commit; use the PR/final response for final HEAD and stable earlier checkpoint references in tracked notes.
-
-## Hosted scheduling and durable continuation
-
-See the [automation plan](workflow-automation.md) for supported execution routes, activation status, phase ownership, retry budgets, merge evidence and post-merge handoff. A local desktop automation is insufficient when the PC is off. Do not claim an active cloud workflow from saved documentation alone.
 
 ## Starting prompts
 

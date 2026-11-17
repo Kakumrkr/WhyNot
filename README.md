@@ -4,7 +4,7 @@
 
 An open-source TypeScript appointment engine and static playground for fictional Riverside Family Clinic. The engine computes sufficient, irredundant blockers, rechecked alternatives and staff policy previews. Templates explain them; no model decides.
 
-> Status: Sessions 0.1, 1.1 and 1.2 are reviewed and merged. Workflow automation maintenance is in progress; Session 1.3 has not started. See [progress](docs/PROGRESS.md) and the [automation plan](docs/workflow-automation.md).
+> Status: Sessions 0.1, 1.1 and 1.2 are reviewed and merged. Session completion guidance is being updated; Session 1.3 has not started. See [progress](docs/PROGRESS.md).
 
 ## First release
 
@@ -26,7 +26,7 @@ Implement only its Build list and satisfy verification and acceptance criteria.
 Make logical checkpoint commits, update the handoff, push all session commits,
 verify remote HEAD and open/update the PR. Do not start another session.
 Continue through recoverable failures, CI and independent review fixes.
-Follow D-064 through confirmed merge and durable handoff under recorded merge authority.
+Follow D-064 through confirmed merge and durable handoff with human merge by default.
 Finish with evidence, commit, PR, merge status and the exact next-session prompt.
 ```
 

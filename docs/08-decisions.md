@@ -161,28 +161,31 @@ The first real cross-package contracts imports exposed a clean-checkout CI failu
 ## Workflow maintenance — 2026-11-16
 
 **D-064 · Persist through verification, independent review, merge and handoff.**
-Supersedes the stop-at-PR/human-only-merge wording in D-055/D-059 and doc 09 where
-it conflicts. The user requested unattended hosted sessions with automatic pickup,
-failure recovery and completion through merge. Each worker owns one selected card
-through its lifecycle; recoverable failures and review findings remain work on that
-card. Two failed attempts trigger diagnosis and an evidence note, not an automatic
-end of the session. Runtime limits trigger durable continuation of the same phase.
+Clarifies D-055/D-059: opening a PR is a checkpoint, not completion of session
+ownership. Each implementer owns one selected card through green checks, fresh
+independent review, corrections, confirmed merge, post-merge checks and a durable
+handoff. Recoverable failures and complexity remain work on that card. Two failed
+attempts trigger diagnosis and an evidence note, not an automatic end of session.
+Do not ask the user to start the same card again merely because tests, CI or review
+require fixes. New commits require fresh review of the exact head and base.
 
-Independent review remains required in fresh context, with corrections and repeat
-verification as necessary. Completion requires confirmed GitHub merge, post-merge
-checks and a durable handoff. Automatic merge is permitted only when the user has
-explicitly selected it and all current-head review/check/protection gates pass;
-otherwise the coordinator waits for human merge without starting another card.
-No protection bypass or self-claimed review. First-release authorization stops at
-5.2; no automatic P/H/A work. Session 1.3 is excluded from this maintenance task.
+Human merge remains the default. Do not merge without explicit user authorization,
+bypass protections or self-claim independent review. While waiting, retain the
+branch/PR and monitor merge status when the session can remain active. Only actual
+GitHub merge evidence and successful required post-merge checks release the next
+card; stop after the selected card and after 5.2 until a follow-on is selected.
 
-Hosted execution, schedule/timezone, credentials, model access and cost limits must
-be verified before activation. No new paid service or API billing is selected by
-this decision. The [automation plan](workflow-automation.md) defines lifecycle,
-recovery, activation gates and durable state requirements. It is a plan until a
-hosted executor passes those gates; repository text is not a running scheduler.
+External blockers or hard runtime limits require a coherent pushed checkpoint,
+truthful incomplete status and the exact branch, PR, phase, evidence, remaining
+work and continuation prompt. This preserves context for resumption; it does not
+promise execution beyond the host's limits. Never mark red checks complete.
 
-_Why:_ prior handoffs required repeated user intervention and left merge evidence
-stale. _Rejected:_ pretending complexity or a fixed retry count means completion;
-endless identical paid retries; weakening checks; starting later cards before merge.
-_Revisit if:_ the user changes merge authority, milestone scope or execution route.
+The user withdrew cloud automation and scheduling. Remove the unactivated hosted
+plan and requested schedule; no cloud executor, trigger, API billing or automatic
+session pickup is part of this decision. Keep session completion and recovery
+guidance in [the session workflow](09-codex-workflow.md). This maintenance does not
+start Session 1.3 or change application behavior.
+
+_Why:_ prior sessions stopped at recoverable failures or PR creation and left the
+user to restart work. _Rejected:_ treating complexity or a fixed retry count as
+completion; weakening checks; starting later cards before merge.
