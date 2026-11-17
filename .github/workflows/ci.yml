@@ -19,3 +19,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
+      - run: pnpm bench --write benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-benchmark
+          path: benchmark.json

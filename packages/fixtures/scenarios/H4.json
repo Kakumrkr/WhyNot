@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "H4",
+  "snapshot": "riverside",
+  "overrides": "H4",
+  "day": 2,
+  "time": "11:00",
+  "serviceId": "physio-follow-up",
+  "patientId": "patient-1",
+  "expected": [["patient-eligibility-returning", "patient-1"]]
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "H3",
+  "snapshot": "riverside",
+  "overrides": "H3",
+  "day": 0,
+  "time": "10:00",
+  "serviceId": "consult",
+  "patientId": "patient-0",
+  "expected": [["min-notice", "riverside"]]
+}

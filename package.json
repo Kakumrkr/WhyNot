@@ -16,7 +16,8 @@
     "test": "pnpm -r --filter \"./packages/**\" build && vitest run",
     "build": "pnpm -r build",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "dev": "pnpm --filter @whynot/web dev"
+    "dev": "pnpm --filter @whynot/web dev",
+    "bench": "pnpm -r --filter \"./packages/**\" build && node packages/engine/bench/run.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "H5",
+  "snapshot": "riverside",
+  "overrides": "H5",
+  "day": 2,
+  "time": "16:00",
+  "serviceId": "physio-assessment",
+  "patientId": "patient-0",
+  "expected": [
+    ["practitioner-daily-cap", "harris"],
+    ["practitioner-hours", "rao"],
+    ["practitioner-hours", "mehta"],
+    ["practitioner-skill", "okafor"],
+    ["practitioner-hours", "iyer"],
+    ["practitioner-hours", "chen"]
+  ]
+}

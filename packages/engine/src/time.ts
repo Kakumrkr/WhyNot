@@ -84,6 +84,52 @@ export function localDate(minute: number, zone: string): TimeResult<string> {
   return date === null ? failure("Cannot resolve local date", ["minute"]) : success(date);
 }
 
+/** Internal batch conversion: share the resolved zone, retaining per-instant guards. */
+export function bookingLocalDates(
+  bookings: readonly { id: string; start: number }[],
+  zone: string,
+): TimeResult<Map<string, string>> {
+  const resolvedZone = IANAZone.create(zone);
+  if (!resolvedZone.isValid) return failure("Unsupported instant or timezone", ["timezone"]);
+  const result = new Map<string, string>();
+  const byMinute = new Map<number, string>();
+  const byLocalDay = new Map<number, string>();
+  for (const booking of bookings) {
+    let date = byMinute.get(booking.start);
+    if (date === undefined) {
+      if (
+        !Number.isSafeInteger(booking.start) ||
+        Math.abs(booking.start * 60000) > 8640000000000000
+      )
+        return failure("Unsupported instant or timezone", ["timezone"]);
+      const offset = resolvedZone.offset(booking.start * 60000);
+      // Historical offsets can include seconds even though the input is a UTC minute.
+      if (!Number.isInteger(offset))
+        return failure(
+          "Timezone offset is not minute-aligned",
+          ["timezone"],
+          "unsupported_wall_time",
+        );
+      const day = Math.floor((booking.start + offset) / 1440);
+      date = byLocalDay.get(day);
+      if (date === undefined) {
+        // Encode this instant's local calendar day as UTC, not as an elapsed zoned day.
+        if (Math.abs(day * 86400000) > 8640000000000000)
+          return failure("Unsupported instant or timezone", ["timezone"]);
+        const calendarDay = DateTime.fromMillis(day * 86400000, { zone: "UTC", locale: "en" });
+        const formatted = calendarDay.toISODate();
+        if (!calendarDay.isValid || formatted === null || !DateSchema.safeParse(formatted).success)
+          return failure("Unsupported instant or timezone", ["timezone"]);
+        date = formatted;
+        byLocalDay.set(day, date);
+      }
+      byMinute.set(booking.start, date);
+    }
+    result.set(booking.id, date);
+  }
+  return success(result);
+}
+
 /** Shift a date in the local calendar, independently of elapsed DST day length. */
 export function addLocalDays(date: string, days: number): TimeResult<string> {
   const base = calendar(date);
@@ -181,6 +227,42 @@ export function datedSchedule(
     intervals.push({ from: from.value, to: to.value });
   }
   return success(intervals.sort((a, b) => a.from - b.from || a.to - b.to));
+}
+
+/** Internal batch for schema-validated schedules, resolving each shared wall boundary once. */
+export function validatedDatedSchedules(
+  schedules: readonly WeeklyHours[],
+  date: string,
+  zone: string,
+): TimeResult<Interval[][]> {
+  const base = calendar(date);
+  if (base === null) return failure("Invalid date", ["date"]);
+  const probe = atMinute(base.toMillis() / 60000, zone);
+  if (!probe.ok) return probe;
+  const boundaries = new Map<string, TimeResult<number>>();
+  const resolve = (clock: string, end: boolean) => {
+    const key = `${clock}/${end}`;
+    let result = boundaries.get(key);
+    if (result === undefined) {
+      result = resolveRecurringBoundary(date, clock, zone, end);
+      boundaries.set(key, result);
+    }
+    return result;
+  };
+  const result: Interval[][] = [];
+  for (const schedule of schedules) {
+    const intervals: Interval[] = [];
+    for (const entry of schedule) {
+      if (entry.weekday !== base.weekday) continue;
+      const from = resolve(entry.from, false);
+      if (!from.ok) return from;
+      const to = resolve(entry.to, true);
+      if (!to.ok) return to;
+      intervals.push({ from: from.value, to: to.value });
+    }
+    result.push(intervals.sort((a, b) => a.from - b.from || a.to - b.to));
+  }
+  return success(result);
 }
 
 /** Split an authored overnight schedule across weekdays; equal endpoints are invalid. */

@@ -7,7 +7,14 @@ import {
   type Service,
   type ValidationIssue,
 } from "@whynot/contracts";
-import { addLocalDays, datedSchedule, isOnLocalGrid, localDate, type TimeResult } from "./time.js";
+import {
+  addLocalDays,
+  validatedDatedSchedules,
+  isOnLocalGrid,
+  localDate,
+  bookingLocalDates,
+  type TimeResult,
+} from "./time.js";
 
 type Interval = { from: number; to: number };
 export type RuleContext = EvaluationInput & {
@@ -17,6 +24,7 @@ export type RuleContext = EvaluationInput & {
   interval: Interval;
   clinicDays: { date: string; hours: Interval[] }[];
   bookingDates: ReadonlyMap<string, string>;
+  practitionerHours: ReadonlyMap<string, Interval[]>;
 };
 
 function invalid(
@@ -106,31 +114,34 @@ export function validateRequest(
   const lastDate = localDate(end - 1, zone);
   if (!lastDate.ok) return lastDate;
   const clinicDays: RuleContext["clinicDays"] = [];
+  const practitionerHours = new Map<string, Interval[]>();
+  const schedules = [
+    snapshot.clinic.openingHours,
+    ...snapshot.practitioners.flatMap((p) => [p.workingHours, p.breaks]),
+  ];
   let current = date.value;
   for (;;) {
-    const hours = datedSchedule(snapshot.clinic.openingHours, current, zone);
-    if (!hours.ok) return hours;
-    clinicDays.push({ date: current, hours: hours.value });
+    const dated = validatedDatedSchedules(schedules, current, zone);
+    if (!dated.ok) return dated;
+    clinicDays.push({ date: current, hours: dated.value[0]! });
     // These schedules will be consumed by resource checks in 1.4. Reject unsupported
     // recurring boundaries now so a global blocker cannot conceal invalid input.
-    for (const practitioner of snapshot.practitioners) {
-      for (const schedule of [practitioner.workingHours, practitioner.breaks]) {
-        const result = datedSchedule(schedule, current, zone);
-        if (!result.ok) return result;
-      }
+    for (const [index, practitioner] of snapshot.practitioners.entries()) {
+      practitionerHours.set(practitioner.id, [
+        ...(practitionerHours.get(practitioner.id) ?? []),
+        ...dated.value[1 + index * 2]!,
+      ]);
     }
     if (current === lastDate.value) break;
     const next = addLocalDays(current, 1);
     if (!next.ok) return next;
     current = next.value;
   }
-  const bookingDates = new Map<string, string>();
-  for (const booking of snapshot.bookings) {
-    if (booking.status === "cancelled") continue;
-    const bookingDate = localDate(booking.start, zone);
-    if (!bookingDate.ok) return bookingDate;
-    bookingDates.set(booking.id, bookingDate.value);
-  }
+  const bookingDates = bookingLocalDates(
+    snapshot.bookings.filter((b) => b.status === "confirmed"),
+    zone,
+  );
+  if (!bookingDates.ok) return bookingDates;
   return {
     ok: true,
     value: {
@@ -140,7 +151,8 @@ export function validateRequest(
       date: date.value,
       interval: { from: start, to: end },
       clinicDays,
-      bookingDates,
+      bookingDates: bookingDates.value,
+      practitionerHours,
     },
   };
 }

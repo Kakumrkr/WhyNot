@@ -220,3 +220,57 @@ from that evidence rather than creating an endless chain of handoff-only PRs.
 This authority does not select another card, start Session 1.3 here, reinstate
 cloud scheduling or authorize new paid services. Stop after the selected card;
 follow-on milestones after 5.2 still require human selection.
+
+## Session 1.6 explanation expectations
+
+**D-066 · Correct the initial H1/H5 primary sets using the existing catalog weights.**
+The initial Session 1.6 goldens were authored before running the implementation.
+They mistakenly put practitioner-skill (weight 5) in primary when practitioner-hours
+(weight 3) blocks the same practitioner. Doc 03 requires minimum summed weight;
+no engine/catalog semantics or demo schedules change. In H1, Harris does not work
+Tuesday and Iyer finishes at 14:00, so their primary facts are hours. In H5, Chen
+does not work Wednesday, Iyer finishes at 14:00, and Rao/Mehta finish at 16:00;
+their primary facts are hours. Other originally authored H1/H5 facts stay the same.
+Correct those six golden entries explicitly and disclose this correction in the PR.
+
+H1's capability context remains grounded practitioner-skill facts in the full
+evidence dictionary, including for practitioners whose cheaper hours fact wins
+primary. Session 2.2 groups that evidence without deleting necessary primary facts.
+This follows doc 02's preference for lower-weight availability over capability;
+the context sentence never requires all capability facts to be primary. H1/H5
+headlines, every other hero expectation and planned alternative openings remain
+unchanged. Tests assert exact primary sets and the retained capability evidence.
+
+**D-067 · Complete the core performance gate using factorized boolean feasibility.**
+The first external S benchmark measured isBookable p95 4.43 ms, exceeding the
+unchanged 2 ms gate. Its boolean-only path need not construct the full Cartesian
+matrix or rank a witness. After complete input validation, check globals and the
+existence of a zero-violation member in each independent practitioner/room/equipment
+dimension, including requested-practitioner facts and structural emptiness. This
+is exactly the factorization specified in doc 03. evaluate retains the real matrix
+and canonical load-ranked witness. Reuse conversions for identical booking start
+minutes within one validation call only; no persistent cache or infrastructure.
+These bounded corrections may touch feasibility.ts and validateRequest.ts in
+Session 1.6. Retain every existing independent differential/property check, and
+measure again without changing targets or removing scenarios.
+
+The same core-gate work may touch matrix.ts: canonicalize the fact dictionary once
+and sort its numeric indices per row, preserving exact fact-ID output order.
+Explanation reduction processes deduplicated rows by size and compares only kept
+minimal rows, avoiding quadratic comparisons against rows already dominated.
+These are local algorithm changes with unchanged canonical output, bounded search
+and assertions; brute-force and shuffled-input properties remain independent gates.
+
+A second measured S isBookable p95 was 2.60 ms. Profiling found booking-date
+conversion dominates validation. An internal batch helper in time.ts resolves the
+zone once per call and retains safe-instant, supported-year and sub-minute-offset
+guards for every distinct confirmed start. It adds no public export, clock or
+persistent cache; local-date equivalence is checked independently at boundaries.
+Batch conversion uses each instant's Luxon zone offset, rejects fractional-minute
+offsets, and formats each distinct local calendar day once. Calendar-day arithmetic
+stays in time.ts; DST folds/gaps retain their actual per-instant offsets. The
+individual Luxon localDate helper remains the independent equivalence path.
+Validation also resolves shared schedule boundaries once per affected date and
+passes validated working intervals to practitioner.ts rather than repeating those
+conversions during rule checks. Boolean checks may return after the first skill
+or hours violation; full evaluation still collects all facts.
