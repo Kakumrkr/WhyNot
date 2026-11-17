@@ -67,6 +67,20 @@ export function validateRequest(
       ["request", "start"],
       "Appointment end exceeds safe minute range",
     );
+  if (
+    ![service.bufferAfterMin, service.roomTurnoverMin].every((buffer) =>
+      Number.isSafeInteger(end + buffer),
+    ) ||
+    snapshot.bookings.some((booking) => {
+      if (booking.status === "cancelled") return false;
+      const existing = snapshot.services.find((entry) => entry.id === booking.serviceId);
+      if (existing === undefined) throw new Error("Validated booking service missing");
+      return ![existing.bufferAfterMin, existing.roomTurnoverMin].every((buffer) =>
+        Number.isSafeInteger(booking.end + buffer),
+      );
+    })
+  )
+    return invalid("invalid_request", [], "Buffered occupancy exceeds safe minute range");
   if (start < snapshot.coverage.from || end > snapshot.coverage.to)
     return invalid(
       "outside_coverage",

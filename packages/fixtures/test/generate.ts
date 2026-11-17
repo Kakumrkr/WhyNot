@@ -132,3 +132,77 @@ export const requestRuleCaseArbitrary = fc
 export function generateSnapshots(seed: number, count: number): ClinicSnapshot[] {
   return fc.sample(snapshotArbitrary, { seed, numRuns: count });
 }
+
+/** Resource cases retain variable/empty pools and put independent windows near the request. */
+export const resourceRuleCaseArbitrary = fc
+  .tuple(
+    requestRuleCaseArbitrary,
+    fc.record({
+      qualified: fc.boolean(),
+      capable: fc.boolean(),
+      correctType: fc.boolean(),
+      roomRequired: fc.boolean(),
+      equipmentRequired: fc.boolean(),
+      breakOn: fc.boolean(),
+      leaveOn: fc.boolean(),
+      maintenanceOn: fc.boolean(),
+      buffer: fc.integer({ min: 0, max: 60 }),
+      turnover: fc.integer({ min: 0, max: 60 }),
+      existingBuffer: fc.integer({ min: 0, max: 60 }),
+      existingTurnover: fc.integer({ min: 0, max: 60 }),
+      bookings: fc.array(
+        fc.record({
+          offset: fc.integer({ min: -180, max: 180 }),
+          duration: fc.integer({ min: 1, max: 240 }),
+          cancelled: fc.boolean(),
+        }),
+        { maxLength: 10 },
+      ),
+    }),
+  )
+  .map(([testCase, generated]) => {
+    const { snapshot, request } = testCase;
+    const service = snapshot.services[0]!;
+    service.bufferAfterMin = generated.buffer;
+    service.roomTurnoverMin = generated.turnover;
+    if (generated.roomRequired) service.requiredRoomCapability = "imaging";
+    if (generated.equipmentRequired) service.requiredEquipmentType = "scanner";
+    else delete service.requiredEquipmentType;
+    snapshot.services.push({
+      ...service,
+      id: "existing",
+      bufferAfterMin: generated.existingBuffer,
+      roomTurnoverMin: generated.existingTurnover,
+    });
+    const window = { id: "window", from: request.start - 10, to: request.start + 10 };
+    for (const practitioner of snapshot.practitioners) {
+      practitioner.skills = generated.qualified ? ["consult"] : [];
+      practitioner.breaks = generated.breakOn ? [{ weekday: 1, from: "12:00", to: "12:30" }] : [];
+      practitioner.timeOff = generated.leaveOn ? [{ ...window, reason: "Synthetic leave" }] : [];
+    }
+    for (const room of snapshot.rooms) {
+      room.capabilities = generated.capable ? ["imaging"] : [];
+      room.maintenance = generated.maintenanceOn ? [window] : [];
+    }
+    for (const equipment of snapshot.equipment) {
+      equipment.type = generated.correctType ? "scanner" : "other";
+      equipment.maintenance = generated.maintenanceOn ? [window] : [];
+    }
+    snapshot.bookings =
+      snapshot.practitioners.length === 0 || snapshot.rooms.length === 0
+        ? []
+        : generated.bookings.map((item, index) => ({
+            id: `nearby-${index}`,
+            patientId: request.patientId,
+            serviceId: "existing",
+            practitionerId: snapshot.practitioners[index % snapshot.practitioners.length]!.id,
+            roomId: snapshot.rooms[index % snapshot.rooms.length]!.id,
+            ...(snapshot.equipment.length === 0
+              ? {}
+              : { equipmentId: snapshot.equipment[index % snapshot.equipment.length]!.id }),
+            start: request.start + item.offset,
+            end: request.start + item.offset + item.duration,
+            status: item.cancelled ? "cancelled" : "confirmed",
+          }));
+    return testCase;
+  });
