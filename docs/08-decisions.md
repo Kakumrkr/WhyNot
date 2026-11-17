@@ -220,3 +220,113 @@ from that evidence rather than creating an endless chain of handoff-only PRs.
 This authority does not select another card, start Session 1.3 here, reinstate
 cloud scheduling or authorize new paid services. Stop after the selected card;
 follow-on milestones after 5.2 still require human selection.
+
+## Session 1.6 explanation expectations
+
+**D-066 · Correct the initial H1/H5 primary sets using the existing catalog weights.**
+The initial Session 1.6 goldens were authored before running the implementation.
+They mistakenly put practitioner-skill (weight 5) in primary when practitioner-hours
+(weight 3) blocks the same practitioner. Doc 03 requires minimum summed weight;
+no engine/catalog semantics or demo schedules change. In H1, Harris does not work
+Tuesday and Iyer finishes at 14:00, so their primary facts are hours. In H5, Chen
+does not work Wednesday, Iyer finishes at 14:00, and Rao/Mehta finish at 16:00;
+their primary facts are hours. Other originally authored H1/H5 facts stay the same.
+Correct those six golden entries explicitly and disclose this correction in the PR.
+
+H1's capability context remains grounded practitioner-skill facts in the full
+evidence dictionary, including for practitioners whose cheaper hours fact wins
+primary. Session 2.2 groups that evidence without deleting necessary primary facts.
+This follows doc 02's preference for lower-weight availability over capability;
+the context sentence never requires all capability facts to be primary. H1/H5
+headlines, every other hero expectation and planned alternative openings remain
+unchanged. Tests assert exact primary sets and the retained capability evidence.
+
+**D-067 · Complete the core performance gate using factorized boolean feasibility.**
+The first external S benchmark measured isBookable p95 4.43 ms, exceeding the
+unchanged 2 ms gate. Its boolean-only path need not construct the full Cartesian
+matrix or rank a witness. After complete input validation, check globals and the
+existence of a zero-violation member in each independent practitioner/room/equipment
+dimension, including requested-practitioner facts and structural emptiness. This
+is exactly the factorization specified in doc 03. evaluate retains the real matrix
+and canonical load-ranked witness. Reuse conversions for identical booking start
+minutes within one validation call only; no persistent cache or infrastructure.
+These bounded corrections may touch feasibility.ts and validateRequest.ts in
+Session 1.6. Retain every existing independent differential/property check, and
+measure again without changing targets or removing scenarios.
+
+The same core-gate work may touch matrix.ts: canonicalize the fact dictionary once
+and sort its numeric indices per row, preserving exact fact-ID output order.
+Explanation reduction processes deduplicated rows by size and compares only kept
+minimal rows, avoiding quadratic comparisons against rows already dominated.
+These are local algorithm changes with unchanged canonical output, bounded search
+and assertions; brute-force and shuffled-input properties remain independent gates.
+
+A second measured S isBookable p95 was 2.60 ms. Profiling found booking-date
+conversion dominates validation. An internal batch helper in time.ts resolves the
+zone once per call and retains safe-instant, supported-year and sub-minute-offset
+guards for every distinct confirmed start. It adds no public export, clock or
+persistent cache; local-date equivalence is checked independently at boundaries.
+Batch conversion formats each distinct start with an explicit Gregorian calendar,
+Latin digits, en-US locale and requested timezone. The date/era and seconds are
+decoded together; nonzero local seconds reject historical fractional-minute
+offsets. Unexpected formatter representation throws instead of guessing. DST
+folds/gaps retain their actual instant's date. The individual Luxon localDate
+helper remains the independent equivalence path.
+Validation also resolves shared schedule boundaries once per affected date and
+passes validated working intervals to practitioner.ts rather than repeating those
+conversions during rule checks. Boolean checks may return after the first skill
+or hours violation; full evaluation still collects all facts.
+
+The corrected Linux run on EPYC 9V74 passed at 1.76 ms, while EPYC 7763 still
+missed at 2.18 ms. Retain the target and repair that remaining cost. Reuse the
+already validated UTC-encoded calendar when resolving batch schedule boundaries;
+preserve every gap/fold/year check. Extend internal stop-at-first behavior to
+leave/break, room capability/maintenance and equipment type/maintenance, avoiding
+unused occupancy work for the boolean path. Full matrix checks still collect all
+facts. This permits bounded edits to room.ts/equipment.ts as part of D-067, with
+unchanged rule versions, expectations and independent differential gates.
+For ordinary schedule boundaries, short-circuit Luxon's ambiguity search when its
+two wall-time +/- one-day offset probes are equal: both subsequent candidate
+instants are necessarily identical. Otherwise retain getPossibleOffsets unchanged.
+This removes duplicate offset work with the same gap/fold result; generated
+comparison against Luxon's full getPossibleOffsets path checks the shortcut.
+
+**D-068 · Use the native canonical timezone catalog for schema validation.**
+Profiling still attributes substantial S cost to repeated construction of an Intl
+formatter just to validate the same canonical timezone. The snapshot contract may
+recognize native Intl.supportedValuesOf("timeZone") entries through a static lookup
+created at module load. Unlisted aliases/case variants retain the existing
+DateTimeFormat fallback, as do runtimes without supportedValuesOf. This is an
+immutable runtime capability catalog, not a cache of snapshots/results or evolving
+validation state. Input schema, accepted aliases, reference validation and schema
+version remain unchanged. The bounded Session 1.6 performance repair may touch
+contracts/src/snapshot.ts and its tests. Keep the 2 ms gate and differential checks.
+
+**D-069 · Fix and record the benchmark Node young-generation configuration.**
+The latest Linux report has 0.84 ms median but 2.10 ms p95 isBookable on EPYC
+9V45, while another runner passes. Allocation/runtime variation remains material
+after deterministic source optimizations. Benchmark wrappers use an explicit
+`--max-semi-space-size=64` (MiB) so Node's automatic young-generation sizing does
+not vary with runner memory limits. Record process.execArgv and V8 heap limit in
+every report and require matching flags for relative comparisons. This is a
+benchmark-only runtime configuration, not an engine/global cache or deployment
+setting. Retain all 300 individual wall-time samples, 1000 warm-ups, p95 calculation
+and absolute 2/20 ms gates; no samples, GC pauses or scheduling delays are removed.
+Publish final measurements only with these conditions and matching baselines.
+
+**D-070 · Avoid successful-validation diagnostic allocations.**
+The explicit heap configuration still missed the S gate on EPYC 7763. Snapshot
+validation may reuse each collection's duplicate-detection set for reference
+validation and construct booking-reference error paths only on failure. Keep the
+same schema, issue order, duplicate/reference paths and messages, including
+multiple simultaneous errors. This bounded Session 1.6 correction touches
+contracts/src/snapshot.ts and regression tests; no validation is skipped and no
+benchmark target or sample changes.
+
+Schedule conversion may also construct a candidate directly from the shared UTC
+calendar and the matching wall-time +/- one-day offset probes. Accept it only if
+the resulting local date/hour/minute match exactly and the instant is a safe
+integer minute. Equal probes make Luxon's ambiguity candidates identical. Any
+unequal probe or failed round trip retains the original keepLocalTime/gap/fold
+path. This removes intermediate calendar objects without assuming fixed DST or
+transition spacing; retain the independent full-Luxon equivalence property.

@@ -16,6 +16,68 @@ import {
 } from "../src/index.js";
 import { snapshot, request } from "./samples.js";
 
+it("reports simultaneous duplicate and missing references in stable order", () => {
+  const booking = {
+    id: "booking",
+    patientId: "missing-patient",
+    serviceId: "missing-service",
+    practitionerId: "missing-practitioner",
+    roomId: "missing-room",
+    equipmentId: "missing-equipment",
+    start: 120,
+    end: 135,
+    status: "confirmed",
+  };
+  const parsed = ClinicSnapshotSchema.safeParse({
+    ...snapshot,
+    practitioners: [snapshot.practitioners[0], snapshot.practitioners[0]],
+    patients: [{ ...snapshot.patients[0], referrals: ["missing-service"] }],
+    bookings: [booking, booking],
+  });
+  expect(parsed.success).toBe(false);
+  if (parsed.success) throw new Error("Expected invalid references");
+  expect(parsed.error.issues.map(({ path, message }) => ({ path, message }))).toEqual([
+    { path: ["practitioners", 1, "id"], message: "Duplicate ID" },
+    { path: ["bookings", 1, "id"], message: "Duplicate ID" },
+    ...[0, 1].flatMap((i) =>
+      [
+        ["patientId", "patients"],
+        ["serviceId", "services"],
+        ["practitionerId", "practitioners"],
+        ["roomId", "rooms"],
+        ["equipmentId", "equipment"],
+      ].map(([field, collection]) => ({
+        path: ["bookings", i, field],
+        message: `Unknown ${collection} reference`,
+      })),
+    ),
+    { path: ["patients", 0, "referrals", 0], message: "Unknown services reference" },
+  ]);
+});
+
+it("timezone catalog validation preserves native canonical names, aliases and rejection", () => {
+  const zones = fc.oneof(
+    fc.constantFrom(...Intl.supportedValuesOf("timeZone")),
+    fc.constantFrom("UTC", "utc", "US/Eastern", "europe/london", "Not/AZone", ""),
+    fc.string(),
+  );
+  fc.assert(
+    fc.property(zones, (timezone) => {
+      let expected = true;
+      try {
+        new Intl.DateTimeFormat("en", { timeZone: timezone });
+      } catch {
+        expected = false;
+      }
+      expect(
+        ClinicSnapshotSchema.safeParse({ ...snapshot, clinic: { ...snapshot.clinic, timezone } })
+          .success,
+      ).toBe(expected);
+    }),
+    { numRuns: Number(process.env.FC_NUM_RUNS ?? 500) },
+  );
+});
+
 describe("snapshot and request contracts", () => {
   it("checks request references, coverage edges and appointment-end overflow", () => {
     const input = { snapshot, request, options: { now: 0 } };

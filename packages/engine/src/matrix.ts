@@ -34,23 +34,33 @@ export function buildMatrix(context: RuleContext): Matrix {
       ? []
       : snapshot.equipment.map((e) => [e.id, checkEquipment(context, e)]),
   );
+  const facts = canonicalFacts([
+    ...global,
+    ...[...practitioners.values()].flat(),
+    ...[...rooms.values()].flat(),
+    ...[...equipment.values()].flat(),
+  ]);
+  const indices = new Map(facts.map((fact, index) => [fact.id, index]));
+  const indexed = (entries: Fact[]) => entries.map((fact) => indices.get(fact.id)!);
+  const globalIndices = indexed(global);
+  const practitionerIndices = new Map(
+    [...practitioners].map(([id, entries]) => [id, indexed(entries)]),
+  );
+  const roomIndices = new Map([...rooms].map(([id, entries]) => [id, indexed(entries)]));
+  const equipmentIndices = new Map([...equipment].map(([id, entries]) => [id, indexed(entries)]));
   const rows = enumerateCandidates(context).map((assignment) => ({
     assignment,
-    factIds: canonicalFacts([
-      ...global,
-      ...practitioners.get(assignment.practitionerId)!,
-      ...rooms.get(assignment.roomId)!,
-      ...(assignment.equipmentId === null ? [] : equipment.get(assignment.equipmentId)!),
-    ]).map((f) => f.id),
+    // Canonical numeric indices avoid re-decoding long fact IDs for every Cartesian row.
+    factIds: [
+      ...new Set([
+        ...globalIndices,
+        ...practitionerIndices.get(assignment.practitionerId)!,
+        ...roomIndices.get(assignment.roomId)!,
+        ...(assignment.equipmentId === null ? [] : equipmentIndices.get(assignment.equipmentId)!),
+      ]),
+    ]
+      .sort((a, b) => a - b)
+      .map((index) => facts[index]!.id),
   }));
-  return {
-    basis: "matrix",
-    rows,
-    facts: canonicalFacts([
-      ...global,
-      ...[...practitioners.values()].flat(),
-      ...[...rooms.values()].flat(),
-      ...[...equipment.values()].flat(),
-    ]),
-  };
+  return { basis: "matrix", rows, facts };
 }

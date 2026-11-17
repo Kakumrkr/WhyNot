@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "H8",
+  "snapshot": "riverside",
+  "overrides": "H8",
+  "day": 1,
+  "time": "11:00",
+  "serviceId": "bloods",
+  "patientId": "patient-0",
+  "expected": [["patient-daily-limit", "patient-0"]]
+}

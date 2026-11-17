@@ -13,7 +13,14 @@ test("fixtures built package entry loads in native Node ESM", () => {
     { cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8" },
   );
   expect(JSON.parse(output)).toEqual({
-    exports: ["buildMinimalRequest", "buildMinimalSnapshot", "demoNow"],
+    exports: [
+      "buildMinimalRequest",
+      "buildMinimalSnapshot",
+      "buildRiverside",
+      "buildScenario",
+      "demoNow",
+      "riversideMinute",
+    ],
     now: 29913660,
     snapshot: "clinic-test",
   });

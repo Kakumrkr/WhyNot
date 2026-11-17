@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "H2",
+  "snapshot": "riverside",
+  "overrides": "H2",
+  "day": 3,
+  "time": "10:00",
+  "serviceId": "ultrasound",
+  "patientId": "patient-0",
+  "expected": [
+    ["equipment-maintenance", "ultrasound-unit"],
+    ["equipment-type", "cryo-unit"]
+  ]
+}

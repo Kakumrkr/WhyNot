@@ -13,10 +13,17 @@ import {
   EvaluateOptionsSchema,
 } from "./primitives.js";
 
+// Native canonical identifiers are already supported. Keep aliases and older
+// runtimes on the formatter path so this optimization does not narrow acceptance.
+const canonicalTimeZones: ReadonlySet<string> = new Set(
+  typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [],
+);
+
 export const ClinicSchema = z.strictObject({
   id: IdSchema,
   name: IdSchema,
   timezone: z.string().refine((value) => {
+    if (canonicalTimeZones.has(value)) return true;
     try {
       new Intl.DateTimeFormat("en", { timeZone: value });
       return true;
@@ -108,9 +115,6 @@ export const ClinicSnapshotSchema = z
       patients: snapshot.patients,
       bookings: snapshot.bookings,
     };
-    const ids = Object.fromEntries(
-      Object.entries(collections).map(([key, entries]) => [key, new Set(entries.map((e) => e.id))]),
-    );
     const unique = (entries: { id: string }[], path: (string | number)[]) => {
       const seen = new Set<string>();
       entries.forEach((entry, index) => {
@@ -118,29 +122,41 @@ export const ClinicSnapshotSchema = z
           ctx.addIssue({ code: "custom", path: [...path, index, "id"], message: "Duplicate ID" });
         seen.add(entry.id);
       });
+      return seen;
     };
-    Object.entries(collections).forEach(([key, entries]) => unique(entries, [key]));
+    const ids = Object.fromEntries(
+      Object.entries(collections).map(([key, entries]) => [key, unique(entries, [key])]),
+    );
     snapshot.practitioners.forEach((p, i) => unique(p.timeOff, ["practitioners", i, "timeOff"]));
     snapshot.rooms.forEach((r, i) => unique(r.maintenance, ["rooms", i, "maintenance"]));
     snapshot.equipment.forEach((e, i) => unique(e.maintenance, ["equipment", i, "maintenance"]));
-    const reference = (collection: string, id: string, path: (string | number)[]) => {
-      if (!ids[collection]?.has(id))
-        ctx.addIssue({ code: "custom", path, message: `Unknown ${collection} reference` });
-    };
+    const bookingReferences = [
+      ["patientId", "patients"],
+      ["serviceId", "services"],
+      ["practitionerId", "practitioners"],
+      ["roomId", "rooms"],
+      ["equipmentId", "equipment"],
+    ] as const;
     snapshot.bookings.forEach((b, i) => {
-      for (const [field, collection] of [
-        ["patientId", "patients"],
-        ["serviceId", "services"],
-        ["practitionerId", "practitioners"],
-        ["roomId", "rooms"],
-        ["equipmentId", "equipment"],
-      ] as const) {
+      for (const [field, collection] of bookingReferences) {
         const id = b[field];
-        if (id !== undefined) reference(collection, id, ["bookings", i, field]);
+        if (id !== undefined && !ids[collection]!.has(id))
+          ctx.addIssue({
+            code: "custom",
+            path: ["bookings", i, field],
+            message: `Unknown ${collection} reference`,
+          });
       }
     });
     snapshot.patients.forEach((p, i) =>
-      p.referrals.forEach((id, j) => reference("services", id, ["patients", i, "referrals", j])),
+      p.referrals.forEach((id, j) => {
+        if (!ids.services!.has(id))
+          ctx.addIssue({
+            code: "custom",
+            path: ["patients", i, "referrals", j],
+            message: "Unknown services reference",
+          });
+      }),
     );
   });
 export const EvaluationInputSchema = z

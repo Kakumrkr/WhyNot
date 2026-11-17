@@ -8,7 +8,7 @@ test("engine built package entry loads in native Node ESM", () => {
     [
       "--input-type=module",
       "--eval",
-      'const entry = await import("@whynot/engine"); console.log(JSON.stringify({ epoch: entry.parseOffsetInstant("1970-01-01T00:00:00Z"), catalogVersion: entry.catalogVersion, catalogSize: Object.keys(entry.catalog).length, invalidBookable: entry.isBookable(null, {}, 0), absent: ["evaluate", "referenceRows", "referenceAssignment", "chooseAssignment", "buildMatrix", "enumerateCandidates", "projectForAudience", "previewPolicyChanges", "validateRequest", "checkClinic", "makeFact"].filter(key => key in entry) }));',
+      'const entry = await import("@whynot/engine"); console.log(JSON.stringify({ epoch: entry.parseOffsetInstant("1970-01-01T00:00:00Z"), catalogVersion: entry.catalogVersion, catalogSize: Object.keys(entry.catalog).length, invalidBookable: entry.isBookable(null, {}, 0), invalidEvaluation: entry.evaluate(null, {}, { now: 0 }).status, absent: ["explain", "bookingLocalDates", "validatedDatedSchedules", "referenceRows", "referenceAssignment", "chooseAssignment", "buildMatrix", "enumerateCandidates", "projectForAudience", "previewPolicyChanges", "validateRequest", "checkClinic", "makeFact"].filter(key => key in entry) }));',
     ],
     { cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8" },
   );
@@ -17,6 +17,7 @@ test("engine built package entry loads in native Node ESM", () => {
     catalogVersion: 1,
     catalogSize: 23,
     invalidBookable: false,
+    invalidEvaluation: "invalid_request",
     absent: [],
   });
 });

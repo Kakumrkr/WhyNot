@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "environment": {
+    "node": "v24.22.3",
+    "pnpm": "12.21.0",
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+    "logicalCpus": 16,
+    "memoryBytes": 33442328576,
+    "nodeFlags": ["--max-semi-space-size=64"],
+    "heapLimitBytes": 4496293888
+  },
+  "warmup": 1000,
+  "samples": 300,
+  "dataset": "H1–H8 round robin; M 3x resources/2x bookings, L 10x resources/1x bookings",
+  "datasets": {
+    "S": {
+      "resources": 1,
+      "bookings": 1,
+      "scenarioBookingCounts": [330, 312, 320, 321, 270, 323, 323, 294],
+      "isBookable": {
+        "p50Ms": 0.7780999999999949,
+        "p95Ms": 0.9438999999999851
+      },
+      "evaluate": {
+        "p50Ms": 1.6497999999996864,
+        "p95Ms": 2.4549999999999272
+      }
+    },
+    "M": {
+      "resources": 3,
+      "bookings": 2,
+      "scenarioBookingCounts": [660, 624, 640, 642, 540, 646, 646, 588],
+      "isBookable": {
+        "p50Ms": 1.0869999999995343,
+        "p95Ms": 1.4481999999998152
+      },
+      "evaluate": {
+        "p50Ms": 3.896599999998216,
+        "p95Ms": 9.472999999999956
+      }
+    },
+    "L": {
+      "resources": 10,
+      "bookings": 1,
+      "scenarioBookingCounts": [330, 312, 320, 321, 270, 323, 323, 294],
+      "isBookable": {
+        "p50Ms": 1.0012000000006083,
+        "p95Ms": 1.389100000000326
+      },
+      "evaluate": {
+        "p50Ms": 22.578699999998207,
+        "p95Ms": 133.1099000000031
+      }
+    }
+  }
+}

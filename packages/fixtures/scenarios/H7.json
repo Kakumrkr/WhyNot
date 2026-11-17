@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "H7",
+  "snapshot": "riverside",
+  "overrides": "H7",
+  "day": 2,
+  "time": "09:00",
+  "serviceId": "consult",
+  "patientId": "patient-0",
+  "practitionerId": "okafor",
+  "expected": [
+    ["practitioner-hours", "okafor"],
+    ["request-practitioner", "okafor"]
+  ]
+}

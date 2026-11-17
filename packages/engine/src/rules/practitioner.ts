@@ -5,19 +5,20 @@ import type { RuleContext } from "../validateRequest.js";
 import { canonicalFacts, intervalLookup, occupancyFacts } from "./resourceIntervals.js";
 
 /** Skill, schedules, explicit leave, occupancy and local-date cap for one real practitioner. */
-export function checkPractitioner(context: RuleContext, practitioner: Practitioner): Fact[] {
+export function checkPractitioner(
+  context: RuleContext,
+  practitioner: Practitioner,
+  stopAtFirst = false,
+): Fact[] {
   const { snapshot, service, interval, date, clinicDays, bookingDates } = context;
   const subject = { type: "practitioner", id: practitioner.id } as const;
   const facts: Fact[] = [];
   if (!practitioner.skills.includes(service.requiredSkill))
     facts.push(makeFact("practitioner-skill", subject, { requiredSkill: service.requiredSkill }));
-  const hours = clinicDays
-    .flatMap((day) => {
-      const result = datedSchedule(practitioner.workingHours, day.date, snapshot.clinic.timezone);
-      if (!result.ok) throw new Error("Unsupported schedule reached resource checks");
-      return result.value;
-    })
-    .sort((a, b) => a.from - b.from || a.to - b.to);
+  if (stopAtFirst && facts.length > 0) return facts;
+  const validatedHours = context.practitionerHours.get(practitioner.id);
+  if (validatedHours === undefined) throw new Error("Validated practitioner schedule missing");
+  const hours = [...validatedHours].sort((a, b) => a.from - b.from || a.to - b.to);
   let covered = interval.from;
   for (const hoursWindow of hours) {
     if (hoursWindow.from > covered) break;
@@ -25,6 +26,7 @@ export function checkPractitioner(context: RuleContext, practitioner: Practition
   }
   if (covered < interval.to)
     facts.push(makeFact("practitioner-hours", subject, { date }, interval));
+  if (stopAtFirst && facts.length > 0) return facts;
   for (const day of clinicDays) {
     for (const entry of practitioner.breaks) {
       const dated = datedSchedule([entry], day.date, snapshot.clinic.timezone);
@@ -51,6 +53,7 @@ export function checkPractitioner(context: RuleContext, practitioner: Practition
         { from: window.from, to: window.to },
       ),
     );
+  if (stopAtFirst && facts.length > 0) return facts;
   const bookings = snapshot.bookings.filter(
     (booking) => booking.practitionerId === practitioner.id,
   );

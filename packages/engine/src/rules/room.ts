@@ -4,12 +4,13 @@ import type { RuleContext } from "../validateRequest.js";
 import { canonicalFacts, intervalLookup, occupancyFacts } from "./resourceIntervals.js";
 
 /** Capability, maintenance, occupancy and both service turnover settings for one room. */
-export function checkRoom(context: RuleContext, room: Room): Fact[] {
+export function checkRoom(context: RuleContext, room: Room, stopAtFirst = false): Fact[] {
   const subject = { type: "room", id: room.id } as const;
   const facts: Fact[] = [];
   const requiredCapability = context.service.requiredRoomCapability;
   if (requiredCapability !== undefined && !room.capabilities.includes(requiredCapability))
     facts.push(makeFact("room-capability", subject, { requiredCapability }));
+  if (stopAtFirst && facts.length > 0) return facts;
   for (const window of intervalLookup(room.maintenance)(context.interval))
     facts.push(
       makeFact(
@@ -19,6 +20,7 @@ export function checkRoom(context: RuleContext, room: Room): Fact[] {
         { from: window.from, to: window.to },
       ),
     );
+  if (stopAtFirst && facts.length > 0) return facts;
   facts.push(
     ...occupancyFacts(
       context,

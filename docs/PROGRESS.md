@@ -1,5 +1,7 @@
 # PROGRESS
 
+Session 1.6 is in progress on session/1.6-explanations from main a33955d741de7a6164f0e12197e044992395ec70. Its current phase and evidence are at the end of this file; Session 2.1 has not started.
+
 Session 1.5 is implemented, independently reviewed and confirmed merged through [PR #10](https://github.com/Kakumrkr/WhyNot/pull/10) at da72bd157650f8b1136c7f721478483320ae0527 with green post-merge main CI. Its completion evidence and exact Session 1.6 prompt are recorded at the end of this file. Earlier pending/blocked notes are historical.
 
 Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 is implemented, independently reviewed and confirmed merged through PR #8 at d8f8a73621be3e99f0d9ab5f3326e950b7ba08a6 with green main CI. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
@@ -325,3 +327,108 @@ Persist the durable handoff and stop before Session 2.1.
 - Required post-merge main CI passed at [run 44009375244](https://github.com/Kakumrkr/WhyNot/actions/runs/44009375244). Clean local main was fast-forwarded to that merge before creating session/1.5-completion-handoff. No application changes, post-merge corrections, golden changes or unresolved material questions remain. Q-1.5-WRITE is resolved and all implementation commits are pushed.
 - Session 1.5's Build and verification criteria are satisfied: canonical real candidates, factorized matrix/structural emptiness, public boolean feasibility, deterministic load-ranked valid witness, independent test-only checker, P1/P2/P8/P9 and authored edge cases. Local full verification passed 128 tests across 20 files with 5000-run properties, native ESM imports and all builds. Implementation, independent review and merge are established separately; earlier pending notes do not describe current status.
 - This documentation-only completion handoff changes PROGRESS only. Final handoff commit, fresh review, PR, CI and merge evidence belong in that PR and the final response, avoiding a self-referential commit hash. The next eligible card is Session 1.6 using the exact prompt above; it has not started and requires a separate selected task. Stop here after the handoff PR is reviewed, verified, merged and main CI is green.
+
+### 1.6 — Minimal explanations and core gate (2026-11-17)
+
+- Branch: session/1.6-explanations, based on main a33955d741de7a6164f0e12197e044992395ec70. Live prerequisite evidence: PR #10 merged at da72bd157650f8b1136c7f721478483320ae0527; main CI runs 44009375244 and 44010047286 succeeded. Untouched baseline pnpm verify passed 128 tests on Node 24.22.3/pnpm 12.21.0.
+- Built: canonical bitset reduction, forced facts, weighted bounded branch-and-bound with canonical ties and disjoint-row lower bound, checked greedy/irredundant fallback, public evaluate, structural missing-resource assertions and real candidate trace capped at 500 rows. Advanced fields are disabled/null and grouping/summaries empty until their owning cards. Internal batch time helpers and explanation solver are excluded from package exports.
+- Riverside: deterministic seeded demo week, nine services, six practitioners/rooms, two units and twelve fictional patients; isolated H1–H8 overrides and pre-authored exact explanation sets. D-066 explicitly corrects six initial H1/H5 skill entries to cheaper hours facts under existing weights, retaining capability context in the evidence dictionary. This correction must be disclosed in the PR; no other hero sets or planned openings changed.
+- Core checks: P3/P4/P5/P12, <=12-fact independent exhaustive optimum/ties, tiny-node fallback, structural witnesses, sixteen authored boundary cases, frozen/reordered/repeated evaluations and individual-vs-batch date/schedule equivalence. All earlier properties remain. A first 5000-run gate passed 160 tests and failed the fixture smoke test's obsolete export list; that list now includes the new fixture exports. Full rerun is pending. No property failure/counterexample or swallowed invariant failure.
+- D-067 records measured performance corrections to earlier engine modules: boolean feasibility uses independent dimensions, matrix rows sort canonical numeric indices, reduction compares kept minimal rows, and time validation shares work only within the call. The initial S isBookable p95 4.43 ms failed the unchanged 2 ms gate. After corrections a complete benchmark measured S p95 1.79 ms isBookable / 3.74 ms evaluate; M 2.50 / 9.99 ms and L 3.04 / 134.74 ms. Final committed baseline and CI-environment evidence remain pending; benchmarks run outside engine with runtime/hardware metadata.
+- Remaining phase: finish full current-workspace 5000-run verification, record final external S/M/L baselines, push every checkpoint, verify remote equality, open PR, obtain fresh independent session and correctness reviews, resolve findings, pass exact-head CI, merge under D-065 and confirm main CI. Implemented/reviewed/merged are not yet complete. No UI/browser/PostgreSQL gate applies and no Session 2.1 work is included.
+
+Continuation if interrupted: `$whynot-session Resume Session 1.6 on session/1.6-explanations. Read this handoff and docs/sessions/session-1.6.md; resume at verification/publication/review, preserve D-066/D-067 and all run counts, finish required CI/merge/main CI under D-065, persist evidence and stop before 2.1.`
+
+Exact next-session prompt, eligible only after PR #12 is confirmed merged and main CI is green:
+
+```text
+$whynot-session
+Start Session 2.1 using docs/sessions/session-2.1.md.
+Confirm Session 1.6 is independently reviewed and merged through PR #12 with green main CI.
+Read the full card and required documents/skills; implement only its Build list.
+Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
+Persist the durable handoff and stop before Session 2.2.
+```
+
+#### Session 1.6 verified checkpoint and publication
+
+- Implementation checkpoint aff537f318c4d14ce62a3a3f4c1cb8ec0ab812da is pushed; remote and local HEAD matched. [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12) is open. The corrected full FC_NUM_RUNS=5000 pnpm verify passed all 161 tests across 24 files, plus formatting/lint/strict types/native ESM/builds. Planning validation passed 32 cards, 254 links, eight skills, three role definitions and 23 rules; git diff --check passed. The earlier obsolete-export smoke failure is resolved.
+- Final Windows benchmark ran separately from tests: 100 warm-ups and 300 timed samples per operation/dataset, H1–H8 round robin. S isBookable p50/p95 1.39/1.78 ms, evaluate 2.23/3.66 ms; M 1.73/2.49 and 4.57/9.85 ms; L 1.60/2.01 and 22.87/128.98 ms. Both S gates pass unchanged. Committed baseline-win32.json includes Node/pnpm, CPU, memory, counts and methodology. Initial Linux CI report/baseline and exact-head review are pending. The 329-line time module's size is explained in engine/README: timezone/Luxon conversion stays confined there; internal batch helpers are not public exports.
+- Fresh independent session and correctness reviews are in progress. No review/merge success is claimed yet. Remaining work is review findings if any, CI-environment baseline, exact-head checks, confirmed PR merge and post-merge main CI. No next card has started.
+
+#### Session 1.6 CI performance correction
+
+- Both initial CI runs passed full verification (161 tests, 5000-run properties), then failed the unchanged isBookable S 2 ms gate on AMD EPYC 7763 Linux. Run 44113600174 measured 3.95 ms p95 isBookable / 6.29 ms evaluate. This is a recoverable performance failure, not completion or an external blocker.
+- Fresh session review independently passed the full 5000-run gate plus planning/diff checks at aff537f; fresh correctness review passed 39 focused tests including the independent feasibility suite at 5000 runs. Neither found a source correctness issue. Those reviews must be refreshed after this correction.
+- Profiling isolated repeated date conversion. The batch helper now formats date/era/local seconds together in one explicitly configured formatter, retaining historical-offset/year guards and the independent Luxon equivalence property. Benchmark warm-up increases from 100 to 1000 calls per operation/dataset to establish optimized steady-state execution; timed samples stay 300 and targets remain 2/20 ms. CI always uploads its diagnostic report even if a gate fails. New baselines and green exact-head gates are pending; do not use earlier reports as the corrected-head baseline.
+
+- Corrected head 7572f42842c8e13960492eea6b26ccc022d43794 passed local and independent full 5000-run verification (161 tests). Focused correctness refresh additionally passed 18 edge tests and 60 explicit year/offset boundary comparisons. Source reviews found no findings. Linux push CI 44115570837 passed on EPYC 9V74 (S p95 1.76/4.41 ms); PR CI 44115588444 passed verification but still missed the boolean gate at 2.18 ms on EPYC 7763. Neither that mixed result nor the older local reports establish session completion.
+- Further bounded repair reuses validated calendar objects, avoids duplicate stable-offset ambiguity probes, and stops boolean resource checks after known violations. D-068 records native canonical-timezone lookup in the snapshot schema, with alias/older-runtime fallback unchanged. New generated Luxon ambiguity equivalence and native timezone-acceptance checks are added at the full run count. Final corrected baselines, refreshed source reviews and all current-head CI remain required.
+
+- H1 fixture audit also caught an incidental room-turnover fact despite its unchanged correct primary set. D-052 requires the room/equipment free at 14:30. The isolated H1 override now sets minor-procedure room turnover to zero, preserving its practitioner buffer at 15 minutes and Riverside's base turnover at 10. Added an explicit no-room/equipment-conflict regression; no authored explanation set or opening changes.
+
+- Run 44117997413 passed at 845e198; run 44118014821 passed all 163 correctness tests but measured S isBookable median 0.84 ms / p95 2.10 ms on EPYC 9V45. D-069 fixes benchmark young-generation sizing explicitly and records flags/heap limit, retaining every individual wall-time sample and both absolute targets. The current H1 correction is 3be8bc5644398ddbacda5562e5584ac8e2741692; new same-condition baselines, refreshed reviews and green current-head CI remain pending.
+
+#### Exact continuation checkpoint before context compaction
+
+- Current published head: fa4093abf275a86c7067b7456b0d51b8dc2832ac on session/1.6-explanations; PR #12 remains open/unmerged. Source at 3be8bc5 passed both CI runs 44118800903 and 44118784825 with default Node flags, and independent 5000-run verification passed all 163 tests. Fresh session/correctness reviews through fa4093 found no remaining correctness issue and accepted D-069 only as disclosed benchmark conditions, with no default-runtime guarantee.
+- Current-head CI is still mixed: run 44119521691 passed; run 44119530618 passed verification but failed S isBookable p95 2.4475 ms (median 1.446 ms) on EPYC 7763 despite the explicit 64 MiB semi-space. Evaluate p95 was 4.8046 ms. The heap flag has not solved all CI variation. Do not merge, waive targets, claim all checks green or start 2.1. Continue profiling the remaining performance cost/variance and refresh reviews on any source change.
+- Windows baseline is committed and measured with D-069 flags (S p95 1.0266/2.5631 ms). The sole untracked file packages/engine/bench/baseline-linux.json is an OLD report from 7572f42, with different flags; it must not be staged as current evidence. Replace it only with a passing report from the eventual final source/configuration.
+- The two independent review tasks are session_review and correctness_review; reuse them for exact-head refresh. All committed work is pushed. Native toolchain: prepend .tools and .tools/node_modules/.bin to PATH; use pnpm.cmd in PowerShell. GitHub connector tools work for reads/PR edits and avoid repeated shell-network approval prompts. For tool schemas, inspect the complete relevant ALL_TOOLS description. GitHub fetch can GET actions/runs collections; parse structuredContent.content and print only selected fields. Job logs are in structuredContent.content; retry transient missing content once. Current failed job ID is 134166754865.
+- Continue this same card through measured repair, full 5000-run gate, current-condition Linux baseline, final exact-head reviews, green required CI, D-065 merge and confirmed main CI. The user's permission to complete and merge remains explicit; do not ask again for routine session authority.
+
+#### Session 1.6 resumed performance repair
+
+- Checkpoint 4b3e68e passed both CI runs 44124297627 and 44124280730,
+  but earlier slow-runner failures still justify reducing work rather than assuming
+  that any random runner establishes adequate margin. D-070 reuses schema ID sets,
+  builds reference diagnostics only on failure, and directly constructs schedule
+  boundaries only after equal ambiguity probes and an exact local round trip.
+  Unequal probes or failed round trips retain the original path. No targets,
+  timed samples, scenarios or validation rules changed.
+- The full 5000-run gate passed 164 tests across 24 files before the final
+  defensive seconds/milliseconds guard suggested by focused independent review.
+  The exact final guarded source also passed the full 5000-run gate: 164 tests
+  across 24 files, formatting, lint, strict types, native smoke checks and builds.
+  Initial focused source
+  review found no demonstrated defect; final committed-head reviews remain pending.
+- Isolated final-source Windows report is committed in baseline-win32.json:
+  S p50/p95 isBookable 0.7781/0.9439 ms, evaluate 1.6498/2.4550 ms;
+  M p95 1.4482/9.4730 ms; L p95 1.3891/133.1099 ms. Same D-069 flags,
+  1000 warm-ups and 300 individual timed samples. Linux final-source baseline,
+  fresh exact-head reviews, CI, merge and main checks remain pending.
+
+#### Session 1.6 final source verification and pre-merge handoff
+
+- Final application source is dc35f9c1822a9f35d0feeedf81c9f6b6227a424b.
+  Full FC_NUM_RUNS=5000 pnpm verify passed 164 tests/24 files and all phases.
+  Fresh independent session review independently passed that complete gate;
+  fresh focused correctness review passed 35 tests/3 files at 5000 runs,
+  including independent feasibility and full-Luxon time equivalence. Both found
+  no findings. Planning and full-base diff checks passed; local/remote/PR heads
+  matched. No benchmark result is attributed to the reviewers.
+- Both exact-source CI runs passed on EPYC 7763:
+  [44126309537](https://github.com/Kakumrkr/WhyNot/actions/runs/44126309537)
+  measured S isBookable p50/p95 1.2809/1.5709 ms and evaluate 2.7812/4.2578 ms;
+  [44126295724](https://github.com/Kakumrkr/WhyNot/actions/runs/44126295724)
+  measured S p95 1.6523/4.3076 ms. All 164 tests and unchanged 2/20 ms gates
+  passed in both. The matching first Linux report replaces the old untracked
+  report in baseline-linux.json with exact source/run provenance. Q-1.6-PERF is
+  resolved. Windows S p95 is 0.9439/2.4550 ms under the same documented flags.
+- This final evidence-only checkpoint changes baselines and handoff documents,
+  leaving the independently reviewed application source unchanged. Implementation
+  and source review are established; final evidence-head review/current CI and
+  actual merge/main CI are pending as of this tracked pre-merge note. Continue
+  under D-065 without renewed permission. Record final reviewed head, confirmed
+  merge SHA and successful main CI in [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12)
+  as required by docs/09; reconcile these pre-merge statuses from that live
+  evidence at the next session. Do not create an endless documentation-only
+  completion PR chain or start 2.1 before main checks pass.
+- All Session 1.6 Build items have source/test evidence: minimum explanation and
+  fallback invariants, real structural witnesses, H1–H8 goldens, capped trace,
+  disabled later fields, P3/P4/P5/P12 and prior independent checks, and S/M/L
+  baselines. D-066 golden corrections remain explicitly disclosed in PR #12.
+  No remaining semantic questions or UI/PG gates apply. All commits must be
+  pushed and remote HEAD confirmed before merge/handoff. The exact next-session
+  prompt remains the Session 2.1 prompt above, eligible after confirmed merge
+  and green main CI; stop before implementing that card.

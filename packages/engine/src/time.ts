@@ -84,6 +84,56 @@ export function localDate(minute: number, zone: string): TimeResult<string> {
   return date === null ? failure("Cannot resolve local date", ["minute"]) : success(date);
 }
 
+/** Internal batch conversion: share the resolved zone, retaining per-instant guards. */
+export function bookingLocalDates(
+  bookings: readonly { id: string; start: number }[],
+  zone: string,
+): TimeResult<Map<string, string>> {
+  const resolvedZone = IANAZone.create(zone);
+  if (!resolvedZone.isValid) return failure("Unsupported instant or timezone", ["timezone"]);
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: zone,
+    calendar: "gregory",
+    numberingSystem: "latn",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    era: "short",
+    second: "2-digit",
+  });
+  const result = new Map<string, string>();
+  const byMinute = new Map<number, string>();
+  for (const booking of bookings) {
+    let date = byMinute.get(booking.start);
+    if (date === undefined) {
+      if (
+        !Number.isSafeInteger(booking.start) ||
+        Math.abs(booking.start * 60000) > 8640000000000000
+      )
+        return failure("Unsupported instant or timezone", ["timezone"]);
+      // Explicit locale/calendar/digits make this a date-and-seconds representation.
+      // Formatting once avoids computing an offset and constructing a second date.
+      const parts = /^(\d{2})\/(\d{2})\/(\d+) (AD|BC), (\d{1,2})$/.exec(
+        formatter.format(booking.start * 60000),
+      );
+      if (parts === null) throw new Error("Unsupported Intl booking-date representation");
+      const year = parts[4] === "BC" ? 1 - Number(parts[3]) : Number(parts[3]);
+      if (year < 0 || year > 9999) return failure("Unsupported instant or timezone", ["timezone"]);
+      // Historical offsets can include seconds even though the input is a UTC minute.
+      if (Number(parts[5]) !== 0)
+        return failure(
+          "Timezone offset is not minute-aligned",
+          ["timezone"],
+          "unsupported_wall_time",
+        );
+      date = `${String(year).padStart(4, "0")}-${parts[1]}-${parts[2]}`;
+      byMinute.set(booking.start, date);
+    }
+    result.set(booking.id, date);
+  }
+  return success(result);
+}
+
 /** Shift a date in the local calendar, independently of elapsed DST day length. */
 export function addLocalDays(date: string, days: number): TimeResult<string> {
   const base = calendar(date);
@@ -137,8 +187,35 @@ export function resolveRecurringBoundary(
   const base = calendar(date);
   if (base === null) return failure("Invalid calendar date", ["date"]);
   if (!IANAZone.create(zone).isValid) return failure("Unknown timezone", ["timezone"]);
+  return calendarBoundary(base, date, clock, zone);
+}
+
+function calendarBoundary(
+  base: DateTime,
+  date: string,
+  clock: string,
+  zone: string,
+): TimeResult<number> {
   const hour = Number(clock.slice(0, 2));
   const minute = Number(clock.slice(3, 5));
+  const wallMillis = base.toMillis() + (hour * 60 + minute) * 60000;
+  const resolvedZone = IANAZone.create(zone);
+  const before = resolvedZone.offset(wallMillis - 86400000);
+  const after = resolvedZone.offset(wallMillis + 86400000);
+  if (before === after) {
+    const candidateMillis = wallMillis - before * 60000;
+    const candidate = DateTime.fromMillis(candidateMillis, { zone, locale: "en" });
+    // Round-trip before accepting: offset probes alone are not a local-time proof.
+    if (
+      candidate.toISODate() === date &&
+      candidate.hour === hour &&
+      candidate.minute === minute &&
+      candidate.second === 0 &&
+      candidate.millisecond === 0 &&
+      Number.isSafeInteger(candidateMillis / 60000)
+    )
+      return success(candidateMillis / 60000);
+  }
   const wall = base.set({ hour, minute });
   const value = wall.setZone(zone, { keepLocalTime: true });
   if (!value.isValid) return failure("Unknown timezone", ["timezone"]);
@@ -148,7 +225,11 @@ export function resolveRecurringBoundary(
       ["date", date, clock],
       "unsupported_wall_time",
     );
-  if (value.getPossibleOffsets().length !== 1)
+  // Luxon's ambiguity search compares offsets one day either side of the UTC-
+  // encoded wall time. Equal probes produce identical candidate instants, so
+  // the remaining duplicate offset lookups cannot discover a second candidate.
+  const stableOffset = before === after;
+  if (!stableOffset && value.getPossibleOffsets().length !== 1)
     return failure(
       "Ambiguous recurring wall boundary",
       ["date", date, clock],
@@ -181,6 +262,45 @@ export function datedSchedule(
     intervals.push({ from: from.value, to: to.value });
   }
   return success(intervals.sort((a, b) => a.from - b.from || a.to - b.to));
+}
+
+/** Internal batch for schema-validated schedules, resolving each shared wall boundary once. */
+export function validatedDatedSchedules(
+  schedules: readonly WeeklyHours[],
+  date: string,
+  zone: string,
+): TimeResult<Interval[][]> {
+  const base = calendar(date);
+  if (base === null) return failure("Invalid date", ["date"]);
+  const probe = atMinute(base.toMillis() / 60000, zone);
+  if (!probe.ok) return probe;
+  const boundaries = new Map<string, TimeResult<number>>();
+  const resolve = (clock: string, end: boolean) => {
+    const key = `${clock}/${end}`;
+    let result = boundaries.get(key);
+    if (result === undefined) {
+      result =
+        clock === "24:00"
+          ? resolveRecurringBoundary(date, clock, zone, end)
+          : calendarBoundary(base, date, clock, zone);
+      boundaries.set(key, result);
+    }
+    return result;
+  };
+  const result: Interval[][] = [];
+  for (const schedule of schedules) {
+    const intervals: Interval[] = [];
+    for (const entry of schedule) {
+      if (entry.weekday !== base.weekday) continue;
+      const from = resolve(entry.from, false);
+      if (!from.ok) return from;
+      const to = resolve(entry.to, true);
+      if (!to.ok) return to;
+      intervals.push({ from: from.value, to: to.value });
+    }
+    result.push(intervals.sort((a, b) => a.from - b.from || a.to - b.to));
+  }
+  return success(result);
 }
 
 /** Split an authored overnight schedule across weekdays; equal endpoints are invalid. */

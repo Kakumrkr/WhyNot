@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "H6",
+  "snapshot": "riverside",
+  "overrides": "H6",
+  "day": 1,
+  "time": "11:00",
+  "serviceId": "dressing",
+  "patientId": "patient-0",
+  "expected": [
+    ["room-maintenance", "treatment"],
+    ["room-busy", "consult-3"],
+    ["room-capability", "consult-1"],
+    ["room-capability", "consult-2"],
+    ["room-capability", "physio"],
+    ["room-capability", "imaging"]
+  ]
+}
