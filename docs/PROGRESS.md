@@ -1,6 +1,6 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is in progress; Session 1.3 has not started. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented on PR #6; fresh review and merge are pending. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
@@ -8,7 +8,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are ind
 | [0.1](sessions/session-0.1.md) | Foundation and architectural boundaries          | done        | done     | done    | [#2](https://github.com/Kakumrkr/WhyNot/pull/2) |
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
-| [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | pending     | pending  | pending | —                                               |
+| [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | pending  | pending | [#6](https://github.com/Kakumrkr/WhyNot/pull/6) |
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | pending     | pending  | pending | —                                               |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                               |
@@ -185,3 +185,45 @@ verify remote HEAD and open a PR. Do not start another session.
 - Updated AGENTS, session/review skills, workflow, README and all 32 active cards, including final completion checkboxes. Cloud automation remains cancelled. Session 1.3 remains unstarted.
 - This authorization update passed pnpm verify (88 tests/11 files), planning validation (32 cards, 254 links) and git diff --check. Fresh exact-head review and final CI evidence belong in PR #5. Merge and post-merge evidence will be recorded there after success; do not infer merge from this note.
 - Exact next prompt after confirmed PR #5 merge and main CI: Start Session 1.3 using its full card, reconcile PROGRESS from PR #5 evidence, confirm merged prerequisites, and use D-065 to complete its verification/review/merge/correction/handoff loop. Do not execute that prompt in this maintenance task.
+
+#### Completion guidance maintenance merge reconciliation — 2026-11-16
+
+- GitHub confirms PR #5 merged at 68935b41a93b8a750915b69be76699ba8bc9aab7 on 2026-11-17T00:38:00Z. Required main CI passed at [run 43989192471](https://github.com/Kakumrkr/WhyNot/actions/runs/43989192471). Earlier pending maintenance notes are historical.
+- Clean main matched origin/main before creating Session 1.3. PR #4's prerequisite merge at 94f71d918417acd7db02fc8f13578222cf628c87 was independently confirmed through live GitHub metadata.
+
+### 1.3 — Clinic, patient, timing and preference rules (2026-11-16)
+
+- Built: all 23 internal catalog entries with exact v1 metadata; nine internal request-related checks covering clinic closure/hours, notice/advance, returning/referral eligibility, patient daily limits, practitioner preference and first-missing-dimension structural evidence. No public evaluate/isBookable or later resource checks. Only catalog/version are new package exports.
+- Validation: contracts parse untrusted input before checks, reject unknown references, unsafe arithmetic, off-grid/local-grid and coverage errors, and materialize affected clinic/working/break schedules to reject unsupported DST boundaries. Safe errors do not echo input. Daily counts use confirmed booking starts on the clinic date; cancellations and other patients do not count.
+- Grounding: sorted, escaped key/value pairs include subject, rule parameters and optional windows. Catalog controls visibility/relaxability, including staff-only raw evidence; patient projection remains owned by 2.1. No claim of patient-safe serialization before projection exists.
+- Branch: session/1.3-request-rules; [PR #6](https://github.com/Kakumrkr/WhyNot/pull/6). Verified implementation checkpoint 40d1a2e829ee214bd082c976e988a102de8f8062 was pushed with remote HEAD equality confirmed. Final HEAD belongs in PR/final response.
+- Verification: baseline pnpm verify passed (88 tests); implementation pnpm verify passed (106 tests/16 files), followed by a passing fixed generator coverage check. Final gate includes 107 tests. Tests cover each rule's positive/negative/boundary cases, exact elapsed advance across both DST changes, local midnight, closing/adjacent/split hours, cancelled bookings, explicit empty pools versus dangling references, catalog integrity and collision-resistant grounding. Generated properties retain 500 local/5000 CI runs, default seed/counterexample failure output, frozen-input preservation, repeated determinism and shuffled-input equality. Independent arithmetic expectations check generated timing, eligibility and daily counts; a fixed corpus reaches all nine implemented rules.
+- Scope: generator extensions stay in fixtures/test/generate.ts, consistent with 1.2's test-only boundary. No new dependencies, golden corrections, UI changes, browser/PG gates or material specification changes. Initial lint caught one unused test import, which was removed while splitting tests into small focused files. No unresolved material questions.
+- Status: implemented; fresh independent review, final-head CI and merge pending. Evidence will be recorded on PR #6. Do not start 1.4 before completion under D-065.
+
+Exact continuation if interrupted before merge:
+
+```text
+$whynot-session
+Resume Session 1.3 on session/1.3-request-rules, PR #6.
+Implementation is complete; read current PROGRESS, QUESTIONS and the full card.
+Continue final verification, fresh exact-head whynot-review, fixes, green CI and D-065 merge.
+Confirm main CI and persist the durable handoff. Do not start 1.4 in this task.
+```
+
+Next prompt only after confirmed PR #6 merge and green main CI:
+
+```text
+$whynot-session
+Start Session 1.4 using docs/sessions/session-1.4.md.
+Confirm PR #6 is merged and reconcile PROGRESS with its evidence.
+Read the full card and required documents/skills; implement only its Build list.
+Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
+Persist the durable handoff and stop before Session 1.5.
+```
+
+#### Session 1.3 independent review correction — 2026-11-16
+
+- Fresh-task whynot-review of 5604e8ed5b222d3851d2d9c06d88ccc91f2dd046 against base 68935b41a93b8a750915b69be76699ba8bc9aab7 found one major verification issue: CI's required 5000-run property took about 9.6 seconds and exceeded Vitest's default five-second test timeout. [Run 43993033975](https://github.com/Kakumrkr/WhyNot/actions/runs/43993033975) failed with 106 passing tests and one timeout. No assertion failure or shrunk counterexample occurred; no additional implementation findings were reported.
+- Gave only that correctness property an explicit 30-second timeout, retaining all assertions and the 500-local/5000-CI counts. The 1.6 benchmark gate is unchanged. The targeted 5000-run property passed locally in 5.82 seconds. Follow-up full verification, fresh changed-head review and CI remain required before merge.
+- Reviewer independently passed pnpm verify (107 tests/16 files), planning validation and diff checks on the earlier head. That review requested changes and is not approval of the correction.
