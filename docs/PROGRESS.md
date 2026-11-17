@@ -10,7 +10,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are ind
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | done     | done    | [#6](https://github.com/Kakumrkr/WhyNot/pull/6) |
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | done     | done    | [#8](https://github.com/Kakumrkr/WhyNot/pull/8) |
-| [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
+| [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | pending  | pending | —                                               |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                               |
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | pending     | pending  | pending | —                                               |
 | [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | pending     | pending  | pending | —                                               |
@@ -275,3 +275,37 @@ Persist the durable handoff and stop before Session 1.6.
 - Required post-merge main CI passed at [run 43996996433](https://github.com/Kakumrkr/WhyNot/actions/runs/43996996433). Clean local main was fast-forwarded to this merge before creating session/1.4-completion-handoff for evidence reconciliation. No application changes or post-merge behavior corrections were needed.
 - Session 1.4 is implemented, independently reviewed and merged; earlier pending-review/merge notes are historical. Its Done when criteria are satisfied. Final handoff reconciliation PR, reviewed head and CI evidence belong in that PR/final response. All implementation commits are pushed; no unresolved material questions remain.
 - Next eligible card is Session 1.5, candidates/matrix/independent reference, using the exact next prompt above. Session 1.5 has not started and requires a separate user-selected task.
+
+### 1.5 — Candidates, matrix and independent reference (2026-11-17)
+
+- Built: canonical real candidate enumeration, factorized global/practitioner/room/equipment violation matrix, first-missing-dimension structural evidence without invented rows, and public boolean isBookable. Internal witness selection uses confirmed local-date practitioner load, then Unicode codepoint practitioner/room/equipment IDs. Requested practitioners remain hard constraints. No public evaluate, explanations or alternatives from later cards.
+- Independent specification oracle lives only in engine/test/reference: direct candidate and booking loops, separate Luxon calendar conversion and minute-by-minute schedule coverage; no optimized rules, matrix, validator or interval index imports. Mixed generated cases include feasible and blocked outcomes. Existing fixtures/test/generate.ts remains test-only, as established by D-062; no production generator/checker exports or dependencies were added.
+- Branch: session/1.5-feasibility. Local verified implementation checkpoint: b8e6c8743f76529a15db7af0a46d1100c519c81c, based on main 5ab8ad93f5e28dec77ba042eda1e9f3bc5594c54. No remote session branch or PR exists: publication is blocked (Q-1.5-WRITE). All session commits are currently unpushed; final local HEAD belongs in the final response.
+- Prerequisite evidence: live GitHub confirms PR #8 merged at d8f8a73621be3e99f0d9ab5f3326e950b7ba08a6 and completion PR #9 merged at 5ab8ad93f5e28dec77ba042eda1e9f3bc5594c54. Main CI passed at https://github.com/Kakumrkr/WhyNot/actions/runs/43997751257. No incomplete predecessor branch was found.
+- Verification: isolated untouched main passed pnpm verify (122 tests). Implementation FC_NUM_RUNS=5000 pnpm verify passed on Node 24.22.3/pnpm 12.21.0: 128 tests across 20 files, formatting, lint, strict typechecks, native built ESM smoke imports and all package/web builds. P1/P2/P8/P9 check independent feasibility and witnesses, rule sets for every real row, frozen-input preservation, repeatability and shuffled resource/nested-input order. Authored cases cover all eight empty-pool combinations, incompatible resources, null equipment, preference, confirmed/cancelled local-day load, Unicode ties, invalid inputs, midnight coverage and exact/one-minute buffer boundaries. No property failures, golden corrections, specification changes or UI/browser/PostgreSQL gates.
+- Environment diagnosis: the first verification overlapped the implementation export change, so it is not baseline evidence; a separate untouched checkout supplied the baseline above. Sandboxed native smoke subprocesses failed with EPERM; the unchanged smoke tests and full implementation gate passed outside that sandbox. The 5000-case differential test takes about two minutes with concurrent checks; its 300-second behavioral-test timeout preserves all run counts/assertions and changes no performance target.
+- Status: implemented and locally verified; fresh independent review is in progress. Git push and connected-app branch creation both return HTTP 403, including after the user reconnected GitHub. Repository reads work and repository metadata reports push permission; the selected-repository installation must still grant effective write access. No remote HEAD equality, PR CI, merge or post-merge CI is claimed. Required planning PowerShell validator is unavailable in this environment; no planning-validator success is claimed. git diff --check passed.
+- Remaining phase: finish independent review and any fixes, restore GitHub write access, push all local commits, verify remote HEAD, open the Session 1.5 PR, pass required CI, merge the exact reviewed head under D-065 and confirm main CI. Save final completion evidence before releasing 1.6. Stop at this external blocker if access is not restored; do not mark the session complete.
+
+Exact continuation for this same card:
+
+```text
+$whynot-session
+Resume Session 1.5 on session/1.5-feasibility in /workspace/WhyNot.
+Read current PROGRESS, QUESTIONS and docs/sessions/session-1.5.md.
+Implementation and the 5000-run local gate are complete; check final review evidence in the latest handoff.
+Resolve Q-1.5-WRITE, push every local commit and verify remote HEAD equality.
+Open the PR, finish fresh exact-head review and green required CI, merge under D-065,
+confirm main CI and persist the durable completion handoff. Do not start Session 1.6 here.
+```
+
+Next prompt only after confirmed Session 1.5 merge and green main CI:
+
+```text
+$whynot-session
+Start Session 1.6 using docs/sessions/session-1.6.md.
+Confirm Session 1.5 is independently reviewed and merged with green main CI.
+Read the full card and required documents/skills; implement only its Build list.
+Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
+Persist the durable handoff and stop before Session 2.1.
+```
