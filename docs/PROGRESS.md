@@ -1,6 +1,6 @@
 # PROGRESS
 
-Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 is implemented on PR #8; independent review and merge are pending. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
+Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are independently reviewed and confirmed merged through PRs #2 and #3. Session 1.2 is independently reviewed and confirmed merged through PR #4 at 94f71d918417acd7db02fc8f13578222cf628c87. Session completion guidance maintenance is confirmed merged through PR #5 with green main CI. Session 1.3 is implemented, independently reviewed and confirmed merged through PR #6 at 9f57ed1e988378fe1a92cd45a27256ca1a4af95e with green main CI. Session 1.4 is implemented, independently reviewed and confirmed merged through PR #8 at d8f8a73621be3e99f0d9ab5f3326e950b7ba08a6 with green main CI. Session 0.0 is confirmed merged; no submitted independent review was found. Do not interpret implemented as merged.
 
 | Session                        | Title                                            | Implemented | Reviewed | Merged  | PR                                              |
 | ------------------------------ | ------------------------------------------------ | ----------- | -------- | ------- | ----------------------------------------------- |
@@ -9,7 +9,7 @@ Active roadmap approved 2026-11-16 (D-050–D-059). Sessions 0.1 and 1.1 are ind
 | [1.1](sessions/session-1.1.md) | Appointment and output contracts                 | done        | done     | done    | [#3](https://github.com/Kakumrkr/WhyNot/pull/3) |
 | [1.2](sessions/session-1.2.md) | Time handling and minimal fixtures               | done        | done     | done    | [#4](https://github.com/Kakumrkr/WhyNot/pull/4) |
 | [1.3](sessions/session-1.3.md) | Clinic, patient, timing and preference rules     | done        | done     | done    | [#6](https://github.com/Kakumrkr/WhyNot/pull/6) |
-| [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | pending  | pending | [#8](https://github.com/Kakumrkr/WhyNot/pull/8) |
+| [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | done     | done    | [#8](https://github.com/Kakumrkr/WhyNot/pull/8) |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | pending     | pending  | pending | —                                               |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | pending     | pending  | pending | —                                               |
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | pending     | pending  | pending | —                                               |
@@ -267,3 +267,11 @@ Read the full card and required documents/skills; implement only its Build list.
 Complete verification, fresh independent review, pushed commits, PR merge and main CI under D-065.
 Persist the durable handoff and stop before Session 1.6.
 ```
+
+#### Session 1.4 final review, merge and completion - 2026-11-16
+
+- Fresh-task independent whynot-review of 4b0fa3a2ad660dfdaa08ad3d0f3aa79459a384f0 against base e3a99a888f051b0b6bd30764082f0299becb031e found no findings and recommended merge after required CI. Reviewer independently passed FC_NUM_RUNS=5000 pnpm verify on Node 24.22.3/pnpm 12.21.0: 122 tests across 19 files, formatting, lint, strict types, native ESM checks and builds. Planning validation and diff checks passed. No review edits or corrections were needed; local/remote/live PR heads matched.
+- Final-head CI passed at [run 43996683171](https://github.com/Kakumrkr/WhyNot/actions/runs/43996683171) and [run 43996690832](https://github.com/Kakumrkr/WhyNot/actions/runs/43996690832). [Review evidence](https://github.com/Kakumrkr/WhyNot/pull/8#issuecomment-6935144162) records exact head and checks. D-065 authorized merging this exact reviewed head through PR #8 without bypassing protections. GitHub confirms merge at d8f8a73621be3e99f0d9ab5f3326e950b7ba08a6 on 2026-11-17T01:37:32Z.
+- Required post-merge main CI passed at [run 43996996433](https://github.com/Kakumrkr/WhyNot/actions/runs/43996996433). Clean local main was fast-forwarded to this merge before creating session/1.4-completion-handoff for evidence reconciliation. No application changes or post-merge behavior corrections were needed.
+- Session 1.4 is implemented, independently reviewed and merged; earlier pending-review/merge notes are historical. Its Done when criteria are satisfied. Final handoff reconciliation PR, reviewed head and CI evidence belong in that PR/final response. All implementation commits are pushed; no unresolved material questions remain.
+- Next eligible card is Session 1.5, candidates/matrix/independent reference, using the exact next prompt above. Session 1.5 has not started and requires a separate user-selected task.
