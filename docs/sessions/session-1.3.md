@@ -33,13 +33,13 @@
 
 ## Done when
 
-- [ ] Session PR and any necessary correction PRs merged under D-065; required main CI green and durable handoff saved.
+- [x] Session PR and any necessary correction PRs merged under D-065; required main CI green and durable handoff saved.
 
-- [ ] Catalog matches doc 02; all request-rule checks tested; pnpm verify green.
-- [ ] All Build items have evidence; required checks are green.
-- [ ] Implementation status/handoff updated; reviewed/merged remain pending until independently established.
-- [ ] Logical checkpoint commits made; all session commits pushed; remote HEAD equals local HEAD; PR opened/updated.
-- [ ] PR includes session ID, verification summary, unresolved questions and screenshot evidence when applicable.
+- [x] Catalog matches doc 02; all request-rule checks tested; pnpm verify green.
+- [x] All Build items have evidence; required checks are green.
+- [x] Implementation status/handoff updated; reviewed/merged remain pending until independently established.
+- [x] Logical checkpoint commits made; all session commits pushed; remote HEAD equals local HEAD; PR opened/updated.
+- [x] PR includes session ID, verification summary, unresolved questions and screenshot evidence when applicable.
 
 ## Out of scope
 
