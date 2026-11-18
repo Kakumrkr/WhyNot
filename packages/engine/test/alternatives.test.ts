@@ -103,6 +103,46 @@ it("reports incomplete empty and partial results and the actual attempted interv
   });
 });
 
+it("reports a window limit when a late start needs coverage beyond the final local date", () => {
+  const snapshot = tinyClinic(0, day);
+  snapshot.clinic.slotGridMinutes = 15;
+  snapshot.clinic.openingHours = [
+    { weekday: 1, from: "23:45", to: "24:00" },
+    { weekday: 2, from: "00:00", to: "00:15" },
+  ];
+  for (const practitioner of snapshot.practitioners)
+    practitioner.workingHours = snapshot.clinic.openingHours;
+  snapshot.services[0]!.durationMin = 30;
+  const request = buildMinimalRequest({ start });
+  const options = { alternatives: { max: 1, searchDays: 0, budgetEvals: 3000 } };
+  const clipped = blocked(snapshot, request, options);
+  expect(clipped.alternatives).toEqual([]);
+  expect(clipped.search.status).toBe("window_limited");
+  snapshot.coverage.to += 15;
+  const full = blocked(snapshot, request, options);
+  expect(full.search.status).toBe("complete");
+  expect(full.alternatives[0]?.assignment).toMatchObject({
+    start: midnight + day - 15,
+    end: midnight + day + 15,
+  });
+});
+
+it("keeps a finite winner when larger costs overflow outside the requested results", () => {
+  const snapshot = tinyClinic(0, day);
+  snapshot.clinic.slotGridMinutes = 15;
+  const request = buildMinimalRequest({ start });
+  const options = {
+    alternatives: { max: 1, searchDays: 0, budgetEvals: 3000 },
+    costWeights: { timeOfDay: Number.MAX_VALUE, day: 1, practitioner: 1, earlier: 0 },
+  };
+  const result = blocked(snapshot, request, options);
+  expect(result.alternatives).toHaveLength(1);
+  expect(result.alternatives[0]).toMatchObject({
+    request: { start: start - 15 },
+    cost: Number.MAX_VALUE,
+  });
+});
+
 function cost(clock: number, offset: number, changed: boolean, candidate: number, w: CostWeights) {
   return (
     (Math.abs(clock - 720) / 15) * w.timeOfDay +
@@ -299,6 +339,37 @@ it("keeps both fold instants on the local grid and uses the earlier penalty only
     category: "same-day",
   });
 });
+
+it.each([15, 61])(
+  "checks every local date during a %i-minute midnight rollback appointment",
+  (durationMin) => {
+    const firstMidnight = Date.parse("2009-11-01T03:00:00Z") / 60000;
+    const snapshot = buildMinimalSnapshot();
+    snapshot.clinic.timezone = "America/Goose_Bay";
+    snapshot.coverage = { from: firstMidnight - 180, to: firstMidnight + 180 };
+    snapshot.policy.minNoticeMin = 0;
+    snapshot.services[0]!.durationMin = durationMin;
+    snapshot.clinic.openingHours = [{ weekday: 7, from: "00:01", to: "04:00" }];
+    snapshot.practitioners[0]!.workingHours = snapshot.clinic.openingHours;
+    const request = { ...buildMinimalRequest(), start: firstMidnight };
+    const atRollback = blocked(snapshot, request, {
+      now: snapshot.coverage.from,
+      alternatives: false,
+    });
+    expect(atRollback.explanation.facts).toContainEqual(
+      expect.objectContaining({
+        ruleId: "clinic-closed-day",
+        params: { date: "2009-10-31" },
+      }),
+    );
+    const secondMidnight = { ...request, start: firstMidnight + 60 };
+    const search = blocked(snapshot, secondMidnight, {
+      now: snapshot.coverage.from,
+      alternatives: { max: 1, searchDays: 0, budgetEvals: 1 },
+    });
+    expect(search.trace?.alternatives).toEqual([{ request, bookable: false }]);
+  },
+);
 
 it("defaults to three results, fourteen local days, and a 3000-attempt trace cap", () => {
   const snapshot = tinyClinic(-day, 16 * day);

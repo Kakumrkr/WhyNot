@@ -62,8 +62,8 @@ function* orderedSlots(
   last: number,
   from: number,
   to: number,
-): Generator<Slot> {
-  if (first > last) return;
+): Generator<Slot, boolean> {
+  if (first > last) return false;
   const { snapshot, options, request, date, service } = context;
   const { timezone, slotGridMinutes } = snapshot.clinic;
   const weights = options.costWeights ?? defaults;
@@ -79,6 +79,7 @@ function* orderedSlots(
   const frontier: (DateRange | DaySlots)[] = [boundDateRange(first, last, request.start, weights)];
   const order = (entry: DateRange | DaySlots) =>
     "order" in entry ? entry.order : entry.slots[entry.index]!;
+  let extendsPastCoverage = false;
   // Compare unexpanded date ranges by lower bounds and opened days by their next slot.
   // Splitting ranges keeps even very wide searches lazy when rounded costs tie.
   while (frontier.length > 0) {
@@ -99,13 +100,12 @@ function* orderedSlots(
       const grid = value(localGridDay(day, timezone, slotGridMinutes));
       const slots: Slot[] = [];
       for (const { start, wallMinute } of grid.starts) {
-        if (
-          start < from ||
-          start + service.durationMin > snapshot.coverage.to ||
-          start >= to ||
-          start - options.now < snapshot.policy.minNoticeMin
-        )
+        if (start < from || start >= to || start - options.now < snapshot.policy.minNoticeMin)
           continue;
+        if (start + service.durationMin > snapshot.coverage.to) {
+          extendsPastCoverage = true;
+          continue;
+        }
         const baseCost =
           (Math.abs(wallMinute - originalWall) / 15) * weights.timeOfDay +
           Math.abs(offset) * weights.day +
@@ -118,6 +118,7 @@ function* orderedSlots(
       if (slots.length > 0) frontier.push({ slots: slots.sort(compareSlots), index: 0 });
     }
   }
+  return extendsPastCoverage;
 }
 
 function selectAlternatives(verified: Alternative[], max: number): Alternative[] {
@@ -182,7 +183,6 @@ export function searchAlternatives(context: RuleContext): Search {
   let evaluated = 0;
   let evaluatedFrom = to;
   let evaluatedTo = from;
-  let unrepresentableCost = false;
   const dates: NonNullable<Parameters<typeof buildSlotContext>[5]> = new Map();
   let next = slots.next();
   while (!next.done && evaluated < budgetEvals) {
@@ -222,23 +222,27 @@ export function searchAlternatives(context: RuleContext): Search {
           : request.practitionerId !== changed.practitionerId
             ? "other-practitioner"
             : "same-day";
-      unrepresentableCost ||= !Number.isFinite(slot.cost);
       verified.push({ request: changed, assignment, category, cost: slot.cost, changes });
     }
     next = slots.next();
   }
   const status = !next.done
     ? "budget_exhausted"
-    : from > lowerGrid.from || to < upperGrid.to || first > -searchDays || last < searchDays
+    : next.value ||
+        from > lowerGrid.from ||
+        to < upperGrid.to ||
+        first > -searchDays ||
+        last < searchDays
       ? "window_limited"
       : "complete";
+  const alternatives = selectAlternatives(verified, max);
   return {
-    alternatives: selectAlternatives(verified, max),
+    alternatives,
     search:
       status === "budget_exhausted"
         ? { status, from: evaluatedFrom, to: evaluatedTo, evaluated }
         : { status, from, to, evaluated },
     attempts,
-    unrepresentableCost,
+    unrepresentableCost: alternatives.some(({ cost }) => !Number.isFinite(cost)),
   };
 }

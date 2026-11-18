@@ -18,7 +18,9 @@ default, within 14 local dates either side and at most 3000 changed-request
 evaluations. Set `alternatives: false` to disable search or supply
 `{ max, searchDays, budgetEvals }` to adjust the limits. A completed or
 window-limited report gives the configured search window intersected with the
-snapshot. A budget-exhausted report bounds the evaluated appointments, and its
+snapshot. Coverage must also include the full appointments of eligible starts,
+including starts near the end of the last requested date. A budget-exhausted report
+bounds the evaluated appointments, and its
 optional trace identifies individual attempts, capped at 3000 entries. Ordering
 prefers the cheapest verified result followed by still-unrepresented categories.
 Policy fixes arrive in 4.1. Use `projectForAudience` before rendering or serializing

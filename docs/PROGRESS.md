@@ -59,7 +59,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Gate             | State        | Evidence                                                                                                               |
 | ---------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | Core 1.6         | passed       | PR #12 CI ran 5000-run properties and S benchmark (runs 44126309537, 44126295724); baselines in packages/engine/bench/ |
-| Alternatives 2.3 | passed       | Local deep suite passed at 5000 runs per property. S alternatives p95 114.9 ms (400 ms target). Evidence in PR #16.    |
+| Alternatives 2.3 | passed       | Local deep suite passed at 5000 runs per property. S alternatives p95 131.7 ms (400 ms target). Evidence in PR #16.    |
 | Preview 3.3      | pending      | —                                                                                                                      |
 | Policy/range 4.3 | pending      | —                                                                                                                      |
 | Release 5.2      | pending      | —                                                                                                                      |
@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**2.3 — Verified alternatives and truthful search.** Blocked slots return rechecked alternatives in category-diverse order. Alternatives that switch practitioners carry an explicit preference change. Search reports distinguish budget and snapshot truncation. All 206 tests passed, including H1–H8 and the independent P6/P7/P16 search reference. The playground can render projected alternatives and the narrator's search note. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
+**2.3 — Verified alternatives and truthful search.** Blocked slots return rechecked alternatives in category-diverse order. Alternatives that switch practitioners carry an explicit preference change. Search reports distinguish budget and snapshot truncation. All 210 tests passed, including H1–H8 and the independent P6/P7/P16 search reference. The playground can render projected alternatives and the narrator's search note. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
