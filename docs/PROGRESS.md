@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**2.2 — Templates, grouping and helpfulness.** Slot evaluations group the full fact dictionary and report the lowest-weight candidate for each practitioner. `TemplateNarrator` renders cited patient and staff wording, eligibility next steps and search status. All 197 tests passed, including H1–H8 wording, E01–E16 edges and grouped P10. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md). See Q-2.2-capability-context for the affirmative H1 qualification list.
+**2.2 — Templates, grouping and helpfulness.** Slot evaluations group the full fact dictionary and report the lowest-weight candidate for each practitioner. `TemplateNarrator` renders cited patient and staff wording, eligibility next steps and search status. All 200 tests passed, including H1–H8 wording, E01–E16 edges and grouped P10. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md). See Q-2.2-capability-context for the affirmative H1 qualification list.

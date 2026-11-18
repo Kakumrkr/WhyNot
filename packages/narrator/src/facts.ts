@@ -35,6 +35,8 @@ export function patientFact(fact: PublicFact, format: Format): string {
     case "patient-eligibility-referral":
       return "This service requires a referral, and the clinic has none on file for you.";
     case "patient-daily-limit":
+      if (params.count > params.limit)
+        return `You have ${params.count} ${params.count === 1 ? "appointment" : "appointments"} that day. The limit is ${params.limit}.`;
       return params.limit === 0
         ? "The clinic's booking limit does not allow an appointment that day."
         : `You already have the maximum of ${params.limit} ${params.limit === 1 ? "appointment" : "appointments"} that day.`;

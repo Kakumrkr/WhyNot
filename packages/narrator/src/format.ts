@@ -8,6 +8,10 @@ export type TemplateDisplay = {
   equipment?: ReadonlyMap<string, string>;
 };
 
+const millisecondsPerMinute = 60000;
+const millisecondsPerDay = 24 * 60 * millisecondsPerMinute;
+const dateLimitMilliseconds = 8.64e15;
+
 /** Format elapsed durations without rounding exact policy values. */
 export function duration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -35,15 +39,28 @@ export function createFormat({ timeZone, locale = "en-GB", ...labels }: Template
     timeZoneName: "shortOffset",
   });
   const instant = (minute: number) =>
-    `${day.format(minute * 60000)}, ${zonedClock.format(minute * 60000)}`;
+    `${day.format(minute * millisecondsPerMinute)}, ${zonedClock.format(minute * millisecondsPerMinute)}`;
+  const offset = (milliseconds: number) =>
+    zonedClock.formatToParts(milliseconds).find(({ type }) => type === "timeZoneName")?.value;
+  function until({ from, to }: { from: number; to: number }): string {
+    const end = to * millisecondsPerMinute;
+    if (day.format(from * millisecondsPerMinute) !== day.format(end)) return instant(to);
+    // Nearby offset changes can repeat a clock time even when the whole window
+    // is on one side of the transition. Keep the offset visible around the change.
+    const endOffset = offset(end);
+    const before = Math.max(-dateLimitMilliseconds, end - millisecondsPerDay);
+    const after = Math.min(dateLimitMilliseconds, end + millisecondsPerDay);
+    return endOffset === offset(before) && endOffset === offset(after)
+      ? clock.format(end)
+      : zonedClock.format(end);
+  }
   return {
     instant,
     practitioner: (id?: string) =>
       (id === undefined ? undefined : labels.practitioners?.get(id)) ?? "This practitioner",
     staffResource: (type: "room" | "equipment", id: string) =>
       (type === "room" ? labels.rooms : labels.equipment)?.get(id) ?? id,
-    until: ({ from, to }: { from: number; to: number }) =>
-      day.format(from * 60000) === day.format(to * 60000) ? clock.format(to * 60000) : instant(to),
+    until,
   };
 }
 
