@@ -7,5 +7,9 @@
   "time": "10:00",
   "serviceId": "consult",
   "patientId": "patient-0",
-  "expected": [["min-notice", "riverside"]]
+  "expected": [["min-notice", "riverside"]],
+  "templates": {
+    "patient": ["The clinic needs at least 2 hours of notice. This request gives 1 hour."],
+    "staff": ["Minimum notice is 2 hours. The request gives 1 hour."]
+  }
 }

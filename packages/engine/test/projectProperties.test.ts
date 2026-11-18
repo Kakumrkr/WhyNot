@@ -31,21 +31,6 @@ it(
     fc.assert(
       fc.property(projectionCaseArbitrary, ({ snapshot, request, now, secrets }) => {
         const result = evaluate(snapshot, request, { now, trace: true });
-        // Current evaluate deliberately leaves groups empty. Add group references to
-        // real facts to exercise remapping before the 2.2 grouping rules arrive.
-        if (result.status === "blocked") {
-          result.explanation.groups = result.explanation.facts.map((fact) => ({
-            id: fact.id,
-            kind: fact.subject.type === "practitioner" ? "practitioner" : "resources",
-            ...(fact.subject.type === "practitioner" ? { practitionerId: fact.subject.id } : {}),
-            factIds: [fact.id],
-          }));
-          result.explanation.groups.push({
-            id: "staff-primary-group",
-            kind: "request",
-            factIds: [...result.explanation.primary],
-          });
-        }
         freeze(result);
         const context = { requesterPatientId: request.patientId };
         const projected = projectForAudience(result, "patient", context);
