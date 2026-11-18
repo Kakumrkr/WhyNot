@@ -91,11 +91,6 @@ it("preserves coverage when multiple incapable resources share one public fact",
   if (staff.status !== "blocked") throw new Error("Expected a capability blocker");
   expect(staff.explanation.primary).toHaveLength(2);
   expect(staff.trace?.candidates).toHaveLength(2);
-  staff.explanation.groups.push({
-    id: "PRIVATE-GROUP",
-    kind: "capability-context",
-    factIds: [...staff.explanation.primary].reverse(),
-  });
   const patient = PatientEvaluationSchema.parse(
     projectForAudience(staff, "patient", { requesterPatientId: request.patientId }),
   );
@@ -105,7 +100,7 @@ it("preserves coverage when multiple incapable resources share one public fact",
       basis: "matrix",
       primary: ["fact-1"],
       facts: [{ id: "fact-1", ruleId: "resource-unavailable", params: {} }],
-      groups: [{ id: "group-1", kind: "capability-context", factIds: ["fact-1"] }],
+      groups: [{ id: "group-1", kind: "resources", factIds: ["fact-1"] }],
     },
   });
   expect(JSON.stringify(patient)).not.toMatch(/PRIVATE-|INTERNAL-CAPABILITY|room-capability/);
