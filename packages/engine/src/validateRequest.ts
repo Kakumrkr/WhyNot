@@ -8,10 +8,10 @@ import {
   type ValidationIssue,
 } from "@whynot/contracts";
 import {
-  addLocalDays,
   validatedDatedSchedules,
   isOnLocalGrid,
   localDate,
+  localDatesInInterval,
   bookingLocalDates,
   type TimeResult,
 } from "./time.js";
@@ -143,16 +143,15 @@ export function buildSlotContext(
       "Slot arithmetic exceeds safe minute range",
     );
   const zone = snapshot.clinic.timezone;
-  const lastDate = localDate(end - 1, zone);
-  if (!lastDate.ok) return lastDate;
+  const appointmentDates = localDatesInInterval(start, end, date, zone);
+  if (!appointmentDates.ok) return appointmentDates;
   const clinicDays: RuleContext["clinicDays"] = [];
   const practitionerHours = new Map<string, Interval[]>();
   const schedules = [
     snapshot.clinic.openingHours,
     ...snapshot.practitioners.flatMap((p) => [p.workingHours, p.breaks]),
   ];
-  let current = date;
-  for (;;) {
+  for (const current of appointmentDates.value) {
     let dated = dates.get(current);
     if (dated === undefined) {
       dated = validatedDatedSchedules(schedules, current, zone);
@@ -168,10 +167,6 @@ export function buildSlotContext(
         ...dated.value[1 + index * 2]!,
       ]);
     }
-    if (current === lastDate.value) break;
-    const next = addLocalDays(current, 1);
-    if (!next.ok) return next;
-    current = next.value;
   }
   return {
     ok: true,

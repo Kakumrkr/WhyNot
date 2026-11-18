@@ -84,6 +84,37 @@ export function localDate(minute: number, zone: string): TimeResult<string> {
   return date === null ? failure("Cannot resolve local date", ["minute"]) : success(date);
 }
 
+/** Find every local date touched by a validated half-open interval, including midnight rollbacks. */
+export function localDatesInInterval(
+  from: number,
+  to: number,
+  startDate: string,
+  zone: string,
+): TimeResult<string[]> {
+  const end = atMinute(to - 1, zone);
+  if (!end.ok) return end;
+  const endDate = end.value.toISODate();
+  if (endDate === null) return failure("Cannot resolve local date", ["minute"]);
+  const resolvedZone = IANAZone.create(zone);
+  const offset = (minute: number) => resolvedZone.offset(minute * 60000);
+  if (to - from <= 1440 && offset(from) === end.value.offset)
+    return success(startDate === endDate ? [startDate] : [startDate, endDate]);
+
+  const dates = new Set<string>([startDate, endDate]);
+  for (let first = from; first < to; first += 1440) {
+    const last = Math.min(first + 1439, to - 1);
+    // Stable offsets over an elapsed day can touch at most the two endpoint dates.
+    // Walk individual minutes around an offset jump to retain any briefly visited date.
+    const step = offset(first) === offset(last) ? Math.max(1, last - first) : 1;
+    for (let minute = first; minute <= last; minute += step) {
+      const date = localDate(minute, zone);
+      if (!date.ok) return date;
+      dates.add(date.value);
+    }
+  }
+  return success([...dates].sort());
+}
+
 /** Internal batch conversion: share the resolved zone, retaining per-instant guards. */
 export function bookingLocalDates(
   bookings: readonly { id: string; start: number }[],
@@ -341,9 +372,19 @@ export function isOnLocalGrid(minute: number, zone: string, grid: number): TimeR
 
 /** Enumerate actual instants on a local date: omit gaps, retain both fold occurrences. */
 export function gridStarts(date: string, zone: string, grid: number): TimeResult<number[]> {
-  const day = localGridDay(date, zone, grid);
-  if (!day.ok) return day;
-  return success(day.value.starts.map(({ start }) => start));
+  if (!Number.isSafeInteger(grid) || grid <= 0)
+    return failure("Expected a positive integer grid", ["grid"]);
+  const from = resolveRecurringBoundary(date, "00:00", zone);
+  if (!from.ok) return from;
+  const to = resolveRecurringBoundary(date, "24:00", zone, true);
+  if (!to.ok) return to;
+  const starts: number[] = [];
+  for (let minute = from.value; minute < to.value; minute++) {
+    const aligned = isOnLocalGrid(minute, zone, grid);
+    if (!aligned.ok) return aligned;
+    if (aligned.value) starts.push(minute);
+  }
+  return success(starts);
 }
 
 /** Materialize a local day's actual minute-aligned grid and instant bounds. */
