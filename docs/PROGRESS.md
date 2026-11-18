@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card:** [2.1 — Patient and staff output projection](sessions/session-2.1.md), branch `session/2.1-projection`. Not started.
-- **Last merged:** 1.6 via [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12) at `5e8fe37` (2026-11-17); main CI [run 44128648561](https://github.com/Kakumrkr/WhyNot/actions/runs/44128648561) green.
+- **Next card after this PR merges:** [2.2 — Templates, grouping and helpfulness](sessions/session-2.2.md), branch `session/2.2-templates`.
+- **Last confirmed session merge at handoff:** 1.6 via [PR #12](https://github.com/Kakumrkr/WhyNot/pull/12) at `5e8fe37` (2026-11-17).
 - **Open questions:** none (see [QUESTIONS](QUESTIONS.md)).
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 2.1 — Patient and staff output projection. Card: docs/sessions/session-2.1.md
+Session 2.2 — Templates, grouping and helpfulness. Card: docs/sessions/session-2.2.md
 ```
 
 ## Status
@@ -28,7 +28,7 @@ Session 2.1 — Patient and staff output projection. Card: docs/sessions/session
 | [1.4](sessions/session-1.4.md) | Practitioner, room and equipment rules           | done        | done         | done   | [#8](https://github.com/Kakumrkr/WhyNot/pull/8)   |
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | done         | done   | [#10](https://github.com/Kakumrkr/WhyNot/pull/10) |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | done        | done         | done   | [#12](https://github.com/Kakumrkr/WhyNot/pull/12) |
-| [2.1](sessions/session-2.1.md) | Patient and staff output projection              | —           | —            | —      | —                                                 |
+| [2.1](sessions/session-2.1.md) | Patient and staff output projection              | done        | —            | —      | [#14](https://github.com/Kakumrkr/WhyNot/pull/14) |
 | [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | —           | —            | —      | —                                                 |
 | [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | —           | —            | —      | —                                                 |
 | [3.1](sessions/session-3.1.md) | Static playground design and shell               | —           | —            | —      | —                                                 |
@@ -77,6 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**1.6 — Minimal explanations and core gate.** Bitset reduction, forced facts, weighted branch-and-bound with canonical ties and greedy/irredundant fallback, public `evaluate`, structural missing-resource evidence, 500-row capped trace; Riverside demo week with H1–H8 isolated overrides and exact explanation sets. 164 tests / 24 files green at 5000 runs; independent session and correctness reviews found no findings. Advanced fields stay disabled/null until their owning cards.
-
-<!-- Next session: replace this section with your own handoff (template in docs/09 §Handoff). -->
+**2.1 — Patient and staff output projection.** `projectForAudience` exposes the public slot schema, including ordinal reference remapping and truthful availability abstractions. Use projected facts and groups for patient templates. H1 and 5,000 P10 cases cover privacy, reference integrity, idempotence and ordering. Range projection belongs to the range card.
