@@ -37,8 +37,14 @@ it(
           result.explanation.groups = result.explanation.facts.map((fact) => ({
             id: fact.id,
             kind: fact.subject.type === "practitioner" ? "practitioner" : "resources",
+            ...(fact.subject.type === "practitioner" ? { practitionerId: fact.subject.id } : {}),
             factIds: [fact.id],
           }));
+          result.explanation.groups.push({
+            id: "staff-primary-group",
+            kind: "request",
+            factIds: [...result.explanation.primary],
+          });
         }
         freeze(result);
         const context = { requesterPatientId: request.patientId };
@@ -90,15 +96,19 @@ it(
         expect(new Set(projected.explanation.primary.map(actualKey))).toEqual(
           new Set(result.explanation.primary.map(expectedKey)),
         );
+        const groupKey = (kind: string, practitionerId: string | undefined, factKeys: string[]) =>
+          JSON.stringify([kind, practitionerId, [...new Set(factKeys)].sort()]);
         expect(
           projected.explanation.groups
-            .map((group) => group.factIds.map(actualKey))
-            .flat()
+            .map(({ kind, practitionerId, factIds }) =>
+              groupKey(kind, practitionerId, factIds.map(actualKey)),
+            )
             .sort(),
         ).toEqual(
           result.explanation.groups
-            .map((group) => group.factIds.map(expectedKey))
-            .flat()
+            .map(({ kind, practitionerId, factIds }) =>
+              groupKey(kind, practitionerId, factIds.map(expectedKey)),
+            )
             .sort(),
         );
         for (const rawId of sourceById.keys())
@@ -107,6 +117,7 @@ it(
         const shuffled = structuredClone(result);
         shuffled.explanation.facts.reverse();
         shuffled.explanation.groups.reverse();
+        shuffled.explanation.groups.forEach(({ factIds }) => factIds.reverse());
         shuffled.explanation.primary.reverse();
         expect(projectForAudience(shuffled, "patient", context)).toEqual(projected);
       }),
