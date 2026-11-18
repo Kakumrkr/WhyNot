@@ -173,7 +173,7 @@ describe("snapshot and request contracts", () => {
     }
     expect(EvaluateOptionsSchema.parse({ now: 0 })).toEqual({
       now: 0,
-      alternatives: false,
+      alternatives: { max: 3, searchDays: 14, budgetEvals: 3000 },
       trace: false,
       includeAdminFix: false,
     });

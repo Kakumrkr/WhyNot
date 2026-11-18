@@ -23,9 +23,10 @@ it(
         const before = structuredClone({ snapshot, request });
         freeze(snapshot);
         freeze(request);
-        const actual = evaluate(snapshot, request, { now, trace: true });
+        const options = { now, trace: true, alternatives: false } as const;
+        const actual = evaluate(snapshot, request, options);
         expect(StaffEvaluationSchema.safeParse(actual).success).toBe(true);
-        expect(evaluate(snapshot, request, { now, trace: true })).toEqual(actual);
+        expect(evaluate(snapshot, request, options)).toEqual(actual);
         expect({ snapshot, request }).toEqual(before);
         const shuffled = structuredClone(snapshot);
         shuffled.practitioners.reverse();
@@ -46,7 +47,7 @@ it(
           r.maintenance.reverse();
         }
         for (const e of shuffled.equipment) e.maintenance.reverse();
-        expect(evaluate(shuffled, request, { now, trace: true })).toEqual(actual);
+        expect(evaluate(shuffled, request, options)).toEqual(actual);
         if (actual.status === "invalid_request") return;
         expect(actual.meta.evaluatedAt).toBe(now);
         expect(actual.status === "bookable").toBe(isBookable(snapshot, request, now));
@@ -126,7 +127,7 @@ it("returns safe invalid errors and valid bookable/blocked results with disabled
   snapshot.policy.minNoticeMin = 121;
   const result = evaluate(snapshot, request, {
     now: demoNow,
-    alternatives: { max: 3, searchDays: 14, budgetEvals: 3000 },
+    alternatives: false,
     includeAdminFix: true,
   });
   expect(result.status).toBe("blocked");
@@ -144,8 +145,9 @@ it("caps trace rows at 500 without changing explanation or feasibility", () => {
   }));
   snapshot.rooms = Array.from({ length: 23 }, (_, i) => ({ ...snapshot.rooms[0]!, id: `r-${i}` }));
   snapshot.policy.minNoticeMin = 121;
-  const plain = evaluate(snapshot, buildMinimalRequest(), { now: demoNow });
-  const traced = evaluate(snapshot, buildMinimalRequest(), { now: demoNow, trace: true });
+  const options = { now: demoNow, alternatives: false } as const;
+  const plain = evaluate(snapshot, buildMinimalRequest(), options);
+  const traced = evaluate(snapshot, buildMinimalRequest(), { ...options, trace: true });
   expect(traced.status).toBe("blocked");
   if (traced.status !== "blocked") throw new Error("Expected blocked");
   expect(traced.trace?.candidates).toHaveLength(500);

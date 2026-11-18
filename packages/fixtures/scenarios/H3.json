@@ -11,5 +11,14 @@
   "templates": {
     "patient": ["The clinic needs at least 2 hours of notice. This request gives 1 hour."],
     "staff": ["Minimum notice is 2 hours. The request gives 1 hour."]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 0,
+      "time": "11:00",
+      "practitionerId": "rao",
+      "category": "same-day",
+      "cost": 4
+    }
+  ]
 }

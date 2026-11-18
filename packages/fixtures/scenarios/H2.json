@@ -20,5 +20,14 @@
       "Ultrasound unit is under maintenance until 12:00.",
       "Cryotherapy unit is not the required equipment type (ultrasound)."
     ]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 3,
+      "time": "12:00",
+      "practitionerId": "chen",
+      "category": "same-day",
+      "cost": 8
+    }
+  ]
 }
