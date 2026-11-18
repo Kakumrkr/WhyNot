@@ -84,6 +84,37 @@ export function localDate(minute: number, zone: string): TimeResult<string> {
   return date === null ? failure("Cannot resolve local date", ["minute"]) : success(date);
 }
 
+/** Find every local date touched by a validated half-open interval, including midnight rollbacks. */
+export function localDatesInInterval(
+  from: number,
+  to: number,
+  startDate: string,
+  zone: string,
+): TimeResult<string[]> {
+  const end = atMinute(to - 1, zone);
+  if (!end.ok) return end;
+  const endDate = end.value.toISODate();
+  if (endDate === null) return failure("Cannot resolve local date", ["minute"]);
+  const resolvedZone = IANAZone.create(zone);
+  const offset = (minute: number) => resolvedZone.offset(minute * 60000);
+  if (to - from <= 1440 && offset(from) === end.value.offset)
+    return success(startDate === endDate ? [startDate] : [startDate, endDate]);
+
+  const dates = new Set<string>([startDate, endDate]);
+  for (let first = from; first < to; first += 1440) {
+    const last = Math.min(first + 1439, to - 1);
+    // Stable offsets over an elapsed day can touch at most the two endpoint dates.
+    // Walk individual minutes around an offset jump to retain any briefly visited date.
+    const step = offset(first) === offset(last) ? Math.max(1, last - first) : 1;
+    for (let minute = first; minute <= last; minute += step) {
+      const date = localDate(minute, zone);
+      if (!date.ok) return date;
+      dates.add(date.value);
+    }
+  }
+  return success([...dates].sort());
+}
+
 /** Internal batch conversion: share the resolved zone, retaining per-instant guards. */
 export function bookingLocalDates(
   bookings: readonly { id: string; start: number }[],
@@ -354,6 +385,53 @@ export function gridStarts(date: string, zone: string, grid: number): TimeResult
     if (aligned.value) starts.push(minute);
   }
   return success(starts);
+}
+
+/** Materialize a local day's actual minute-aligned grid and instant bounds. */
+export function localGridDay(
+  date: string,
+  zone: string,
+  grid: number,
+): TimeResult<{
+  from: number;
+  to: number;
+  starts: { start: number; wallMinute: number }[];
+}> {
+  if (!Number.isSafeInteger(grid) || grid <= 0)
+    return failure("Expected a positive integer grid", ["grid"]);
+  const base = calendar(date);
+  const resolvedZone = IANAZone.create(zone);
+  if (base === null || !resolvedZone.isValid) return failure("Invalid date or timezone", ["date"]);
+  const wallStart = base.toMillis() / 60000;
+  const wallEnd = wallStart + 1440;
+  const lower = wallStart - 1440;
+  const upper = wallEnd + 1440;
+  const offset = (minute: number) => resolvedZone.offset(minute * 60000);
+  const initialOffset = offset(lower);
+  const starts: { start: number; wallMinute: number }[] = [];
+  if (
+    Number.isInteger(initialOffset) &&
+    [wallStart, wallEnd, upper].every((minute) => offset(minute) === initialOffset)
+  ) {
+    const from = wallStart - initialOffset;
+    for (let wallMinute = 0; wallMinute < 1440; wallMinute += grid)
+      starts.push({ start: from + wallMinute, wallMinute });
+    return success({ from, to: from + 1440, starts });
+  }
+  // Around a transition, walk actual instants so folds are retained and gaps are omitted.
+  // A skipped calendar date has an empty interval at the jump into the next date.
+  let from: number | undefined;
+  let to: number | undefined;
+  let nextDate = upper;
+  for (let start = lower; start < upper; start++) {
+    const wallMinute = start + offset(start) - wallStart;
+    if (wallMinute >= 1440) nextDate = Math.min(nextDate, start);
+    if (wallMinute < 0 || wallMinute >= 1440) continue;
+    from ??= start;
+    to = start + 1;
+    if (wallMinute % grid === 0) starts.push({ start, wallMinute });
+  }
+  return success({ from: from ?? nextDate, to: to ?? nextDate, starts });
 }
 
 /** Half-open overlap: touching boundaries do not overlap. Inputs must be valid intervals. */

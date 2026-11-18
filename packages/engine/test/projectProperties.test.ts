@@ -30,7 +30,7 @@ it(
   () => {
     fc.assert(
       fc.property(projectionCaseArbitrary, ({ snapshot, request, now, secrets }) => {
-        const result = evaluate(snapshot, request, { now, trace: true });
+        const result = evaluate(snapshot, request, { now, trace: true, alternatives: false });
         freeze(result);
         const context = { requesterPatientId: request.patientId };
         const projected = projectForAudience(result, "patient", context);

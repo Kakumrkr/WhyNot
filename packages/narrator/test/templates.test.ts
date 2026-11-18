@@ -96,7 +96,7 @@ it("covers every staff catalog rule and its projected patient template", () => {
 });
 
 function blockedPatient(snapshot: ClinicSnapshot) {
-  const staff = evaluate(snapshot, buildMinimalRequest(), { now: demoNow });
+  const staff = evaluate(snapshot, buildMinimalRequest(), { now: demoNow, alternatives: false });
   const patient = projectForAudience(staff, "patient", context);
   if (patient.status !== "blocked") throw new Error("Expected a blocked test fixture");
   return patient;
@@ -190,7 +190,7 @@ it("renders only supplied alternatives and describes incomplete searches accurat
   const to = demoNow + 180;
   const render = (search: typeof patient.search) =>
     TemplateNarrator.renderPatient({ ...patient, search }, display).searchNote;
-  expect(render(patient.search)).toBe("The clinic did not check other times for this result.");
+  expect(render(patient.search)).toBe("The clinic did not search for alternatives.");
   expect(render({ status: "complete", from, to, evaluated: 4 })).toMatch(
     /^No alternatives were found from 16 Nov 2026, 11:00 GMT(?:\+0)? to 16 Nov 2026, 12:00 GMT(?:\+0)?\.$/,
   );

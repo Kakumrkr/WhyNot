@@ -88,5 +88,13 @@ for (let i = 1; i <= 8; i++) {
       );
     }
     if (i === 4) expect(publicText.alternatives).toEqual([]);
+    if (i === 7) {
+      expect(publicText.alternatives[0]).toMatch(/10:00.*with Dr\. Lena Okafor$/);
+      expect(publicText.alternatives[1]).toMatch(
+        /09:00.*with Dr\. Asha Rao instead of Dr\. Lena Okafor$/,
+      );
+      expect(publicText.searchNote).toMatch(/Other openings may still be available/);
+      expect(staffText.alternatives).toEqual(publicText.alternatives);
+    }
   });
 }

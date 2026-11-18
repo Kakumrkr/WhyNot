@@ -191,6 +191,10 @@ describe("local grids and half-open intervals", () => {
     expect(oddGrid).not.toContain(instant("2026-10-25T01:15:00Z"));
     expect(new Set(autumn).size).toBe(autumn.length);
     expect(gridStarts("bad", london, 15).ok).toBe(false);
+    expect(gridStarts("1900-01-02", "Europe/Paris", 15)).toMatchObject({
+      ok: false,
+      issues: [{ code: "unsupported_wall_time" }],
+    });
     expect(gridStarts("2026-03-29", london, 0).ok).toBe(false);
   });
 
