@@ -1,5 +1,6 @@
 import {
   PatientEvaluationSchema,
+  type PatientAlternative,
   type PatientEvaluation,
   type PatientExplanation,
   type SearchReport,
@@ -46,7 +47,7 @@ function empty(status: TemplateNarration["status"], headline: string): TemplateN
 function searchNote(search: SearchReport, alternatives: number, format: Format): string | null {
   switch (search.status) {
     case "disabled":
-      return "The clinic did not check other times for this result.";
+      return "The clinic did not search for alternatives.";
     case "complete":
       return alternatives > 0
         ? null
@@ -54,7 +55,7 @@ function searchNote(search: SearchReport, alternatives: number, format: Format):
     case "budget_exhausted":
       return "The search reached its limit. Other openings may still be available.";
     case "window_limited":
-      return "The search covered only the dates available in the schedule. More schedule data is needed to check the remaining dates.";
+      return "The search covered the available part of the schedule. More schedule data is needed to check the rest of the requested window.";
   }
 }
 
@@ -87,7 +88,7 @@ function blocked<F extends { id: string; ruleId: string }>(
     search,
   }: {
     explanation: Pick<PatientExplanation, "primary" | "groups"> & { facts: F[] };
-    alternatives: { assignment: { start: number; practitionerId: string } }[];
+    alternatives: Pick<PatientAlternative, "assignment" | "changes">[];
     search: SearchReport;
   },
   format: Format,
@@ -117,10 +118,13 @@ function blocked<F extends { id: string; ruleId: string }>(
     if (ruleId === "patient-eligibility-returning" || ruleId === "patient-eligibility-referral")
       narration.guidance.push({ text: guidance[ruleId], factIds: [id] });
   }
-  narration.alternatives = alternatives.map(
-    ({ assignment }) =>
-      `${format.instant(assignment.start)} with ${format.practitioner(assignment.practitionerId)}`,
-  );
+  narration.alternatives = alternatives.map(({ assignment, changes }) => {
+    const opening = `${format.instant(assignment.start)} with ${format.practitioner(assignment.practitionerId)}`;
+    const preference = changes.find((change) => change.field === "practitionerId");
+    return preference?.from == null
+      ? opening
+      : `${opening} instead of ${format.practitioner(preference.from)}`;
+  });
   narration.searchNote = searchNote(search, alternatives.length, format);
   return narration;
 }

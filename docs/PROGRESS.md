@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [2.3 — Verified alternatives and truthful search](sessions/session-2.3.md), branch `session/2.3-alternatives`.
-- **Last confirmed session merge at handoff:** 2.1 via [PR #14](https://github.com/Kakumrkr/WhyNot/pull/14) at `155d2a1` (2026-11-17).
+- **Next card after this PR merges:** [3.1 — Static playground design and shell](sessions/session-3.1.md), branch `session/3.1-playground-shell`.
+- **Last confirmed session merge at handoff:** 2.2 via [PR #15](https://github.com/Kakumrkr/WhyNot/pull/15) at `f808ba6` (2026-11-17).
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 qualification list.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 2.3 — Verified alternatives and truthful search. Card: docs/sessions/session-2.3.md
+Session 3.1 — Static playground design and shell. Card: docs/sessions/session-3.1.md
 ```
 
 ## Status
@@ -29,8 +29,8 @@ Session 2.3 — Verified alternatives and truthful search. Card: docs/sessions/s
 | [1.5](sessions/session-1.5.md) | Candidates, matrix and independent reference     | done        | done         | done   | [#10](https://github.com/Kakumrkr/WhyNot/pull/10) |
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | done        | done         | done   | [#12](https://github.com/Kakumrkr/WhyNot/pull/12) |
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | done        | done         | done   | [#14](https://github.com/Kakumrkr/WhyNot/pull/14) |
-| [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | done        | —            | —      | [#15](https://github.com/Kakumrkr/WhyNot/pull/15) |
-| [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | —           | —            | —      | —                                                 |
+| [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | done        | done         | done   | [#15](https://github.com/Kakumrkr/WhyNot/pull/15) |
+| [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | done        | —            | —      | [#16](https://github.com/Kakumrkr/WhyNot/pull/16) |
 | [3.1](sessions/session-3.1.md) | Static playground design and shell               | —           | —            | —      | —                                                 |
 | [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | —           | —            | —      | —                                                 |
 | [3.3](sessions/session-3.3.md) | Inspector and first public preview               | —           | —            | —      | —                                                 |
@@ -59,7 +59,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Gate             | State        | Evidence                                                                                                               |
 | ---------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | Core 1.6         | passed       | PR #12 CI ran 5000-run properties and S benchmark (runs 44126309537, 44126295724); baselines in packages/engine/bench/ |
-| Alternatives 2.3 | pending      | —                                                                                                                      |
+| Alternatives 2.3 | passed       | Local deep suite passed at 5000 runs per property. S alternatives p95 114.9 ms (400 ms target). Evidence in PR #16.    |
 | Preview 3.3      | pending      | —                                                                                                                      |
 | Policy/range 4.3 | pending      | —                                                                                                                      |
 | Release 5.2      | pending      | —                                                                                                                      |
@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**2.2 — Templates, grouping and helpfulness.** Slot evaluations group the full fact dictionary and report the lowest-weight candidate for each practitioner. `TemplateNarrator` renders cited patient and staff wording, eligibility next steps and search status. All 200 tests passed, including H1–H8 wording, E01–E16 edges and grouped P10. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md). See Q-2.2-capability-context for the affirmative H1 qualification list.
+**2.3 — Verified alternatives and truthful search.** Blocked slots return rechecked alternatives in category-diverse order. Alternatives that switch practitioners carry an explicit preference change. Search reports distinguish budget and snapshot truncation. All 206 tests passed, including H1–H8 and the independent P6/P7/P16 search reference. The playground can render projected alternatives and the narrator's search note. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).

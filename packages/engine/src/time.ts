@@ -341,19 +341,56 @@ export function isOnLocalGrid(minute: number, zone: string, grid: number): TimeR
 
 /** Enumerate actual instants on a local date: omit gaps, retain both fold occurrences. */
 export function gridStarts(date: string, zone: string, grid: number): TimeResult<number[]> {
+  const day = localGridDay(date, zone, grid);
+  if (!day.ok) return day;
+  return success(day.value.starts.map(({ start }) => start));
+}
+
+/** Materialize a local day's actual minute-aligned grid and instant bounds. */
+export function localGridDay(
+  date: string,
+  zone: string,
+  grid: number,
+): TimeResult<{
+  from: number;
+  to: number;
+  starts: { start: number; wallMinute: number }[];
+}> {
   if (!Number.isSafeInteger(grid) || grid <= 0)
     return failure("Expected a positive integer grid", ["grid"]);
-  const from = resolveRecurringBoundary(date, "00:00", zone);
-  if (!from.ok) return from;
-  const to = resolveRecurringBoundary(date, "24:00", zone, true);
-  if (!to.ok) return to;
-  const starts: number[] = [];
-  for (let minute = from.value; minute < to.value; minute++) {
-    const aligned = isOnLocalGrid(minute, zone, grid);
-    if (!aligned.ok) return aligned;
-    if (aligned.value) starts.push(minute);
+  const base = calendar(date);
+  const resolvedZone = IANAZone.create(zone);
+  if (base === null || !resolvedZone.isValid) return failure("Invalid date or timezone", ["date"]);
+  const wallStart = base.toMillis() / 60000;
+  const wallEnd = wallStart + 1440;
+  const lower = wallStart - 1440;
+  const upper = wallEnd + 1440;
+  const offset = (minute: number) => resolvedZone.offset(minute * 60000);
+  const initialOffset = offset(lower);
+  const starts: { start: number; wallMinute: number }[] = [];
+  if (
+    Number.isInteger(initialOffset) &&
+    [wallStart, wallEnd, upper].every((minute) => offset(minute) === initialOffset)
+  ) {
+    const from = wallStart - initialOffset;
+    for (let wallMinute = 0; wallMinute < 1440; wallMinute += grid)
+      starts.push({ start: from + wallMinute, wallMinute });
+    return success({ from, to: from + 1440, starts });
   }
-  return success(starts);
+  // Around a transition, walk actual instants so folds are retained and gaps are omitted.
+  // A skipped calendar date has an empty interval at the jump into the next date.
+  let from: number | undefined;
+  let to: number | undefined;
+  let nextDate = upper;
+  for (let start = lower; start < upper; start++) {
+    const wallMinute = start + offset(start) - wallStart;
+    if (wallMinute >= 1440) nextDate = Math.min(nextDate, start);
+    if (wallMinute < 0 || wallMinute >= 1440) continue;
+    from ??= start;
+    to = start + 1;
+    if (wallMinute % grid === 0) starts.push({ start, wallMinute });
+  }
+  return success({ from: from ?? nextDate, to: to ?? nextDate, starts });
 }
 
 /** Half-open overlap: touching boundaries do not overlap. Inputs must be valid intervals. */

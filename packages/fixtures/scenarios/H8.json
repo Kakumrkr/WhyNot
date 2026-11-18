@@ -11,5 +11,14 @@
   "templates": {
     "patient": ["You already have the maximum of 1 appointment that day."],
     "staff": ["The patient has reached the daily booking limit (1 booked, limit 1)."]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 2,
+      "time": "11:00",
+      "practitionerId": "iyer",
+      "category": "other-day",
+      "cost": 6
+    }
+  ]
 }
