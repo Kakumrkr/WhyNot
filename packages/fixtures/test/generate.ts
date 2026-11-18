@@ -206,3 +206,36 @@ export const resourceRuleCaseArbitrary = fc
           }));
     return testCase;
   });
+
+/** Projection cases carry recognizable private values through actual engine facts. */
+export const projectionCaseArbitrary = fc
+  .tuple(resourceRuleCaseArbitrary, fc.uuid(), fc.boolean())
+  .map(([testCase, suffix, validRequest]) => {
+    const { snapshot, request } = testCase;
+    const otherPatientId = `PRIVATE-PATIENT-${suffix}`;
+    const existingServiceId = `PRIVATE-SERVICE-${suffix}`;
+    const reason = `PRIVATE-LEAVE-${suffix}`;
+    snapshot.patients.push({ ...snapshot.patients[0]!, id: otherPatientId });
+    snapshot.services[1]!.id = existingServiceId;
+    for (const [index, booking] of snapshot.bookings.entries()) {
+      booking.id = `PRIVATE-BOOKING-${suffix}-${index}`;
+      booking.patientId = otherPatientId;
+      booking.serviceId = existingServiceId;
+    }
+    for (const practitioner of snapshot.practitioners) {
+      for (const leave of practitioner.timeOff) leave.reason = reason;
+    }
+    return {
+      ...testCase,
+      request: { ...request, start: request.start + (validRequest ? 0 : 1) },
+      secrets: [
+        request.patientId,
+        otherPatientId,
+        existingServiceId,
+        reason,
+        ...snapshot.bookings.map(({ id }) => id),
+        ...snapshot.rooms.map(({ id }) => id),
+        ...snapshot.equipment.map(({ id }) => id),
+      ],
+    };
+  });
