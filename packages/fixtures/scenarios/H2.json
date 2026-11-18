@@ -10,5 +10,15 @@
   "expected": [
     ["equipment-maintenance", "ultrasound-unit"],
     ["equipment-type", "cryo-unit"]
-  ]
+  ],
+  "templates": {
+    "patient": [
+      "A piece of equipment is under maintenance until 12:00.",
+      "Some resources do not meet this service's requirements."
+    ],
+    "staff": [
+      "Ultrasound unit is under maintenance until 12:00.",
+      "Cryotherapy unit is not the required equipment type (ultrasound)."
+    ]
+  }
 }

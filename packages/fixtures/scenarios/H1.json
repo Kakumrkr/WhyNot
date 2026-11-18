@@ -14,5 +14,23 @@
     ["practitioner-hours", "iyer"],
     ["practitioner-hours", "harris"],
     ["practitioner-skill", "chen"]
-  ]
+  ],
+  "templates": {
+    "patient": [
+      "Sonographer Mei Chen does not offer this service.",
+      "This time is outside Physio Tom Harris's working hours.",
+      "This time is outside Nurse Priya Iyer's working hours.",
+      "Dr. Vikram Mehta is unavailable at this time.",
+      "Dr. Lena Okafor does not offer this service.",
+      "Dr. Asha Rao needs a 15-minute gap between appointments."
+    ],
+    "staff": [
+      "Sonographer Mei Chen lacks the required skill (minor-procedure).",
+      "This time is outside Physio Tom Harris's working hours.",
+      "This time is outside Nurse Priya Iyer's working hours.",
+      "Dr. Vikram Mehta is on leave (Fictional annual leave).",
+      "Dr. Lena Okafor lacks the required skill (minor-procedure).",
+      "A 15-minute after-appointment buffer for service minor-procedure blocks this slot for Dr. Asha Rao."
+    ]
+  }
 }

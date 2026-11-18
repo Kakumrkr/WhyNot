@@ -11,5 +11,15 @@
   "expected": [
     ["practitioner-hours", "okafor"],
     ["request-practitioner", "okafor"]
-  ]
+  ],
+  "templates": {
+    "patient": [
+      "This time is outside Dr. Lena Okafor's working hours.",
+      "You requested Dr. Lena Okafor."
+    ],
+    "staff": [
+      "This time is outside Dr. Lena Okafor's working hours.",
+      "The request is restricted to Dr. Lena Okafor."
+    ]
+  }
 }

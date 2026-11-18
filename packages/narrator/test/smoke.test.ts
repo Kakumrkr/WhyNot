@@ -8,9 +8,12 @@ test("narrator built package entry loads in native Node ESM", () => {
     [
       "--input-type=module",
       "--eval",
-      'const entry = await import("@whynot/narrator"); console.log(JSON.stringify(Object.keys(entry)));',
+      `const { TemplateNarrator } = await import("@whynot/narrator");
+       const result = TemplateNarrator.renderPatient({ status: "invalid_request",
+         errors: [{ code: "off_grid", field: "start" }] }, { timeZone: "UTC" });
+       console.log(JSON.stringify([result.source, result.status]));`,
     ],
     { cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8" },
   );
-  expect(output.trim()).toBe("[]");
+  expect(JSON.parse(output)).toEqual(["template", "invalid_request"]);
 });

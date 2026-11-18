@@ -14,5 +14,23 @@
     ["practitioner-skill", "okafor"],
     ["practitioner-hours", "iyer"],
     ["practitioner-hours", "chen"]
-  ]
+  ],
+  "templates": {
+    "patient": [
+      "Physio Tom Harris is fully booked that day.",
+      "This time is outside Dr. Asha Rao's working hours.",
+      "This time is outside Dr. Vikram Mehta's working hours.",
+      "Dr. Lena Okafor does not offer this service.",
+      "This time is outside Nurse Priya Iyer's working hours.",
+      "This time is outside Sonographer Mei Chen's working hours."
+    ],
+    "staff": [
+      "Physio Tom Harris has reached the daily appointment cap (6 booked, limit 6).",
+      "This time is outside Dr. Asha Rao's working hours.",
+      "This time is outside Dr. Vikram Mehta's working hours.",
+      "Dr. Lena Okafor lacks the required skill (physio).",
+      "This time is outside Nurse Priya Iyer's working hours.",
+      "This time is outside Sonographer Mei Chen's working hours."
+    ]
+  }
 }

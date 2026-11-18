@@ -4,7 +4,9 @@ Record unresolved material ambiguity here instead of inventing architecture, rul
 
 ## Open
 
-None.
+### Q-2.2-capability-context
+
+Doc 02's H1 context names the two practitioners who offer the requested procedure. The current slot explanation contracts carry negative skill facts and groups of references to those facts. They have no field for an exhaustive list of qualified practitioners, and doc 04 limits templates to display labels and evaluated facts. H1 renders the supported qualification exclusions under a separate heading. Decide whether to add engine-computed qualified practitioner IDs to the public contract or accept the exclusion wording. The affirmative list is pending that decision.
 
 Add new items here as `### Q-<card>-<slug>` with the question, options considered and what work is blocked. Move them to Resolved as one line once a decision closes them.
 
