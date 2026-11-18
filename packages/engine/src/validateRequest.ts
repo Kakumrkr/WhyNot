@@ -111,6 +111,38 @@ export function validateRequest(
     return invalid("off_grid", ["request", "start"], "Start is off the clinic local grid");
   const date = localDate(start, zone);
   if (!date.ok) return date;
+  const bookingDates = bookingLocalDates(
+    snapshot.bookings.filter((b) => b.status === "confirmed"),
+    zone,
+  );
+  if (!bookingDates.ok) return bookingDates;
+  return buildSlotContext(input, patient, service, date.value, bookingDates.value);
+}
+
+/** Reuse validated snapshot data while resolving the changed slot's recurring schedules. */
+export function buildSlotContext(
+  input: EvaluationInput,
+  patient: Patient,
+  service: Service,
+  date: string,
+  bookingDates: RuleContext["bookingDates"],
+  dates = new Map<string, ReturnType<typeof validatedDatedSchedules>>(),
+): TimeResult<RuleContext> {
+  const { snapshot, request, options } = input;
+  const start = request.start;
+  const end = start + service.durationMin;
+  if (
+    !Number.isSafeInteger(end) ||
+    !Number.isSafeInteger(end + service.bufferAfterMin) ||
+    !Number.isSafeInteger(end + service.roomTurnoverMin) ||
+    !Number.isSafeInteger(start - options.now)
+  )
+    return invalid(
+      "invalid_request",
+      ["request", "start"],
+      "Slot arithmetic exceeds safe minute range",
+    );
+  const zone = snapshot.clinic.timezone;
   const lastDate = localDate(end - 1, zone);
   if (!lastDate.ok) return lastDate;
   const clinicDays: RuleContext["clinicDays"] = [];
@@ -119,9 +151,13 @@ export function validateRequest(
     snapshot.clinic.openingHours,
     ...snapshot.practitioners.flatMap((p) => [p.workingHours, p.breaks]),
   ];
-  let current = date.value;
+  let current = date;
   for (;;) {
-    const dated = validatedDatedSchedules(schedules, current, zone);
+    let dated = dates.get(current);
+    if (dated === undefined) {
+      dated = validatedDatedSchedules(schedules, current, zone);
+      dates.set(current, dated);
+    }
     if (!dated.ok) return dated;
     clinicDays.push({ date: current, hours: dated.value[0]! });
     // These schedules will be consumed by resource checks in 1.4. Reject unsupported
@@ -137,21 +173,16 @@ export function validateRequest(
     if (!next.ok) return next;
     current = next.value;
   }
-  const bookingDates = bookingLocalDates(
-    snapshot.bookings.filter((b) => b.status === "confirmed"),
-    zone,
-  );
-  if (!bookingDates.ok) return bookingDates;
   return {
     ok: true,
     value: {
       ...input,
       patient,
       service,
-      date: date.value,
+      date,
       interval: { from: start, to: end },
       clinicDays,
-      bookingDates: bookingDates.value,
+      bookingDates,
       practitionerHours,
     },
   };

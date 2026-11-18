@@ -71,7 +71,9 @@ export const SearchOptionsSchema = z.strictObject({
 });
 export const EvaluateOptionsSchema = z.strictObject({
   now: MinuteSchema,
-  alternatives: z.union([z.literal(false), SearchOptionsSchema]).default(false),
+  alternatives: z
+    .union([z.literal(false), SearchOptionsSchema])
+    .default({ max: 3, searchDays: 14, budgetEvals: 3000 }),
   costWeights: CostWeightsSchema.optional(),
   trace: z.boolean().default(false),
   includeAdminFix: z.boolean().default(false),

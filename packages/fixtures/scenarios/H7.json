@@ -21,5 +21,21 @@
       "This time is outside Dr. Lena Okafor's working hours.",
       "The request is restricted to Dr. Lena Okafor."
     ]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 2,
+      "time": "10:00",
+      "practitionerId": "okafor",
+      "category": "same-day",
+      "cost": 4
+    },
+    {
+      "day": 2,
+      "time": "09:00",
+      "practitionerId": "rao",
+      "category": "other-practitioner",
+      "cost": 8
+    }
+  ]
 }

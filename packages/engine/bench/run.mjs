@@ -10,6 +10,8 @@ import { buildScenario, riversideMinute } from "../../fixtures/dist/index.js";
 
 const warmup = 1000;
 const samples = 300;
+const alternativesWarmup = 40;
+const alternativesSamples = 120;
 const now = riversideMinute(0, "09:00");
 const scenarios = Array.from({ length: 8 }, (_, i) => {
   const golden = JSON.parse(
@@ -72,9 +74,11 @@ for (const [name, resources, bookings] of [
     snapshot: scale(entry.snapshot, resources, bookings),
   }));
   const metrics = {};
-  for (const operation of ["isBookable", "evaluate"]) {
+  for (const operation of ["isBookable", "evaluate", "evaluateAlternatives"]) {
     const run = (i) => {
       const entry = cases[i % cases.length];
+      if (operation === "evaluateAlternatives")
+        return evaluate(entry.snapshot, entry.request, { now, includeAdminFix: false });
       return operation === "isBookable"
         ? isBookable(entry.snapshot, entry.request, now)
         : evaluate(entry.snapshot, entry.request, {
@@ -83,17 +87,19 @@ for (const [name, resources, bookings] of [
             includeAdminFix: false,
           });
     };
-    for (let i = 0; i < warmup; i++) run(i);
+    const measured = operation === "evaluateAlternatives" ? alternativesSamples : samples;
+    const warmed = operation === "evaluateAlternatives" ? alternativesWarmup : warmup;
+    for (let i = 0; i < warmed; i++) run(i);
     const durations = [];
-    for (let i = 0; i < samples; i++) {
+    for (let i = 0; i < measured; i++) {
       const start = performance.now();
       run(i);
       durations.push(performance.now() - start);
     }
     durations.sort((a, b) => a - b);
     metrics[operation] = {
-      p50Ms: durations[Math.ceil(samples * 0.5) - 1],
-      p95Ms: durations[Math.ceil(samples * 0.95) - 1],
+      p50Ms: durations[Math.ceil(measured * 0.5) - 1],
+      p95Ms: durations[Math.ceil(measured * 0.95) - 1],
     };
     console.log(`${name} ${operation}: ${JSON.stringify(metrics[operation])}`);
   }
@@ -109,6 +115,8 @@ const report = {
   environment,
   warmup,
   samples,
+  alternativesWarmup,
+  alternativesSamples,
   dataset: "H1–H8 round robin; M 3x resources/2x bookings, L 10x resources/1x bookings",
   datasets,
 };
@@ -118,6 +126,7 @@ if (output >= 0) writeFileSync(process.argv[output + 1], JSON.stringify(report, 
 for (const [operation, target] of [
   ["isBookable", 2],
   ["evaluate", 20],
+  ["evaluateAlternatives", 400],
 ]) {
   if (datasets.S[operation].p95Ms > target)
     throw new Error(`${operation} S p95 exceeds ${target}ms`);
@@ -135,9 +144,11 @@ if (baseline !== undefined) {
       (key) => baseline.environment[key] === environment[key],
     ) && JSON.stringify(baseline.environment.nodeFlags) === JSON.stringify(environment.nodeFlags);
   if (comparable) {
-    for (const operation of ["isBookable", "evaluate"])
-      if (datasets.S[operation].p95Ms > baseline.datasets.S[operation].p95Ms * 1.5)
+    for (const operation of ["isBookable", "evaluate", "evaluateAlternatives"]) {
+      const prior = baseline.datasets.S[operation];
+      if (prior !== undefined && datasets.S[operation].p95Ms > prior.p95Ms * 1.5)
         throw new Error(`${operation} S p95 regressed by >50%`);
+    }
   } else
     console.log(
       "Hardware/runtime differs from baseline; absolute S gates checked, relative comparison unavailable.",

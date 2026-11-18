@@ -32,5 +32,14 @@
       "This time is outside Nurse Priya Iyer's working hours.",
       "This time is outside Sonographer Mei Chen's working hours."
     ]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 4,
+      "time": "16:00",
+      "practitionerId": "harris",
+      "category": "other-day",
+      "cost": 12
+    }
+  ]
 }

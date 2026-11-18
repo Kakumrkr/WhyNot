@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { BookingRequestSchema, ClinicSnapshotSchema } from "@whynot/contracts";
+import { BookingRequestSchema, ClinicSnapshotSchema, type Alternative } from "@whynot/contracts";
 import { evaluate, isBookable } from "@whynot/engine";
 import { buildRiverside, buildScenario, riversideMinute } from "../../fixtures/src/index.js";
 
@@ -14,6 +14,13 @@ for (let i = 1; i <= 8; i++) {
       patientId: string;
       practitionerId?: string;
       expected: string[][];
+      alternatives: {
+        day: number;
+        time: string;
+        practitionerId: string;
+        category: Alternative["category"];
+        cost: number;
+      }[];
     } = JSON.parse(
       readFileSync(new URL(`../../fixtures/scenarios/H${i}.json`, import.meta.url), "utf8"),
     );
@@ -47,6 +54,19 @@ for (let i = 1; i <= 8; i++) {
       return [fact.ruleId, fact.subject.id];
     });
     expect(selected.sort()).toEqual([...golden.expected].sort());
+    expect(
+      actual.alternatives.slice(0, golden.alternatives.length).map((a) => ({
+        start: a.assignment.start,
+        practitionerId: a.assignment.practitionerId,
+        category: a.category,
+        cost: a.cost,
+      })),
+    ).toEqual(
+      golden.alternatives.map(({ day, time, ...expected }) => ({
+        ...expected,
+        start: riversideMinute(day, time),
+      })),
+    );
     const next: Record<number, [number, string]> = {
       1: [1, "14:45"],
       2: [3, "12:00"],
@@ -56,7 +76,8 @@ for (let i = 1; i <= 8; i++) {
       7: [2, "10:00"],
       8: [2, "11:00"],
     };
-    if (i === 4)
+    if (i === 4) {
+      expect(actual.alternatives).toEqual([]);
       expect(
         isBookable(
           snapshot,
@@ -64,7 +85,7 @@ for (let i = 1; i <= 8; i++) {
           riversideMinute(0, "09:00"),
         ),
       ).toBe(false);
-    else
+    } else
       expect(
         isBookable(
           snapshot,

@@ -29,5 +29,14 @@
       "Physio Studio lacks the required capability (dressing).",
       "Imaging Room lacks the required capability (dressing)."
     ]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 1,
+      "time": "11:30",
+      "practitionerId": "iyer",
+      "category": "same-day",
+      "cost": 2
+    }
+  ]
 }

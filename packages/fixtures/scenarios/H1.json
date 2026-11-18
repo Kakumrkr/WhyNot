@@ -32,5 +32,14 @@
       "Dr. Lena Okafor lacks the required skill (minor-procedure).",
       "A 15-minute after-appointment buffer for service minor-procedure blocks this slot for Dr. Asha Rao."
     ]
-  }
+  },
+  "alternatives": [
+    {
+      "day": 1,
+      "time": "14:45",
+      "practitionerId": "rao",
+      "category": "same-day",
+      "cost": 1
+    }
+  ]
 }
