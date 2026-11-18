@@ -52,8 +52,9 @@ it(
         expect(actual.status === "bookable").toBe(isBookable(snapshot, request, now));
         if (actual.status !== "blocked") return;
         const { explanation: e } = actual;
-        expect(e.groups).toEqual([]);
-        expect(e.perCandidateSummary).toEqual([]);
+        expect(e.groups.flatMap(({ factIds }) => factIds).sort()).toEqual(
+          e.facts.map(({ id }) => id).sort(),
+        );
         expect(actual.search.status).toBe("disabled");
         expect(actual.adminFix).toBeNull();
         for (const f of e.facts) expect(f.ruleVersion).toBe(catalog[f.ruleId].version);
@@ -72,11 +73,25 @@ it(
             expect(snapshot.services[0]!.requiredEquipmentType).toBeDefined();
           }
           expect(actual.trace?.candidates).toEqual([]);
+          expect(e.perCandidateSummary).toEqual([]);
           expect(e.optimal).toBe(true);
         } else {
           const validated = validateRequest(snapshot, request, { now });
           if (!validated.ok) throw new Error("Unexpected invalid case");
           const matrix = buildMatrix(validated.value);
+          const weights = new Map(e.facts.map(({ id, ruleId }) => [id, catalog[ruleId].weight]));
+          const score = (ids: string[]) => ids.reduce((sum, id) => sum + weights.get(id)!, 0);
+          expect(e.perCandidateSummary).toEqual(
+            [...snapshot.practitioners]
+              .sort((a, b) => a.id.localeCompare(b.id))
+              .map(({ id }) => {
+                const rows = matrix.rows.filter(
+                  ({ assignment }) => assignment.practitionerId === id,
+                );
+                const best = [...rows].sort((a, b) => score(a.factIds) - score(b.factIds))[0]!;
+                return { practitionerId: id, candidate: best.assignment, factIds: best.factIds };
+              }),
+          );
           expect(matrix.rows.every((r) => r.factIds.some((id) => e.primary.includes(id)))).toBe(
             true,
           );
@@ -138,4 +153,38 @@ it("caps trace rows at 500 without changing explanation or feasibility", () => {
   const { trace, ...result } = traced;
   expect(trace?.selected).toEqual(traced.explanation.primary);
   expect(result).toEqual(plain);
+});
+
+it("summarizes the lowest-weight candidate per practitioner, breaking ties by resource IDs", () => {
+  const snapshot = buildMinimalSnapshot();
+  snapshot.services[0]!.requiredRoomCapability = "exam";
+  snapshot.policy.minNoticeMin = 121;
+  snapshot.rooms = ["later", "earlier", "blocked"].map((id) => ({
+    id,
+    displayName: id,
+    capabilities: id === "blocked" ? [] : ["exam"],
+    maintenance: [],
+  }));
+  const request = buildMinimalRequest();
+  const result = evaluate(snapshot, request, { now: demoNow });
+  if (result.status !== "blocked") throw new Error("Expected a notice blocker for all candidates");
+  const { facts, groups, perCandidateSummary, primary } = result.explanation;
+  const capability = facts.find(({ ruleId }) => ruleId === "room-capability")!;
+  expect(groups).toEqual([
+    { id: "request", kind: "request", factIds: primary },
+    { id: "resources", kind: "resources", factIds: [capability.id] },
+  ]);
+  expect(perCandidateSummary).toEqual([
+    {
+      practitionerId: "practitioner-test",
+      candidate: {
+        practitionerId: "practitioner-test",
+        roomId: "earlier",
+        equipmentId: null,
+        start: request.start,
+        end: request.start + 15,
+      },
+      factIds: primary,
+    },
+  ]);
 });

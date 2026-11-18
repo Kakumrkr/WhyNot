@@ -3,9 +3,10 @@ import { validateRequest } from "./validateRequest.js";
 import { buildMatrix } from "./matrix.js";
 import { chooseAssignment } from "./feasibility.js";
 import { explain } from "./explain.js";
+import { groupFacts, summarizePractitioners } from "./groups.js";
 
 /** Evaluate untrusted inputs with an injected clock. Search and policy fixes are disabled
- * until their owning sessions; groups and practitioner summaries arrive in 2.2.
+ * until their owning sessions.
  */
 export function evaluate(snapshot: unknown, request: unknown, options: unknown): StaffEvaluation {
   const validated = validateRequest(snapshot, request, options);
@@ -68,8 +69,8 @@ export function evaluate(snapshot: unknown, request: unknown, options: unknown):
     primary: selection.primary,
     facts: matrix.facts,
     optimal: selection.optimal,
-    groups: [],
-    perCandidateSummary: [],
+    groups: groupFacts(matrix.facts),
+    perCandidateSummary: summarizePractitioners(matrix),
   };
   return {
     status: "blocked",

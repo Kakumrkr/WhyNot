@@ -14,5 +14,20 @@
     ["room-capability", "consult-2"],
     ["room-capability", "physio"],
     ["room-capability", "imaging"]
-  ]
+  ],
+  "templates": {
+    "patient": [
+      "A room is under maintenance until 11:30.",
+      "A room is already in use at this time.",
+      "Some resources do not meet this service's requirements."
+    ],
+    "staff": [
+      "Treatment Room is under maintenance until 11:30.",
+      "Consult 3 overlaps booking h6-dressing.",
+      "Consult 1 lacks the required capability (dressing).",
+      "Consult 2 lacks the required capability (dressing).",
+      "Physio Studio lacks the required capability (dressing).",
+      "Imaging Room lacks the required capability (dressing)."
+    ]
+  }
 }
