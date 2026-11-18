@@ -119,6 +119,24 @@ it("keeps referral guidance cited and separate from verified alternatives", () =
   expect(narration.alternatives).toEqual([]);
 });
 
+it("gives the actual appointment count when existing bookings exceed the daily limit", () => {
+  const snapshot = buildMinimalSnapshot();
+  snapshot.bookings = [0, 30].map((offset) => ({
+    id: `previous-${offset}`,
+    patientId: context.requesterPatientId,
+    practitionerId: "practitioner-test",
+    roomId: "room-test",
+    serviceId: "consult",
+    start: demoNow + offset,
+    end: demoNow + offset + 15,
+    status: "confirmed",
+  }));
+  const narration = TemplateNarrator.renderPatient(blockedPatient(snapshot), display);
+  expect(narration.primary.sentences).toEqual([
+    { text: "You have 2 appointments that day. The limit is 1.", factIds: ["fact-1"] },
+  ]);
+});
+
 it("renders structural failures and time-independent capability proofs without suggesting another time", () => {
   const snapshot = buildMinimalSnapshot();
   snapshot.services[0]!.requiredRoomCapability = "procedure";
@@ -133,6 +151,36 @@ it("renders structural failures and time-independent capability proofs without s
   ]);
   expect(missing.alternatives).toEqual([]);
 });
+
+it.each([
+  ["00:30", "00:45", "01:15"],
+  ["01:05", "01:15", "01:30"],
+])(
+  "shows the offset when maintenance from %s UTC ends in the repeated local hour",
+  (from, start, to) => {
+    const minute = (time: string) => Date.parse(`2026-10-25T${time}:00Z`) / 60000;
+    const snapshot = buildMinimalSnapshot();
+    const request = { ...buildMinimalRequest(), start: minute(start) };
+    const hours = [{ weekday: 7, from: "00:00", to: "06:00" }];
+    snapshot.coverage = { from: request.start - 1440, to: request.start + 1440 };
+    snapshot.clinic.openingHours = hours;
+    snapshot.practitioners[0]!.workingHours = hours;
+    snapshot.rooms[0]!.maintenance = [
+      { id: "fold-maintenance", from: minute(from), to: minute(to) },
+    ];
+    const staff = evaluate(snapshot, request, { now: request.start - 120 });
+    const patient = projectForAudience(staff, "patient", context);
+    const narration = TemplateNarrator.renderPatient(patient, display);
+    expect(narration.primary.sentences).toEqual([
+      {
+        text: expect.stringMatching(
+          new RegExp(`^A room is under maintenance until ${to} GMT(?:\\+0)?\\.$`),
+        ),
+        factIds: ["fact-1"],
+      },
+    ]);
+  },
+);
 
 it("renders only supplied alternatives and describes incomplete searches accurately", () => {
   const snapshot = buildMinimalSnapshot();
