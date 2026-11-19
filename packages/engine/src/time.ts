@@ -372,19 +372,15 @@ export function isOnLocalGrid(minute: number, zone: string, grid: number): TimeR
 
 /** Enumerate actual instants on a local date: omit gaps, retain both fold occurrences. */
 export function gridStarts(date: string, zone: string, grid: number): TimeResult<number[]> {
-  if (!Number.isSafeInteger(grid) || grid <= 0)
-    return failure("Expected a positive integer grid", ["grid"]);
-  const from = resolveRecurringBoundary(date, "00:00", zone);
-  if (!from.ok) return from;
-  const to = resolveRecurringBoundary(date, "24:00", zone, true);
-  if (!to.ok) return to;
-  const starts: number[] = [];
-  for (let minute = from.value; minute < to.value; minute++) {
-    const aligned = isOnLocalGrid(minute, zone, grid);
-    if (!aligned.ok) return aligned;
-    if (aligned.value) starts.push(minute);
+  const day = localGridDay(date, zone, grid);
+  if (!day.ok) return day;
+  const { from, to, starts } = day.value;
+  // Historical offsets with seconds are outside the public minute model.
+  for (const minute of [from, Math.max(from, to - 1)]) {
+    const instant = atMinute(minute, zone);
+    if (!instant.ok) return instant;
   }
-  return success(starts);
+  return success(starts.map(({ start }) => start));
 }
 
 /** Materialize a local day's actual minute-aligned grid and instant bounds. */

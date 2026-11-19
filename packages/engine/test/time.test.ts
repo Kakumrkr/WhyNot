@@ -198,6 +198,16 @@ describe("local grids and half-open intervals", () => {
     expect(gridStarts("2026-03-29", london, 0).ok).toBe(false);
   });
 
+  it("enumerates the actual grid when midnight itself is skipped", () => {
+    const zone = "America/Sao_Paulo";
+    const date = "2018-11-04";
+    expect(resolveRecurringBoundary(date, "00:00", zone).ok).toBe(false);
+    const starts = value(gridStarts(date, zone, 15));
+    expect(starts).toHaveLength(92);
+    expect(starts[0]).toBe(instant("2018-11-04T01:00:00-02:00"));
+    expect(starts.at(-1)).toBe(instant("2018-11-04T23:45:00-02:00"));
+  });
+
   it("accepts exact closing and break adjacency, including midnight spans", () => {
     const hours = { from: 0, to: 600 };
     expect(intervalContains(hours, { from: 590, to: 600 })).toBe(true);

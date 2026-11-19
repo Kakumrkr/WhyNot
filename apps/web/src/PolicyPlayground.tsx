@@ -37,7 +37,7 @@ export function PolicyPlayground({
 }: {
   policy: Policy;
   suggested?: PolicyPatch | undefined;
-  request: Pick<Selection, "service" | "date" | "instant" | "practitioner">;
+  request: Pick<Selection, "service" | "date" | "practitioner"> & { time: string };
 }) {
   const [setting, setSetting] = useState("");
   const [value, setValue] = useState("");
@@ -141,7 +141,7 @@ export function PolicyPlayground({
           <div className="policy-comparison">
             <p>
               <strong>Original request</strong> · {request.service} · {request.date} at{" "}
-              {request.instant.slice(11, 16)} · {request.practitioner}
+              {request.time} · {request.practitioner}
             </p>
             <dl className="changes">
               {result.value.settings.map(({ label, from, to }) => (
