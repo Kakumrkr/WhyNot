@@ -326,7 +326,7 @@ export function App() {
                           selection.date
                         ) : (
                           <time dateTime={selection.instant}>
-                            {selection.date} at {selection.instant.slice(11, 16)}
+                            {selection.date} at {selection.time}
                           </time>
                         )}
                       </dd>
@@ -365,14 +365,14 @@ export function App() {
                   }}
                 />
               )}
-              {selection.instant !== null &&
+              {selection.time !== undefined &&
                 selection.policy &&
                 checked &&
                 checked !== "failed" &&
                 checked.status !== "invalid_request" && (
                   <PolicyPlayground
                     policy={selection.policy}
-                    request={{ ...selection, instant: selection.instant }}
+                    request={{ ...selection, time: selection.time }}
                     suggested={checked.status === "blocked" ? checked.suggestedChanges : undefined}
                   />
                 )}

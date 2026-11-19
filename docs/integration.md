@@ -31,9 +31,9 @@ Call `evaluate(snapshot, request, { now })` to get an assignment, a blocked expl
 
 ## Use snapshot files in the playground
 
-Open **Synthetic snapshot files** and select a UTF-8 JSON file with `schemaVersion: 1`, `snapshot` and `now`. Use the [Harbor example](../examples/node/snapshot.json) or download the current scenario with **Export snapshot JSON**. The file describes clinic data and the frozen clock. On import, the playground starts in patient view with the first patient and service in file order. **Reset imported snapshot** returns to the curated selection. Reloading the page also clears the import.
+Open **Synthetic snapshot files** and select a UTF-8 JSON file with `schemaVersion: 1`, `snapshot` and `now`. Use the [Harbor example](../examples/node/snapshot.json) or download the current scenario with **Export snapshot JSON**. The file describes clinic data and the frozen clock. On import, the playground starts in patient view with the first patient and service in file order. **Reset imported snapshot** returns to the curated selection. Reloading or using browser history also clears the import.
 
-Playground limits are 256 KiB, 100 practitioners, 100 rooms, 100 equipment units, 5,000 bookings, 20,000 real candidate combinations per service and 31 covered local dates. The file stays in tab memory until reset or reload. The export is a local download, and shareable links contain curated selections only. Use fictional data.
+Playground limits are 256 KiB, 100 practitioners, 100 rooms, 100 equipment units, 5,000 bookings, 20,000 real candidate combinations per service and 31 covered local dates. The file stays in tab memory. The export is a local download, and shareable links contain curated selections only. Use fictional data.
 
 ## Extend the rules in source
 

@@ -156,3 +156,56 @@ test("opens the exported curated snapshot and handles the absence of a usable st
     page.getByRole("heading", { name: "No appointment request to check" }),
   ).toBeVisible();
 });
+
+test("offers starts on an imported date with a skipped local midnight", async ({ page }) => {
+  await page.goto("/");
+  const file = await openFiles(page);
+  const envelope = SyntheticSnapshotEnvelopeSchema.parse(
+    JSON.parse(await readFile(ownSnapshot, "utf8")),
+  );
+  const { snapshot } = envelope;
+  snapshot.clinic.timezone = "America/Sao_Paulo";
+  snapshot.clinic.openingHours = [{ weekday: 7, from: "09:00", to: "12:00" }];
+  snapshot.practitioners[0]!.workingHours = snapshot.clinic.openingHours;
+  snapshot.coverage = {
+    from: Date.parse("2018-11-04T01:00:00-02:00") / 60000,
+    to: Date.parse("2018-11-05T00:00:00-02:00") / 60000,
+  };
+  envelope.now = Date.parse("2018-11-04T06:00:00-02:00") / 60000;
+  await file.setInputFiles(jsonFile(envelope));
+  const request = page.getByRole("region", { name: "Requested appointment" });
+  await expect(request.getByText("2018-11-04 at 09:00")).toBeVisible();
+  await expect(request.getByRole("status")).toHaveText("This time is available");
+  await page.getByText("Choose a start", { exact: true }).click();
+  await page.getByRole("button", { name: "09:15 Available", exact: true }).click();
+  await expect(request.getByText("2018-11-04 at 09:15")).toBeVisible();
+  await expect(request.getByRole("status")).toHaveText("This time is available");
+});
+
+test("distinguishes repeated wall times by offset in an imported clinic", async ({ page }) => {
+  await page.goto("/");
+  const file = await openFiles(page);
+  const envelope = SyntheticSnapshotEnvelopeSchema.parse(
+    JSON.parse(await readFile(ownSnapshot, "utf8")),
+  );
+  const { snapshot } = envelope;
+  snapshot.clinic.timezone = "Europe/Berlin";
+  snapshot.clinic.openingHours = [{ weekday: 7, from: "01:00", to: "04:00" }];
+  snapshot.practitioners[0]!.workingHours = snapshot.clinic.openingHours;
+  snapshot.coverage = {
+    from: Date.parse("2026-10-25T00:00:00+02:00") / 60000,
+    to: Date.parse("2026-10-26T00:00:00+01:00") / 60000,
+  };
+  envelope.now = Date.parse("2026-10-24T19:00:00+02:00") / 60000;
+  await file.setInputFiles(jsonFile(envelope));
+  await expect(page.getByText("Imported snapshot active.")).toBeVisible();
+  const request = page.getByRole("region", { name: "Requested appointment" });
+  await page.getByText("Choose a start", { exact: true }).click();
+  for (const offset of ["+02:00", "+01:00"]) {
+    await page.getByRole("button", { name: `02:00 (UTC${offset}) Available`, exact: true }).click();
+    await expect(request.getByText(`2026-10-25 at 02:00 (UTC${offset})`)).toHaveAttribute(
+      "datetime",
+      `2026-10-25T02:00:00${offset}`,
+    );
+  }
+});

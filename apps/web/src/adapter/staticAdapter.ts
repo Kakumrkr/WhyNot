@@ -169,18 +169,24 @@ function availability(
   if (hours.length === 0) return [];
   const grid = gridStarts(date, timezone, slotGridMinutes);
   const starts = importedDuration === undefined ? timeValue(grid) : grid.ok ? grid.value : [];
-  return starts
+  const scheduled = starts
     .filter((start) => hours.some(({ from, to }) => start >= from && start < to))
     .filter(
       (start) =>
         importedDuration === undefined ||
         (start >= snapshot.coverage.from && start + importedDuration <= snapshot.coverage.to),
     )
-    .map((start) => ({
-      start,
-      time: timeValue(formatOffsetInstant(start, timezone)).slice(11, 16),
-      available: isBookable(snapshot, { ...request, start }, now),
-    }));
+    .map((start) => {
+      const instant = timeValue(formatOffsetInstant(start, timezone));
+      return { start, time: instant.slice(11, 16), offset: instant.slice(19) };
+    });
+  const counts = new Map<string, number>();
+  for (const { time } of scheduled) counts.set(time, (counts.get(time) ?? 0) + 1);
+  return scheduled.map(({ start, time, offset }) => ({
+    start,
+    time: counts.get(time) === 1 ? time : `${time} (UTC${offset === "Z" ? "+00:00" : offset})`,
+    available: isBookable(snapshot, { ...request, start }, now),
+  }));
 }
 
 type ImportedSelections = {
@@ -268,6 +274,8 @@ function openSnapshot(
           : undefined) ??
         null);
   const request = start === null ? null : BookingRequestSchema.parse({ ...baseRequest, start });
+  const instant = start === null ? null : timeValue(formatOffsetInstant(start, timezone));
+  const time = starts.find((option) => option.start === start)?.time ?? instant?.slice(11, 16);
   const services = options(snapshot.services);
   const practitioners = options(snapshot.practitioners);
   const display = {
@@ -293,7 +301,8 @@ function openSnapshot(
     endDate,
     periods,
     start,
-    instant: start === null ? null : timeValue(formatOffsetInstant(start, timezone)),
+    instant,
+    time,
     serviceId: service.id,
     service: service.displayName,
     practitionerId: practitioner?.id,

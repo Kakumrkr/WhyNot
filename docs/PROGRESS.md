@@ -79,4 +79,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 **5.1 — Developer adoption and package validation.** Built ESM roots, schema/template subpaths and an independent Harbor clinic example with isolated tarball installation and declaration checks. The playground imports and exports versioned synthetic snapshots with a frozen clock, validates ingestion limits and references, and keeps imported selections in memory. The integration guide documents record mapping, rule extension and supported limits.
 
-`pnpm verify` passed all 235 tests. Playwright passed all 60 desktop and mobile checks, including axe, import limits, text rendering, reset, export and privacy. The clean package consumer passed. The affirmative qualification wording for H1 and H11 remains open.
+`pnpm verify` passed all 236 tests. Playwright passed all 64 desktop and mobile checks, including axe, import limits, text rendering, reset, export, privacy and DST. The clean package consumer passed. The affirmative qualification wording for H1 and H11 remains open.

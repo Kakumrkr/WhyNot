@@ -48,7 +48,8 @@ export function SnapshotControls({
     <details className="card snapshot-controls">
       <summary>Synthetic snapshot files</summary>
       <p id="snapshot-help">
-        Use fictional data only. Imported snapshots stay in this tab until reset or reload.
+        Use fictional data only. Imported snapshots stay in this tab and clear on reset, reload or
+        browser navigation.
       </p>
       <label htmlFor="snapshot-file">Import snapshot JSON</label>
       <input
