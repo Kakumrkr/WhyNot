@@ -1,9 +1,16 @@
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { SlotCheck } from "./adapter/staticAdapter.js";
+import { StaffInspector } from "./StaffInspector.js";
 
 type Blocked = Extract<SlotCheck, { status: "blocked" }>;
 type Alternative = Blocked["alternatives"][number];
+
+const categoryLabels: Record<Alternative["category"], string> = {
+  "same-day": "Same day",
+  "other-practitioner": "Different practitioner",
+  "other-day": "Different day",
+};
 
 function Sentences({ sentences }: { sentences: Blocked["narration"]["primary"]["sentences"] }) {
   return (
@@ -34,6 +41,16 @@ function Alternatives({
           {alternatives.map((alternative) => (
             <li key={alternative.title}>
               <h3>{alternative.title}</h3>
+              <dl className="changes alternative-ranking">
+                <div>
+                  <dt>Category</dt>
+                  <dd>{categoryLabels[alternative.category]}</dd>
+                </div>
+                <div>
+                  <dt>Search cost</dt>
+                  <dd>{alternative.cost}</dd>
+                </div>
+              </dl>
               <dl className="changes">
                 {alternative.changes.map(({ label, from, to }) => (
                   <div key={label}>
@@ -65,6 +82,9 @@ function Alternatives({
       )}
       <div className="search-note">
         <p>{search.note}</p>
+        {alternatives.length > 0 && (
+          <p>Search cost scores appointment changes. The search also prioritizes varied options.</p>
+        )}
         {search.coverage && (
           <p>
             Search window {search.coverage.from} to {search.coverage.to} ·{" "}
@@ -114,12 +134,16 @@ export function ExplanationJourney({
 }) {
   if (result.status === "bookable")
     return (
-      <section className="card outcome" aria-labelledby="bookable-title">
-        <h2 id="bookable-title">Bookable in this demo</h2>
-        <p className="supporting">
-          {result.practitioner} can take this appointment. The playground only checks availability.
-        </p>
-      </section>
+      <div className="outcome">
+        <section className="card" aria-labelledby="bookable-title">
+          <h2 id="bookable-title">Bookable in this demo</h2>
+          <p className="supporting">
+            {result.practitioner} can take this appointment. The playground only checks
+            availability.
+          </p>
+        </section>
+        {result.inspector && <StaffInspector inspection={result.inspector} />}
+      </div>
     );
 
   const { narration, candidates, alternatives, search } = result;
@@ -163,6 +187,7 @@ export function ExplanationJourney({
         )}
       </section>
       <Alternatives alternatives={alternatives} search={search} onAlternative={onAlternative} />
+      {result.inspector && <StaffInspector inspection={result.inspector} />}
     </div>
   );
 }

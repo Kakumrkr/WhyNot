@@ -88,6 +88,7 @@ select {
   left: 1rem;
   z-index: 1;
   transform: translateY(-200%);
+  clip-path: inset(50%);
   padding: 0.65rem 1rem;
   background: var(--surface);
   color: var(--accent);
@@ -95,6 +96,7 @@ select {
 
 .skip-link:focus {
   transform: none;
+  clip-path: none;
 }
 
 .intro {
@@ -344,12 +346,14 @@ div.outcome {
 }
 
 .explanation details,
+.inspector details,
 .starts details {
   border-top: 1px solid var(--line);
   margin-top: 0.75rem;
 }
 
 .explanation summary,
+.inspector summary,
 .starts summary {
   align-content: center;
   min-height: 2.75rem;
@@ -372,8 +376,96 @@ div.outcome {
   margin-bottom: 0.75rem;
 }
 
-.changes > div + div {
+.changes:not(.alternative-ranking) > div + div {
   margin-top: 0.4rem;
+}
+
+.alternative-ranking {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+
+.inspector {
+  min-width: 0;
+}
+
+.inspector-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-block: 1rem;
+}
+
+.inspector-stats > :first-child {
+  grid-column: 1 / -1;
+}
+
+.inspector-stats > div {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+
+.inspector-stats dt,
+.inspector-facts dt {
+  font-weight: 650;
+}
+
+.inspector-facts > div {
+  padding-block: 0.45rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.inspector h3 {
+  margin-top: 1rem;
+}
+
+.matrix-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 0.85rem;
+}
+
+.matrix-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.matrix-scroll caption {
+  padding-block: 0.4rem;
+  text-align: left;
+  color: var(--quiet);
+}
+
+.matrix-scroll :is(th, td) {
+  min-width: 7rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.matrix-scroll thead th {
+  background: var(--paper);
+}
+
+.matrix-scroll th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+}
+
+.matrix-scroll th span {
+  display: block;
+  color: var(--quiet);
+  font-size: 0.8125rem;
+}
+
+.inspector .primary-fact {
+  color: var(--accent);
+  background: var(--tint);
 }
 
 .changes dt {
