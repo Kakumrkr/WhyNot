@@ -51,7 +51,15 @@ test("restores scenario and audience through reload and browser history", async 
   await expect(scenario).toHaveValue("H2");
 });
 
-test("uses validated date, service, and practitioner selections", async ({ page }) => {
+test("uses validated date, service, and practitioner selections", async ({ page }, testInfo) => {
+  await page.goto("/?scenarioId=H7");
+  const scenario = page.getByRole("combobox", { name: "Scenario" });
+  await expect(scenario.locator("option:checked")).toHaveText("Consultation with Dr. Okafor");
+  await page.screenshot({
+    path: testInfo.outputPath("preferred-practitioner.png"),
+    fullPage: true,
+  });
+
   await page.goto("/?scenarioId=H7&date=2026-11-19&serviceId=ultrasound&practitionerId=chen");
   const request = page.getByRole("region", { name: "Requested appointment" });
   await expect(request.getByText("2026-11-19 at 09:00")).toBeVisible();
