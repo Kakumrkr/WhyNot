@@ -21,40 +21,17 @@ import {
 } from "@whynot/engine";
 import { buildScenario, demoNow } from "@whynot/fixtures";
 import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
+import { calendarRange } from "./calendarRange.js";
+import { policyPreview } from "./policyPreview.js";
+import { scenarios } from "./scenarios.js";
 import { staffInspector } from "./staffInspector.js";
 
-const scenarios = [
-  { id: "H1", label: "Minor procedure", day: 1, time: "14:30", serviceId: "minor-procedure" },
-  { id: "H2", label: "Ultrasound", day: 3, time: "10:00", serviceId: "ultrasound" },
-  { id: "H3", label: "Same-day consultation", day: 0, time: "10:00", serviceId: "consult" },
-  {
-    id: "H4",
-    label: "Physiotherapy follow-up",
-    day: 2,
-    time: "11:00",
-    serviceId: "physio-follow-up",
-    patientId: "patient-1",
-  },
-  {
-    id: "H5",
-    label: "Physiotherapy assessment",
-    day: 2,
-    time: "16:00",
-    serviceId: "physio-assessment",
-  },
-  { id: "H6", label: "Wound dressing", day: 1, time: "11:00", serviceId: "dressing" },
-  {
-    id: "H7",
-    label: "Consultation with Dr. Okafor",
-    day: 2,
-    time: "09:00",
-    serviceId: "consult",
-    practitionerId: "okafor",
-  },
-  { id: "H8", label: "Blood test", day: 1, time: "11:00", serviceId: "bloods" },
-];
-
 const parameters = new Set(["scenarioId", "audience", "date", "serviceId", "practitionerId"]);
+const calendarPeriods = [
+  { days: 1, label: "One day" },
+  { days: 5, label: "Five days" },
+  { days: 7, label: "Seven days" },
+];
 export const anyPractitioner = "any";
 
 function timeValue<T>(result: { ok: true; value: T } | { ok: false }): T {
@@ -90,10 +67,15 @@ function staffCandidates(
 function check(
   snapshot: ClinicSnapshot,
   request: BookingRequest,
+  now: number,
   audience: "patient" | "staff",
   display: TemplateDisplay,
 ) {
-  const evaluated = evaluate(snapshot, request, { now: demoNow, trace: audience === "staff" });
+  const evaluated = evaluate(snapshot, request, {
+    now,
+    trace: audience === "staff",
+    includeAdminFix: audience === "staff",
+  });
   const context = { requesterPatientId: request.patientId };
   const patient = audience === "patient" ? projectForAudience(evaluated, "patient", context) : null;
   const result = patient ?? evaluated;
@@ -142,6 +124,7 @@ function check(
     narration,
     inspector,
     candidates: "adminFix" in result ? staffCandidates(result, sentences, display) : [],
+    suggestedChanges: "adminFix" in result ? result.adminFix?.changes : undefined,
     alternatives: result.alternatives.map((alternative, index) => {
       const { assignment, changes, category, cost } = alternative;
       const preference = changes.find((change) => change.field === "practitionerId");
@@ -169,8 +152,14 @@ function check(
   };
 }
 
-function availability(snapshot: ClinicSnapshot, request: BookingRequest, date: string) {
-  const { timezone, openingHours, slotGridMinutes } = snapshot.clinic;
+function availability(
+  snapshot: ClinicSnapshot,
+  request: BookingRequest,
+  date: string,
+  now: number,
+) {
+  const { timezone, openingHours, slotGridMinutes, closedDates } = snapshot.clinic;
+  if (closedDates.includes(date)) return [];
   const hours = timeValue(datedSchedule(openingHours, date, timezone));
   if (hours.length === 0) return [];
   const starts = timeValue(gridStarts(date, timezone, slotGridMinutes));
@@ -179,7 +168,7 @@ function availability(snapshot: ClinicSnapshot, request: BookingRequest, date: s
     .map((start) => ({
       start,
       time: timeValue(formatOffsetInstant(start, timezone)).slice(11, 16),
-      available: isBookable(snapshot, { ...request, start }, demoNow),
+      available: isBookable(snapshot, { ...request, start }, now),
     }));
 }
 
@@ -187,7 +176,7 @@ function availability(snapshot: ClinicSnapshot, request: BookingRequest, date: s
 export const staticAdapter = {
   scenarios: scenarios.map(({ id, label }) => ({ id, label })),
 
-  open(query: string, selectedStart?: unknown) {
+  open(query: string, selectedStart?: unknown, selectedDays?: unknown) {
     const params = new URLSearchParams(query);
     for (const key of params.keys()) {
       if (!parameters.has(key) || params.getAll(key).length > 1) return null;
@@ -197,16 +186,32 @@ export const staticAdapter = {
     const audience = params.get("audience") ?? "patient";
     if (!scenario || (audience !== "patient" && audience !== "staff")) return null;
     if (params.has("date") && !DateSchema.safeParse(params.get("date")).success) return null;
+    const preferredDays =
+      calendarPeriods.find((entry) => entry.days === selectedDays)?.days ?? scenario.days ?? 1;
 
     const snapshot = ClinicSnapshotSchema.parse(buildScenario(scenario.id));
     const { timezone } = snapshot.clinic;
-    const defaultDate = timeValue(
-      addLocalDays(timeValue(localDate(demoNow, timezone)), scenario.day),
-    );
+    const demoDate = timeValue(localDate(demoNow, timezone));
+    const defaultDate = timeValue(addLocalDays(demoDate, scenario.day));
+    const now = scenario.now
+      ? timeValue(
+          resolveRecurringBoundary(
+            timeValue(addLocalDays(demoDate, scenario.now.day)),
+            scenario.now.time,
+            timezone,
+          ),
+        )
+      : demoNow;
     const date = params.get("date") ?? defaultDate;
     const firstDate = timeValue(localDate(snapshot.coverage.from, timezone));
     const lastDate = timeValue(localDate(snapshot.coverage.to - 1, timezone));
     if (date < firstDate || date > lastDate) return null;
+    const periods = calendarPeriods
+      .map((period) => ({ ...period, endDate: timeValue(addLocalDays(date, period.days - 1)) }))
+      .filter(({ endDate }) => endDate <= lastDate);
+    const period = periods.find(({ days }) => days === preferredDays) ?? periods.at(-1);
+    if (!period) throw new Error("No calendar period for a covered date");
+    const { days, endDate } = period;
     const fallback = timeValue(resolveRecurringBoundary(date, scenario.time, timezone));
     const start =
       typeof selectedStart === "number" &&
@@ -236,6 +241,7 @@ export const staticAdapter = {
     const practitioners = options(snapshot.practitioners);
     const display = {
       timeZone: timezone,
+      services: labels(snapshot.services),
       practitioners: labels(snapshot.practitioners),
       rooms: labels(snapshot.rooms),
       equipment: labels(snapshot.equipment),
@@ -250,18 +256,38 @@ export const staticAdapter = {
       audience,
       timezone,
       date,
+      days,
+      endDate,
+      periods,
       start,
       instant: timeValue(formatOffsetInstant(start, timezone)),
       serviceId: service.id,
       service: service.displayName,
       practitionerId: practitioner?.id ?? anyPractitioner,
       practitioner: practitioner?.displayName ?? "Any practitioner",
-      clock: timeValue(formatOffsetInstant(demoNow, timezone)),
+      clock: timeValue(formatOffsetInstant(now, timezone)),
       dates,
       services,
       practitioners,
-      starts: availability(snapshot, request, date),
-      check: () => check(snapshot, request, audience, display),
+      starts: availability(snapshot, request, date, now),
+      check: () => check(snapshot, request, now, audience, display),
+      range: () =>
+        calendarRange(
+          snapshot,
+          {
+            fromDate: date,
+            days,
+            patientId: request.patientId,
+            serviceId: request.serviceId,
+            ...(request.practitionerId === undefined
+              ? {}
+              : { practitionerId: request.practitionerId }),
+          },
+          now,
+          audience,
+          display,
+        ),
+      policy: audience === "staff" ? policyPreview(snapshot, request, now, display) : null,
     };
   },
 };
