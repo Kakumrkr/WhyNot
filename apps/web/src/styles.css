@@ -128,7 +128,7 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
   gap: 1.25rem;
-  align-items: stretch;
+  align-items: start;
 }
 
 .card {
@@ -145,7 +145,7 @@ legend {
 
 .setup > label {
   display: block;
-  margin-block: 1.75rem 0.4rem;
+  margin-block: 1.1rem 0.4rem;
 }
 
 select,
@@ -264,6 +264,157 @@ button {
 
 .disclosure {
   padding-block: 1.4rem 2.5rem;
+}
+
+.secondary {
+  color: var(--accent);
+  background: var(--surface);
+}
+
+.secondary:hover,
+.start[aria-pressed="true"] {
+  background: var(--tint);
+}
+
+.reset {
+  margin-top: 1.25rem;
+}
+
+.workspace-column,
+div.outcome {
+  display: grid;
+  min-width: 0;
+  gap: inherit;
+}
+
+.supporting,
+.search-note {
+  margin-top: 0.65rem;
+  color: var(--quiet);
+}
+
+.start-grid,
+.alternative-list {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0;
+  margin: 1rem 0 0;
+  list-style: none;
+}
+
+.start-grid {
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  max-height: 12.5rem;
+  overflow-y: auto;
+  padding: 0.4rem;
+  scrollbar-gutter: stable;
+}
+
+.start {
+  display: grid;
+  width: 100%;
+  place-content: center;
+  gap: 0.05rem;
+  border-color: var(--control-line);
+  padding: 0.35rem 0.4rem;
+  color: var(--ink);
+}
+
+.start span {
+  color: var(--quiet);
+  font-size: 0.8125rem;
+}
+
+.start[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.outcome h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.explanation ul {
+  padding-inline-start: 1.25rem;
+}
+
+.explanation li + li {
+  margin-top: 0.4rem;
+}
+
+.explanation details,
+.starts details {
+  border-top: 1px solid var(--line);
+  margin-top: 0.75rem;
+}
+
+.explanation summary,
+.starts summary {
+  align-content: center;
+  min-height: 2.75rem;
+  color: var(--accent);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.guidance {
+  border-left: 3px solid var(--accent);
+  padding: 0.45rem 0 0.45rem 0.75rem;
+}
+
+.alternative-list > li {
+  border-top: 1px solid var(--line);
+  padding-block: 0.9rem 0.35rem;
+}
+
+.changes {
+  margin-bottom: 0.75rem;
+}
+
+.changes > div + div {
+  margin-top: 0.4rem;
+}
+
+.changes dt {
+  font-size: 0.875rem;
+  color: var(--quiet);
+  font-weight: 650;
+}
+
+.search-note {
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.search-note p + p {
+  margin-top: 0.35rem;
+}
+
+dialog {
+  width: min(100% - 2.5rem, 28rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+dialog::backdrop {
+  background: rgb(23 45 42 / 55%);
+}
+
+dialog p {
+  margin-top: 0.75rem;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: end;
+  margin-top: 1.25rem;
 }
 
 @media (max-width: 46rem) {

@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [3.2 — Patient and staff explanation journey](sessions/session-3.2.md), branch `session/3.2-explanation-journey`.
-- **Last confirmed session merge at handoff:** 2.3 via [PR #16](https://github.com/Kakumrkr/WhyNot/pull/16) at `efa711c` (2026-11-18 UTC).
+- **Next card after this PR merges:** [3.3 — Inspector and first public preview](sessions/session-3.3.md), branch `session/3.3-inspector-preview`.
+- **Last confirmed session merge at handoff:** 3.1 via [PR #17](https://github.com/Kakumrkr/WhyNot/pull/17) at `9091669`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 qualification list.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 3.2 — Patient and staff explanation journey. Card: docs/sessions/session-3.2.md
+Session 3.3 — Inspector and first public preview. Card: docs/sessions/session-3.3.md
 ```
 
 ## Status
@@ -31,8 +31,8 @@ Session 3.2 — Patient and staff explanation journey. Card: docs/sessions/sessi
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | done        | done         | done   | [#14](https://github.com/Kakumrkr/WhyNot/pull/14) |
 | [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | done        | done         | done   | [#15](https://github.com/Kakumrkr/WhyNot/pull/15) |
 | [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | done        | done         | done   | [#16](https://github.com/Kakumrkr/WhyNot/pull/16) |
-| [3.1](sessions/session-3.1.md) | Static playground design and shell               | done        | —            | —      | [#17](https://github.com/Kakumrkr/WhyNot/pull/17) |
-| [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | —           | —            | —      | —                                                 |
+| [3.1](sessions/session-3.1.md) | Static playground design and shell               | done        | done         | done   | [#17](https://github.com/Kakumrkr/WhyNot/pull/17) |
+| [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | done        | —            | —      | [#18](https://github.com/Kakumrkr/WhyNot/pull/18) |
 | [3.3](sessions/session-3.3.md) | Inspector and first public preview               | —           | —            | —      | —                                                 |
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | —           | —            | —      | —                                                 |
 | [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | —           | —            | —      | —                                                 |
@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**3.1 — Static playground design and shell.** D-073 establishes the [design tokens](design/design-system.md). The synchronous adapter opens H1–H8 with a frozen clock, validated link selections and an audience-projected slot result. The shell shows the request and its availability; 3.2 owns explanation and alternative rendering. The gate covers 210 unit/property tests and 10 built-app browser checks at 1280 and 390 pixels, with screenshots and axe scans. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
+**3.2 — Patient and staff explanation journey.** The adapter checks starts with the engine and renders projected patient templates or staff templates with per-practitioner candidate summaries. Verified alternatives display changes and search scope, then re-evaluate the revised request. Selected start times live in browser history state. Curated URLs retain scenario, audience, date, service and practitioner selections. Verification covers 210 unit/property tests and 24 built-app browser checks at 1280 and 390 pixels, with screenshots and axe scans. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
