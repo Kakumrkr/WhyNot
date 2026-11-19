@@ -23,3 +23,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
+      - run: pnpm --filter @whynot/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @whynot/web test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playground-browser-evidence
+          path: |
+            .tools/playwright/**/*.png
+            .tools/playwright/**/*.zip
+          include-hidden-files: true
+          if-no-files-found: ignore

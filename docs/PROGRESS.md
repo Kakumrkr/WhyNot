@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [3.1 — Static playground design and shell](sessions/session-3.1.md), branch `session/3.1-playground-shell`.
-- **Last confirmed session merge at handoff:** 2.2 via [PR #15](https://github.com/Kakumrkr/WhyNot/pull/15) at `f808ba6` (2026-11-17).
+- **Next card after this PR merges:** [3.2 — Patient and staff explanation journey](sessions/session-3.2.md), branch `session/3.2-explanation-journey`.
+- **Last confirmed session merge at handoff:** 2.3 via [PR #16](https://github.com/Kakumrkr/WhyNot/pull/16) at `efa711c` (2026-11-18 UTC).
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 qualification list.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 3.1 — Static playground design and shell. Card: docs/sessions/session-3.1.md
+Session 3.2 — Patient and staff explanation journey. Card: docs/sessions/session-3.2.md
 ```
 
 ## Status
@@ -30,8 +30,8 @@ Session 3.1 — Static playground design and shell. Card: docs/sessions/session-
 | [1.6](sessions/session-1.6.md) | Minimal explanations and core gate               | done        | done         | done   | [#12](https://github.com/Kakumrkr/WhyNot/pull/12) |
 | [2.1](sessions/session-2.1.md) | Patient and staff output projection              | done        | done         | done   | [#14](https://github.com/Kakumrkr/WhyNot/pull/14) |
 | [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | done        | done         | done   | [#15](https://github.com/Kakumrkr/WhyNot/pull/15) |
-| [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | done        | —            | —      | [#16](https://github.com/Kakumrkr/WhyNot/pull/16) |
-| [3.1](sessions/session-3.1.md) | Static playground design and shell               | —           | —            | —      | —                                                 |
+| [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | done        | done         | done   | [#16](https://github.com/Kakumrkr/WhyNot/pull/16) |
+| [3.1](sessions/session-3.1.md) | Static playground design and shell               | done        | —            | —      | [#17](https://github.com/Kakumrkr/WhyNot/pull/17) |
 | [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | —           | —            | —      | —                                                 |
 | [3.3](sessions/session-3.3.md) | Inspector and first public preview               | —           | —            | —      | —                                                 |
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | —           | —            | —      | —                                                 |
@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**2.3 — Verified alternatives and truthful search.** Blocked slots return rechecked alternatives in category-diverse order. Alternatives that switch practitioners carry an explicit preference change. Search reports distinguish budget and snapshot truncation. All 210 tests passed, including H1–H8 and the independent P6/P7/P16 search reference. The playground can render projected alternatives and the narrator's search note. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
+**3.1 — Static playground design and shell.** D-073 establishes the [design tokens](design/design-system.md). The synchronous adapter opens H1–H8 with a frozen clock, validated link selections and an audience-projected slot result. The shell shows the request and its availability; 3.2 owns explanation and alternative rendering. The gate covers 210 unit/property tests and 10 built-app browser checks at 1280 and 390 pixels, with screenshots and axe scans. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
