@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "H10",
+  "snapshot": "riverside",
+  "overrides": "H10",
+  "now": { "day": 3, "time": "09:00" },
+  "request": {
+    "patientId": "patient-0",
+    "serviceId": "consult",
+    "practitionerId": "okafor",
+    "fromDate": "2026-11-20",
+    "days": 1
+  },
+  "commonCause": [
+    ["practitioner-hours", "okafor"],
+    ["request-practitioner", "okafor"]
+  ],
+  "nextAvailable": { "day": 7, "time": "10:00", "practitionerId": "okafor" }
+}

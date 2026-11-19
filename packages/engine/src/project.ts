@@ -1,11 +1,15 @@
 import {
   PatientEvaluationSchema,
+  PatientRangeExplanationSchema,
+  type Alternative,
   type Assignment,
   type Explanation,
   type Fact,
   type PatientEvaluation,
   type PatientExplanation,
+  type PatientRangeExplanation,
   type PublicFact,
+  type RangeExplanation,
   type StaffEvaluation,
   type ValidationIssue,
 } from "@whynot/contracts";
@@ -75,10 +79,10 @@ function projectFact(fact: Fact): PublicFactDetails {
   }
 }
 
-function projectExplanation(explanation: Explanation): PatientExplanation {
+function projectFacts(source: Fact[]) {
   const keysBySourceId = new Map<string, string>();
   const publicFactsByKey = new Map<string, PublicFactDetails>();
-  for (const fact of explanation.facts) {
+  for (const fact of source) {
     const projected = projectFact(fact);
     const key = JSON.stringify(projected);
     keysBySourceId.set(fact.id, key);
@@ -103,6 +107,11 @@ function projectExplanation(explanation: Explanation): PatientExplanation {
     });
     return [...new Set(ordinals)].sort((a, b) => a - b).map((ordinal) => `fact-${ordinal}`);
   }
+  return { facts, remap };
+}
+
+function projectExplanation(explanation: Explanation): PatientExplanation {
+  const { facts, remap } = projectFacts(explanation.facts);
   const groups = explanation.groups.map(({ kind, practitionerId, factIds }) => ({
     kind,
     ...(practitionerId === undefined ? {} : { practitionerId }),
@@ -129,6 +138,8 @@ function projectError({ code, path }: ValidationIssue) {
     case "serviceId":
     case "practitionerId":
     case "start":
+    case "fromDate":
+    case "days":
       return { code, field: requestField };
     default:
       return { code, field: "request" as const };
@@ -143,6 +154,62 @@ function projectAssignment({
   return { practitionerId, start, end };
 }
 
+function projectAlternative({ assignment, category, cost, changes }: Alternative) {
+  return {
+    assignment: projectAssignment(assignment),
+    category,
+    cost,
+    changes: changes.map((change) =>
+      change.field === "start"
+        ? { field: change.field, from: change.from, to: change.to }
+        : { field: change.field, from: change.from, to: change.to },
+    ),
+  };
+}
+
+type StaffBlockedRange = Extract<RangeExplanation, { status: "fully_blocked" }>;
+type PublicBlockedRange = Extract<PatientRangeExplanation, { status: "fully_blocked" }>;
+
+function isStaffRange(output: StaffBlockedRange | PublicBlockedRange): output is StaffBlockedRange {
+  const first = output.facts[0];
+  return (
+    (first !== undefined && "subject" in first) ||
+    (output.nextAvailable !== null && "request" in output.nextAvailable)
+  );
+}
+
+function projectBlockedRange(output: StaffBlockedRange) {
+  const { facts, remap } = projectFacts(output.facts);
+  return PatientRangeExplanationSchema.parse({
+    status: output.status,
+    bookableCount: output.bookableCount,
+    facts,
+    commonCause: remap(output.commonCause),
+    context: remap(output.context),
+    segments: output.segments.map((segment) => ({ ...segment, factIds: remap(segment.factIds) })),
+    nextAvailable: output.nextAvailable === null ? null : projectAlternative(output.nextAvailable),
+    nextSearch: output.nextSearch,
+    meta: output.meta,
+  });
+}
+
+/** Preserve the range evidence for staff. */
+export function projectForAudience(
+  output: RangeExplanation,
+  audience: "staff",
+  context: ProjectionContext,
+): RangeExplanation;
+/** Remap range evidence and remove private assignment and fact details for patients. */
+export function projectForAudience(
+  output: RangeExplanation | PatientRangeExplanation,
+  audience: "patient",
+  context: ProjectionContext,
+): PatientRangeExplanation;
+export function projectForAudience(
+  output: RangeExplanation,
+  audience: "staff" | "patient",
+  context: ProjectionContext,
+): RangeExplanation | PatientRangeExplanation;
 /** Preserve engine evidence while limiting patient output to the public slot contract. */
 export function projectForAudience(
   output: StaffEvaluation,
@@ -164,9 +231,9 @@ export function projectForAudience(
   context: ProjectionContext,
 ): StaffEvaluation | PatientEvaluation;
 export function projectForAudience(
-  output: StaffEvaluation | PatientEvaluation,
+  output: StaffEvaluation | PatientEvaluation | RangeExplanation | PatientRangeExplanation,
   audience: "staff" | "patient",
-): StaffEvaluation | PatientEvaluation {
+): StaffEvaluation | PatientEvaluation | RangeExplanation | PatientRangeExplanation {
   if (audience === "staff") return output;
   if (output.status === "invalid_request") {
     return {
@@ -175,6 +242,12 @@ export function projectForAudience(
         "path" in error ? projectError(error) : { code: error.code, field: error.field },
       ),
     };
+  }
+  if (output.status === "has_availability") return PatientRangeExplanationSchema.parse(output);
+  if (output.status === "fully_blocked") {
+    return isStaffRange(output)
+      ? projectBlockedRange(output)
+      : PatientRangeExplanationSchema.parse(output);
   }
   const { schemaVersion, engineVersion, policyVersionId, evaluatedAt } = output.meta;
   const meta = { schemaVersion, engineVersion, policyVersionId, evaluatedAt };
@@ -190,16 +263,7 @@ export function projectForAudience(
   return {
     status: output.status,
     explanation: projectExplanation(output.explanation),
-    alternatives: output.alternatives.map(({ assignment, category, cost, changes }) => ({
-      assignment: projectAssignment(assignment),
-      category,
-      cost,
-      changes: changes.map((change) =>
-        change.field === "start"
-          ? { field: change.field, from: change.from, to: change.to }
-          : { field: change.field, from: change.from, to: change.to },
-      ),
-    })),
+    alternatives: output.alternatives.map(projectAlternative),
     search,
     meta,
   };
