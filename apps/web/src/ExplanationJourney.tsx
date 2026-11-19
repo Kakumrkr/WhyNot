@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import type { SlotCheck } from "./adapter/staticAdapter.js";
 
 type Blocked = Extract<SlotCheck, { status: "blocked" }>;
@@ -47,7 +48,8 @@ function Alternatives({
                 type="button"
                 className="secondary"
                 onClick={() => {
-                  setChosen(alternative);
+                  // showModal moves focus immediately, so commit the accessible description first.
+                  flushSync(() => setChosen(alternative));
                   dialog.current?.showModal();
                   cancel.current?.focus();
                 }}
