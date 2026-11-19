@@ -38,7 +38,12 @@ for (let i = 1; i <= 8; i++) {
       serviceId: string;
       patientId: string;
       practitionerId?: string;
-      templates: { patient: string[]; staff: string[]; guidance?: string[] };
+      templates: {
+        patient: string[];
+        staff: string[];
+        guidance?: string[];
+        policySettings?: string[];
+      };
     } = JSON.parse(
       readFileSync(new URL(`../../fixtures/scenarios/H${i}.json`, import.meta.url), "utf8"),
     );
@@ -60,6 +65,7 @@ for (let i = 1; i <= 8; i++) {
       ),
       rooms: new Map(snapshot.rooms.map(({ id, displayName }) => [id, displayName])),
       equipment: new Map(snapshot.equipment.map(({ id, displayName }) => [id, displayName])),
+      services: new Map(snapshot.services.map(({ id, displayName }) => [id, displayName])),
     };
     const publicText = TemplateNarrator.renderPatient(patient, display);
     const staffText = TemplateNarrator.renderStaff(staff, display);
@@ -70,6 +76,9 @@ for (let i = 1; i <= 8; i++) {
       [...golden.templates.staff].sort(),
     );
     expect(publicText.guidance.map(({ text }) => text)).toEqual(golden.templates.guidance ?? []);
+    expect(publicText).not.toHaveProperty("policyFix");
+    expect(staffText.policyFix?.settings).toEqual(golden.templates.policySettings);
+    expect(staffText.policyFix?.summary.factIds).toEqual(staff.adminFix?.factIds);
     checkCitations(publicText, patient.explanation);
     checkCitations(staffText, staff.explanation);
     expect(TemplateNarrator.renderPatient(patient, display)).toEqual(publicText);

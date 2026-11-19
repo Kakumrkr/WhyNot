@@ -23,7 +23,7 @@ it(
         const before = structuredClone({ snapshot, request });
         freeze(snapshot);
         freeze(request);
-        const options = { now, trace: true, alternatives: false } as const;
+        const options = { now, trace: true, alternatives: false, includeAdminFix: false } as const;
         const actual = evaluate(snapshot, request, options);
         expect(StaffEvaluationSchema.safeParse(actual).success).toBe(true);
         expect(evaluate(snapshot, request, options)).toEqual(actual);
@@ -128,7 +128,7 @@ it("returns safe invalid errors and valid bookable/blocked results with disabled
   const result = evaluate(snapshot, request, {
     now: demoNow,
     alternatives: false,
-    includeAdminFix: true,
+    includeAdminFix: false,
   });
   expect(result.status).toBe("blocked");
   if (result.status !== "blocked") throw new Error("Expected notice blocker");

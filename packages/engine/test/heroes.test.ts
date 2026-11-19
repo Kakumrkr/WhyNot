@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { BookingRequestSchema, ClinicSnapshotSchema, type Alternative } from "@whynot/contracts";
-import { evaluate, isBookable } from "@whynot/engine";
+import {
+  BookingRequestSchema,
+  ClinicSnapshotSchema,
+  type Alternative,
+  type PolicyPatch,
+} from "@whynot/contracts";
+import { evaluate, isBookable, previewPolicyChanges } from "@whynot/engine";
 import { buildRiverside, buildScenario, riversideMinute } from "../../fixtures/src/index.js";
 
 for (let i = 1; i <= 8; i++) {
@@ -14,6 +19,7 @@ for (let i = 1; i <= 8; i++) {
       patientId: string;
       practitionerId?: string;
       expected: string[][];
+      policyChanges?: PolicyPatch;
       alternatives: {
         day: number;
         time: string;
@@ -36,6 +42,18 @@ for (let i = 1; i <= 8; i++) {
     expect(actual.status).toBe("blocked");
     if (actual.status !== "blocked") throw new Error("Hero must be blocked");
     expect(actual.explanation.optimal).toBe(true);
+    if (golden.policyChanges !== undefined) {
+      expect(actual.adminFix?.changes).toEqual(golden.policyChanges);
+      const preview = previewPolicyChanges(snapshot, request, golden.policyChanges, {
+        now: riversideMinute(0, "09:00"),
+        alternatives: false,
+      });
+      if (!preview.ok) throw new Error("Expected a valid hero preview");
+      expect(preview.value.baseline).toMatchObject({ status: "blocked", adminFix: null });
+      expect(preview.value.modified.status).toBe("bookable");
+    } else {
+      expect(actual.adminFix).toBeNull();
+    }
     if (i === 1) {
       expect(
         actual.explanation.facts.filter((f) =>
