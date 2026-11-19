@@ -15,6 +15,8 @@ Zod schemas in contracts define shared types. Required capabilities:
 - PolicyPatch: typed allowed entity/field/value operations, no arbitrary object paths. PolicyPreview: concrete changes, baseline and modified evaluations without mutating the input.
 - RangeExplanation: invalid_request/has_availability/fully_blocked variants, bookableCount, commonCause/context IDs, segments with member starts and fact references, nextAvailable, nextSearch, facts/meta. has_availability has empty segments/commonCause/context and no next search.
 
+A fully blocked range with no eligible starts or closed dates has no segment or fact evidence. Range search can report `window_limited` with null bounds and zero evaluations when it could not inspect any covered window (D-074).
+
 Start schema version 1 before publication; breaking published changes need a bump/decision. Before owning sessions, advanced fields have explicit disabled/null values and their functions are not public. Do not expose malformed placeholder results.
 
 Alternative changes must be non-no-op, unique per field and have destinations matching the changed request. Patient changes match the assignment's start and any explicitly selected practitioner; null means any practitioner. Schema validation cannot compare the original request or establish feasibility; the engine must still verify both (D-061).

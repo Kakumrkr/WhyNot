@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "H9",
+  "snapshot": "riverside",
+  "overrides": "H9",
+  "now": { "day": 0, "time": "06:00" },
+  "request": {
+    "patientId": "patient-1",
+    "serviceId": "ultrasound",
+    "fromDate": "2026-11-16",
+    "days": 5
+  },
+  "commonCause": [["patient-eligibility-referral", "patient-1"]],
+  "nextAvailable": null,
+  "guidance": "Ask your GP for a referral."
+}

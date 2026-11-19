@@ -266,3 +266,14 @@ controls. Controls have at least 44 CSS pixels of height and status is conveyed
 in words. Use a two-column layout when space permits and a single column on
 small screens. The design-system reference maps these choices to the CSS
 tokens and gives guidance for subsequent playground cards. Resolves Q-3.
+
+**D-074 · Represent empty range and search domains without invented times.**
+An open date can have zero eligible starts when no grid-aligned appointment
+fits its openings. That date contributes no segment. A fully blocked range
+may therefore have an empty segment list and evidence dictionary. Actual clinic
+closures still have dated structural evidence. When next-available search
+cannot inspect any covered search window, report `window_limited` with null
+bounds and zero evaluations. In a verified next opening, the existing
+alternative contract uses the start of the requested local-date range as its
+temporal reference. Its day cost measures the local-day difference with the
+usual preference-change cost. No calculation assumes a requested time of day.
