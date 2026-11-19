@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { anyPractitioner, staticAdapter, type SlotCheck } from "./adapter/staticAdapter.js";
+import { CalendarJourney, type CalendarCheck } from "./CalendarJourney.js";
 import { ExplanationJourney } from "./ExplanationJourney.js";
+import { PolicyPlayground } from "./PolicyPlayground.js";
 import "./styles.css";
 
 function openSelection() {
-  const history = window.history.state as { start?: unknown } | null;
+  const history = window.history.state as { start?: unknown; days?: unknown } | null;
   try {
-    return { selection: staticAdapter.open(window.location.search, history?.start) };
+    return { selection: staticAdapter.open(window.location.search, history?.start, history?.days) };
   } catch {
     return { selection: null, failed: true };
   }
@@ -17,6 +19,7 @@ export function App() {
   const [screen, setScreen] = useState(openSelection);
   const { selection } = screen;
   const [checked, setChecked] = useState<SlotCheck | "failed" | null>(null);
+  const [calendar, setCalendar] = useState<CalendarCheck | "failed" | null>(null);
   const playground = useRef<HTMLElement>(null);
   const scenarioPicker = useRef<HTMLSelectElement>(null);
   const requestTitle = useRef<HTMLHeadingElement>(null);
@@ -25,6 +28,7 @@ export function App() {
   useEffect(() => {
     const restore = () => {
       setChecked(null);
+      setCalendar(null);
       setScreen(openSelection());
     };
     window.addEventListener("popstate", restore);
@@ -47,27 +51,33 @@ export function App() {
       } catch {
         setChecked("failed");
       }
+      try {
+        setCalendar(selection.range());
+      } catch {
+        setCalendar("failed");
+      }
     }, 0);
     return () => window.clearTimeout(timer);
   }, [selection]);
 
-  function update(query: URLSearchParams, start?: number, reset = false) {
+  function update(query: URLSearchParams, start?: number, reset = false, days?: number) {
     const url = new URL(window.location.href);
     url.search = query.toString();
     if (reset) {
       window.history.replaceState(null, "", url);
       focusAfterReset.current = true;
     } else {
-      window.history.pushState(start === undefined ? null : { start }, "", url);
+      window.history.pushState({ start, days }, "", url);
     }
     setChecked(null);
+    setCalendar(null);
     setScreen(openSelection());
   }
 
-  function edit(changes: Record<string, string>, start?: number) {
+  function edit(changes: Record<string, string>, start?: number, days = selection?.days) {
     const query = new URLSearchParams(window.location.search);
     for (const [key, value] of Object.entries(changes)) query.set(key, value);
-    update(query, start);
+    update(query, start, false, days);
   }
 
   const verdict =
@@ -183,6 +193,18 @@ export function App() {
                     <option key={date}>{date}</option>
                   ))}
                 </select>
+                <label htmlFor="calendar-period">Calendar period</label>
+                <select
+                  id="calendar-period"
+                  value={selection.days}
+                  onChange={(event) => edit({}, selection.start, Number(event.target.value))}
+                >
+                  {selection.periods.map(({ days, label }) => (
+                    <option key={days} value={days}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
                 <button
                   className="secondary reset"
                   type="button"
@@ -191,6 +213,15 @@ export function App() {
                   Reset selections
                 </button>
               </section>
+              <CalendarJourney
+                result={calendar}
+                date={selection.date}
+                endDate={selection.endDate}
+                onNext={({ date, practitionerId, start }) => {
+                  requestTitle.current?.focus();
+                  edit({ date, practitionerId: practitionerId ?? anyPractitioner }, start, 1);
+                }}
+              />
               <section className="card starts" aria-labelledby="starts-title">
                 <h2 id="starts-title">Appointment starts</h2>
                 {selection.starts.length === 0 ? (
@@ -268,6 +299,16 @@ export function App() {
                   }}
                 />
               )}
+              {selection.policy &&
+                checked &&
+                checked !== "failed" &&
+                checked.status !== "invalid_request" && (
+                  <PolicyPlayground
+                    policy={selection.policy}
+                    request={selection}
+                    suggested={checked.status === "blocked" ? checked.suggestedChanges : undefined}
+                  />
+                )}
             </div>
           </div>
         ) : (
