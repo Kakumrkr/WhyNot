@@ -8,7 +8,11 @@
   "serviceId": "physio-follow-up",
   "patientId": "patient-1",
   "expected": [["patient-eligibility-returning", "patient-1"]],
+  "policyChanges": [
+    { "entity": "service", "id": "physio-follow-up", "field": "eligibility", "value": "any" }
+  ],
   "templates": {
+    "policySettings": ["Set Physio follow-up eligibility to allow new and returning patients."],
     "patient": ["This service is available to returning patients."],
     "staff": ["Service eligibility is returning-only and the patient is new."],
     "guidance": [

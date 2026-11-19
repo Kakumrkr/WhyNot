@@ -175,7 +175,7 @@ describe("snapshot and request contracts", () => {
       now: 0,
       alternatives: { max: 3, searchDays: 14, budgetEvals: 3000 },
       trace: false,
-      includeAdminFix: false,
+      includeAdminFix: true,
     });
   });
   it("rejects every dangling booking reference with an exact structured path", () => {
