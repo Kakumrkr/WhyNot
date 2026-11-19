@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**4.1 — Verified policy patch engine.** Staff evaluations include the least-cost supported patch whose candidate passes all rules after the settings change. Policy previews compare copied snapshots for the same request and clock, with fix generation disabled. Staff templates describe hypothetical settings and cite their supporting facts. `pnpm verify` passed 217 tests, and P11 and P15 each passed 5,000 runs. Full default evaluation measured 133.27 ms S p95. Range evaluations can disable policy fixes through `includeAdminFix: false`.
+**4.1 — Verified policy patch engine.** Staff evaluations include the least-cost supported patch whose candidate passes all rules after the settings change. Policy previews compare copied snapshots for the same request and clock, with fix generation disabled. Staff templates describe hypothetical settings and cite their supporting facts. `pnpm verify` passed 218 tests, and P11 and P15 each passed 5,000 runs. Full default evaluation measured 133.27 ms S p95. Range evaluations can disable policy fixes through `includeAdminFix: false`.
