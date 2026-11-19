@@ -109,7 +109,7 @@ Q-1–Q-5 with current owners (the original table with obsolete session numbers 
 | --- | --------------------------------------------------------------------------------- | ---------------------------------- |
 | Q-1 | Resolved by D-043: pinned supported Node/pnpm and compatible stable libraries     | 0.1                                |
 | Q-2 | PGlite btree_gist/concurrency support; record evidence and real-Postgres fallback | P1                                 |
-| Q-3 | Accessible calm clinic design tokens and typography                               | 3.1                                |
+| Q-3 | Accessible calm clinic design tokens and typography                               | Resolved by D-073                  |
 | Q-4 | Whether AI adds value, output constraints, provider/model if justified            | A1/A2                              |
 | Q-5 | Full-stack hosting optional; static Pages is fixed                                | P5, only if human requests hosting |
 
@@ -258,3 +258,11 @@ Extends D-071; product scope, rules, goldens and targets are unchanged.
   verification workflow is optional (amends D-071's milestone requirement).
 - Scripts: `pnpm test:quick <files>` runs selected tests after building packages;
   `pnpm test:deep` runs the whole suite at FC_NUM_RUNS=5000.
+
+**D-073 · Accessible clinic playground design.** Riverside uses ink on warm
+off-white and white, with deep teal for controls and a distinct visible focus
+ring. Headings use a local serif stack, with a system sans-serif for body and
+controls. Controls have at least 44 CSS pixels of height and status is conveyed
+in words. Use a two-column layout when space permits and a single column on
+small screens. The design-system reference maps these choices to the CSS
+tokens and gives guidance for subsequent playground cards. Resolves Q-3.

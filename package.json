@@ -15,6 +15,7 @@
     "typecheck": "pnpm -r --filter \"./packages/**\" build && tsc --noEmit -p tsconfig.json && pnpm -r typecheck",
     "test": "pnpm -r --filter \"./packages/**\" build && vitest run",
     "test:quick": "vitest run",
+    "test:e2e": "pnpm build && pnpm --filter @whynot/web test:e2e",
     "test:deep": "pnpm -r --filter \"./packages/**\" build && vitest run --config vitest.deep.config.ts",
     "build": "pnpm -r build",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
