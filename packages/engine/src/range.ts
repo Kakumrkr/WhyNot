@@ -7,9 +7,9 @@ import {
   type ValidationIssue,
 } from "@whynot/contracts";
 import { verifyAssignment } from "./feasibility.js";
-import { factorViolations } from "./matrix.js";
 import { rangeEvidence } from "./rangeEvidence.js";
 import { searchNextOpening } from "./rangeSearch.js";
+import { checkClinic } from "./rules/clinic.js";
 import {
   addLocalDays,
   bookingLocalDates,
@@ -109,19 +109,34 @@ function planDay(input: RangeInput, date: string) {
   if (!grid.ok) return grid;
   const hours = input.opening(date);
   if (!hours.ok) return hours;
-  const windows = hours.value.map(() => ({ starts: [] as number[] }));
-  for (const { start } of grid.value.starts) {
+  const windows: { opening: Bounds; starts: { start: number; to: number }[] }[] = [];
+  for (const interval of hours.value) {
+    const previous = windows.at(-1);
+    if (previous !== undefined && previous.opening.to >= interval.from)
+      previous.opening.to = Math.max(previous.opening.to, interval.to);
+    else windows.push({ opening: { ...interval }, starts: [] });
+  }
+  let issues: ValidationIssue[] = [];
+  for (const [index, { start }] of grid.value.starts.entries()) {
+    const window = windows.find(({ opening }) => start >= opening.from && start < opening.to);
+    if (window === undefined) continue;
     const end = start + input.service.durationMin;
-    const index = hours.value.findIndex(({ from, to }) => start >= from && end <= to);
-    if (index < 0) continue;
-    if (!Number.isSafeInteger(start + input.snapshot.clinic.slotGridMinutes))
-      return issue("invalid_request", "snapshot", "Grid start window exceeds safe minute range");
-    // Overlapping opening entries must not count the same instant more than once.
-    windows[index]!.starts.push(start);
+    if (end > window.opening.to) {
+      if (window.opening.to !== grid.value.to) continue;
+      // Reuse the clinic rule when a candidate extends beyond today's final opening.
+      const slot = input.slot(date, { ...input.preference, start });
+      if (!slot.ok) {
+        issues = slot.issues;
+        break;
+      }
+      if (checkClinic(slot.value).length > 0) continue;
+    }
+    const to = grid.value.starts[index + 1]?.start ?? grid.value.to;
+    window.starts.push({ start, to });
   }
   return {
     ok: true as const,
-    value: { date, bounds: grid.value, closed: windows.length === 0, windows },
+    value: { date, bounds: grid.value, closed: windows.length === 0, windows, issues },
   };
 }
 
@@ -146,6 +161,7 @@ export function explainRange(
     if (!date.ok) return invalid(date.issues);
     const plan = planDay(value, date.value);
     if (!plan.ok) return invalid(plan.issues);
+    if (plan.value.issues.length > 0) return invalid(plan.value.issues);
     const { from, to } = value.snapshot.coverage;
     if (plan.value.bounds.from < from || plan.value.bounds.to > to)
       return invalid([
@@ -172,14 +188,22 @@ export function explainRange(
   let bookableCount = 0;
   for (const { date, windows } of plans) {
     for (const { starts } of windows) {
-      const contexts = [];
-      for (const start of starts) {
+      const members = [];
+      for (const { start, to } of starts) {
+        if (start + value.service.durationMin > value.snapshot.coverage.to)
+          return invalid([
+            {
+              code: "outside_coverage",
+              path: ["fromDate"],
+              message: "An eligible appointment extends beyond snapshot coverage",
+            },
+          ]);
         const context = value.slot(date, { ...value.preference, start });
         if (!context.ok) return invalid(context.issues);
         if (verifyAssignment(context.value) !== null) bookableCount++;
-        contexts.push(context.value);
+        members.push({ to, context: context.value });
       }
-      if (contexts.length > 0) open.push({ date, contexts });
+      if (members.length > 0) open.push({ date, members });
     }
   }
   const meta = {
@@ -201,16 +225,9 @@ export function explainRange(
       meta,
     };
   const evidence = rangeEvidence(
-    open.map(({ date, contexts }) => ({
-      date,
-      members: contexts.map((context) => ({
-        start: context.interval.from,
-        factors: factorViolations(context),
-      })),
-    })),
+    open,
     plans.filter(({ closed }) => closed).map(({ date }) => date),
     value.snapshot.clinic.id,
-    value.snapshot.clinic.slotGridMinutes,
   );
   const next = searchNextOpening(value, last.date, bounds, planDay);
   return { status: "fully_blocked", bookableCount: 0, ...evidence, ...next, meta };

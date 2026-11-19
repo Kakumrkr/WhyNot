@@ -284,3 +284,79 @@ it("includes the 14th forward day and excludes the next calendar date", () => {
     nextSearch: { status: "complete", to: riversideMinute(15, "00:00"), evaluated: 0 },
   });
 });
+
+it("counts and finds appointments across touching same-day and overnight openings", () => {
+  const snapshot = buildMinimalSnapshot();
+  snapshot.services[0]!.durationMin = 30;
+  snapshot.clinic.openingHours = [
+    { weekday: 2, from: "11:00", to: "11:15" },
+    { weekday: 2, from: "11:15", to: "11:30" },
+  ];
+  snapshot.practitioners[0]!.workingHours = [{ weekday: 2, from: "11:00", to: "11:30" }];
+  const tuesday = { ...request, fromDate: "2026-11-17" };
+  const options = { now: demoNow, searchDays: 1 };
+  expect(run(snapshot, tuesday, options)).toMatchObject({
+    status: "has_availability",
+    bookableCount: 1,
+  });
+  expect(run(snapshot, request, options)).toMatchObject({
+    nextAvailable: { assignment: { start: riversideMinute(1, "11:00") } },
+  });
+
+  snapshot.clinic.openingHours = [
+    { weekday: 2, from: "23:45", to: "24:00" },
+    { weekday: 3, from: "00:00", to: "00:15" },
+  ];
+  snapshot.practitioners[0]!.workingHours = snapshot.clinic.openingHours;
+  expect(run(snapshot, tuesday, options)).toMatchObject({
+    status: "has_availability",
+    bookableCount: 1,
+  });
+  const opening = run(snapshot, request, options);
+  expect(opening).toMatchObject({
+    nextAvailable: {
+      assignment: { start: riversideMinute(1, "23:45"), end: riversideMinute(2, "00:15") },
+    },
+  });
+  if (opening.status !== "fully_blocked") throw new Error("Expected a next opening");
+  expect(isBookable(snapshot, opening.nextAvailable?.request, demoNow)).toBe(true);
+
+  snapshot.coverage.to = riversideMinute(2, "00:00");
+  expect(run(snapshot, tuesday, options)).toMatchObject({
+    status: "invalid_request",
+    errors: [{ code: "outside_coverage" }],
+  });
+  expect(run(snapshot, request, options)).toMatchObject({
+    nextAvailable: null,
+    nextSearch: { status: "window_limited", evaluated: 0 },
+  });
+});
+
+it("keeps different-cause start windows disjoint across a local grid gap", () => {
+  const snapshot = buildMinimalSnapshot();
+  const midnight = parseOffsetInstant("2026-03-29T00:00:00Z");
+  const nextDate = parseOffsetInstant("2026-03-30T00:00:00+01:00");
+  const lateStart = parseOffsetInstant("2026-03-29T02:15:00+01:00");
+  if (!midnight.ok || !nextDate.ok || !lateStart.ok) throw new Error("Expected explicit instants");
+  snapshot.coverage = { from: midnight.value, to: nextDate.value + 1440 };
+  snapshot.clinic.slotGridMinutes = 45;
+  snapshot.clinic.openingHours = [{ weekday: 7, from: "00:00", to: "04:00" }];
+  snapshot.practitioners[0]!.workingHours = [{ weekday: 7, from: "00:00", to: "00:30" }];
+  snapshot.policy.minNoticeMin = 60;
+  const result = run(
+    snapshot,
+    { ...request, fromDate: "2026-03-29" },
+    { now: midnight.value, searchDays: 1 },
+  );
+  if (result.status !== "fully_blocked") throw new Error("Expected blocked range");
+  expect(result.commonCause).toEqual([]);
+  expect(result.segments).toMatchObject([
+    { closedDay: false, from: midnight.value, to: lateStart.value },
+    { closedDay: false, from: lateStart.value },
+  ]);
+  expect(
+    result.segments.map(({ factIds }) => [
+      ...new Set(result.facts.filter(({ id }) => factIds.includes(id)).map(({ ruleId }) => ruleId)),
+    ]),
+  ).toEqual([["min-notice"], ["practitioner-hours"]]);
+});

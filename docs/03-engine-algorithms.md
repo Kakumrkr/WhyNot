@@ -85,9 +85,9 @@ Apply each patch and re-evaluate against all rules. Discard proposals that fail,
 
 RangeRequest: patientId, serviceId, optional practitionerId, fromDate, days 1–7. Validate before scanning. List grid starts whose full appointment fits clinic opening intervals. A closed date has an explicit closed-day segment with no invented slot. If any start is bookable, return has_availability with count and empty explanation fields.
 
-An open date with no fitting start contributes no segment (D-074). Count a start covered by overlapping opening entries once, assigning it to the first containing opening by start then end.
+An open date with no fitting start contributes no segment (D-074). Merge touching or overlapping clinic openings as continuous coverage, matching slot evaluation when coverage continues across midnight (D-075).
 
-For fully blocked ranges, evaluate slots without alternatives/admin fixes. Signature is sorted (ruleId, subject.id) pairs. Merge consecutive starts on the same date and opening interval with equal signatures. Retain memberStarts, all fact IDs and windows. Segment [from,to) denotes starts; to = last start + grid, not last appointment end. Closed dates use a dedicated closedDay flag/date and no time bounds.
+For fully blocked ranges, evaluate slots without alternatives/admin fixes. Signature is sorted (ruleId, subject.id) pairs. Merge consecutive starts on the same date and continuous opening with equal signatures. Retain memberStarts, all fact IDs and windows. Segment [from,to) denotes starts. Its end is the next actual grid instant on the same date, or the end of the local date for its last grid start (D-075). Closed dates use a dedicated closedDay flag/date and no time bounds.
 
 For each signature pair present in every slot, collect its actual fact instances. Common cause is the union of those facts only if their per-slot subsets alone cover every row at every slot. Return real FactIds from the dictionary, never signature pairs in ID fields. Otherwise commonCause empty and invariant capability facts become context; segment facts plus context retain each slot's evidence. Closed-day structural facts participate via their own structural sufficiency check.
 

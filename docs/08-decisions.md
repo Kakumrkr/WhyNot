@@ -277,3 +277,12 @@ bounds and zero evaluations. In a verified next opening, the existing
 alternative contract uses the start of the requested local-date range as its
 temporal reference. Its day cost measures the local-day difference with the
 usual preference-change cost. No calculation assumes a requested time of day.
+
+**D-075 · Keep range start windows aligned to the actual clinic grid.**
+Touching or overlapping opening entries offer continuous clinic coverage,
+matching single-slot evaluation. A start may fit across midnight if clinic
+coverage continues and the whole appointment is within the snapshot. Keep
+segments separate by local date. End a start window at the next actual grid
+instant on that date, or the end of the local date for its last grid start.
+On a regular grid this advances by one grid step where another grid start
+exists. Around offset changes it keeps adjacent windows disjoint.

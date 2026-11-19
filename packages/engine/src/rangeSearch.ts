@@ -30,14 +30,19 @@ export function searchNextOpening(
     }
     from ??= Math.max(plan.value.bounds.from, snapshot.coverage.from);
     to = Math.min(plan.value.bounds.to, snapshot.coverage.to);
-    const starts = plan.value.windows.flatMap(({ starts }) => starts);
+    const starts = plan.value.windows.flatMap(({ starts }) => starts.map(({ start }) => start));
     days.push({
       date: date.value,
       starts: starts.filter(
-        (start) => start >= snapshot.coverage.from && start + service.durationMin <= to,
+        (start) =>
+          start >= snapshot.coverage.from && start + service.durationMin <= snapshot.coverage.to,
       ),
     });
-    if (plan.value.bounds.to > snapshot.coverage.to) {
+    if (
+      plan.value.issues.length > 0 ||
+      plan.value.bounds.to > snapshot.coverage.to ||
+      starts.some((start) => start + service.durationMin > snapshot.coverage.to)
+    ) {
       limited = true;
       break;
     }
