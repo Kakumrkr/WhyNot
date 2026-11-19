@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { anyPractitioner, staticAdapter, type SlotCheck } from "./adapter/staticAdapter.js";
 import { ExplanationJourney } from "./ExplanationJourney.js";
+import { PolicyPlayground } from "./PolicyPlayground.js";
 import "./styles.css";
 
 function openSelection() {
@@ -268,6 +269,16 @@ export function App() {
                   }}
                 />
               )}
+              {selection.policy &&
+                checked &&
+                checked !== "failed" &&
+                checked.status !== "invalid_request" && (
+                  <PolicyPlayground
+                    policy={selection.policy}
+                    request={selection}
+                    suggested={checked.status === "blocked" ? checked.suggestedChanges : undefined}
+                  />
+                )}
             </div>
           </div>
         ) : (

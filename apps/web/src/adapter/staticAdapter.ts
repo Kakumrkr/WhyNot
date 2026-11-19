@@ -21,6 +21,7 @@ import {
 } from "@whynot/engine";
 import { buildScenario, demoNow } from "@whynot/fixtures";
 import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
+import { policyPreview } from "./policyPreview.js";
 import { staffInspector } from "./staffInspector.js";
 
 const scenarios = [
@@ -142,6 +143,7 @@ function check(
     narration,
     inspector,
     candidates: "adminFix" in result ? staffCandidates(result, sentences, display) : [],
+    suggestedChanges: "adminFix" in result ? result.adminFix?.changes : undefined,
     alternatives: result.alternatives.map((alternative, index) => {
       const { assignment, changes, category, cost } = alternative;
       const preference = changes.find((change) => change.field === "practitionerId");
@@ -236,6 +238,7 @@ export const staticAdapter = {
     const practitioners = options(snapshot.practitioners);
     const display = {
       timeZone: timezone,
+      services: labels(snapshot.services),
       practitioners: labels(snapshot.practitioners),
       rooms: labels(snapshot.rooms),
       equipment: labels(snapshot.equipment),
@@ -262,6 +265,7 @@ export const staticAdapter = {
       practitioners,
       starts: availability(snapshot, request, date),
       check: () => check(snapshot, request, audience, display),
+      policy: audience === "staff" ? policyPreview(snapshot, request, demoNow, display) : null,
     };
   },
 };
