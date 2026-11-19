@@ -15,3 +15,5 @@
 Keep a clear heading hierarchy. Use native inputs with visible labels and group related controls with a fieldset and legend. Give controls at least 44 CSS pixels of touch height. Use words alongside color for status and expose updates to assistive technology. On link reset, return focus to the scenario picker. Keep the skip link visible when focused.
 
 Use the two-column shell at wider widths and stack in reading order on narrow screens. Preserve the clinic timezone and an explicit frozen-clock label. Load fonts and styles locally.
+
+Show availability as text on every start button and expose the selected start with `aria-pressed`. Announce appointment check updates in a persistent status region. Alternative dialogs focus Cancel on open, return focus to the invoking control on dismissal, and focus the requested appointment heading when the choice is applied.

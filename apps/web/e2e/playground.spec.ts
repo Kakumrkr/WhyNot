@@ -17,9 +17,11 @@ test("shows the curated request and frozen clock with no horizontal overflow", a
   await expect(page.getByRole("heading", { name: "Appointment playground" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Scenario" })).toHaveValue("H1");
   await expect(page.getByRole("radio", { name: "Patient" })).toBeChecked();
-  await expect(page.getByText("2026-11-17 at 14:30")).toBeVisible();
-  await expect(page.getByText("This time is unavailable")).toBeVisible();
-  await expect(page.getByText("2026-11-16 at 09:00")).toBeVisible();
+  await expect(page.getByText("2026-11-17 at 14:30", { exact: true })).toBeVisible();
+  await expect(page.getByRole("status")).toHaveText(
+    "This appointment is unavailable at the requested time.",
+  );
+  await expect(page.getByText("2026-11-16 at 09:00", { exact: true })).toBeVisible();
   await expect(page.getByText("Europe/London", { exact: false })).toBeVisible();
   await expect(page.getByText(/fictional.*synthetic data only/i)).toBeVisible();
   expect([...requests]).toEqual([new URL(page.url()).origin]);
@@ -38,7 +40,7 @@ test("restores scenario and audience through reload and browser history", async 
   await scenario.selectOption({ label: "Ultrasound" });
   await staff.check();
   await expect(page).toHaveURL(/\?scenarioId=H2&audience=staff$/);
-  await expect(page.getByText("2026-11-19 at 10:00")).toBeVisible();
+  await expect(page.getByText("2026-11-19 at 10:00", { exact: true })).toBeVisible();
   await page.reload();
   await expect(scenario).toHaveValue("H2");
   await expect(staff).toBeChecked();
@@ -120,4 +122,154 @@ test("has a visible keyboard path through the skip link, picker and audience", a
   await page.keyboard.press("ArrowRight");
   await expect(page.getByRole("radio", { name: "Staff" })).toBeFocused();
   await expect(page.getByRole("radio", { name: "Staff" })).toBeChecked();
+});
+
+const explanation = (page: Page) =>
+  page.getByRole("region", { name: "Why this time is unavailable" });
+
+const reasonItem = (page: Page, hasText: string | RegExp) =>
+  explanation(page).getByRole("listitem").filter({ hasText });
+
+for (const { id, reasons, alternative, selected } of [
+  {
+    id: "H1",
+    reasons: ["needs a 15-minute gap", "Dr. Vikram Mehta is unavailable"],
+    alternative: /14:45.*Dr\. Asha Rao/,
+    selected: "2026-11-17 at 14:45",
+  },
+  {
+    id: "H3",
+    reasons: ["at least 2 hours of notice", "This request gives 1 hour"],
+    alternative: /11:00.*Dr\. Asha Rao/,
+    selected: "2026-11-16 at 11:00",
+  },
+  {
+    id: "H6",
+    reasons: ["A room is under maintenance until 11:30", "A room is already in use"],
+    alternative: /11:30.*Nurse Priya Iyer/,
+    selected: "2026-11-17 at 11:30",
+  },
+]) {
+  test(`${id} explains the blocked start and checks a verified alternative`, async ({ page }) => {
+    await page.goto(`/?scenarioId=${id}`);
+    for (const reason of reasons) await expect(reasonItem(page, reason)).toBeVisible();
+
+    await page.getByRole("button", { name: alternative }).click();
+    await page.getByRole("button", { name: "Check alternative" }).click();
+    await expect(page.getByRole("heading", { name: "Bookable in this demo" })).toBeVisible();
+    await expect(page.getByText(selected, { exact: true })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Practitioner preference" })).toHaveValue(
+      "any",
+    );
+  });
+}
+
+test("keeps patient output free of staff evidence after switching views", async ({
+  page,
+}, testInfo) => {
+  for (const [scenario, sensitive] of [
+    ["H1", "Fictional annual leave"],
+    ["H6", "h6-dressing"],
+  ] as const) {
+    await page.goto(`/?scenarioId=${scenario}&audience=staff`);
+    await expect(reasonItem(page, sensitive)).toBeVisible();
+    await page.getByText("Candidate blockers by practitioner", { exact: true }).click();
+    await expect(explanation(page).getByText(/lowest-weight candidate/)).toBeVisible();
+    await expect(
+      explanation(page).getByRole("heading", { name: "Nurse Priya Iyer", exact: true }),
+    ).toBeVisible();
+    if (scenario === "H6") {
+      await expectAccessible(page);
+      await page.screenshot({ path: testInfo.outputPath("staff-blockers.png"), fullPage: true });
+    }
+    await page.getByRole("radio", { name: "Patient" }).check();
+    await explanation(page).getByText("All scheduling conflicts considered").click();
+    await expect(page.getByText("Candidate blockers by practitioner")).toHaveCount(0);
+    await expect
+      .poll(() => page.locator("main").innerHTML())
+      .not.toMatch(/Fictional annual leave|mehta-leave|h1-procedure|h6-dressing|patient-\d/);
+  }
+});
+
+test("reviews the H7 preference change with keyboard focus and honest search status", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/?scenarioId=H7");
+  const alternatives = page.getByRole("region", { name: "Verified alternatives" });
+  const options = alternatives.getByRole("heading", { level: 3 });
+  await expect(options.nth(0)).toHaveText(/10:00.*with Dr\. Lena Okafor/);
+  await expect(options.nth(1)).toHaveText(/09:00.*with Dr\. Asha Rao instead of Dr\. Lena Okafor/);
+  await expect(alternatives.getByText("Dr. Lena Okafor → Dr. Asha Rao")).toBeVisible();
+  await expect(alternatives.getByText(/Other openings may still be available/)).toBeVisible();
+  await expect(alternatives.getByText(/requests checked/)).toBeVisible();
+  await expectAccessible(page);
+  await page.screenshot({ path: testInfo.outputPath("explanation-journey.png"), fullPage: true });
+
+  const review = alternatives.getByRole("button", { name: /review alternative.*09:00.*Rao/i });
+  await review.focus();
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Check this alternative?" });
+  await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
+  await expect(dialog).toHaveAccessibleDescription(/09:00.*with Dr\. Asha Rao/);
+  await expectAccessible(page);
+  await page.screenshot({ path: testInfo.outputPath("alternative-dialog.png") });
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(review).toBeFocused();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Check alternative" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Requested appointment" })).toBeFocused();
+  await expect(page.getByRole("status")).toHaveText("This time is available");
+  await expect(page.getByRole("heading", { name: "Bookable in this demo" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Practitioner preference" })).toHaveValue("rao");
+  await expect(page.getByText("2026-11-18 at 09:00", { exact: true })).toBeVisible();
+  await page.goBack();
+  await expect(review).toBeVisible();
+  await page.goForward();
+  await expect(page.getByRole("heading", { name: "Bookable in this demo" })).toBeVisible();
+});
+
+test("updates availability with service, practitioner, date and explainable starts", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/?scenarioId=H3");
+  const starts = page.getByRole("region", { name: "Appointment starts" });
+  await starts.getByText("Choose a start", { exact: true }).click();
+  const unavailable = starts.getByRole("button", { name: "10:15 Unavailable", exact: true });
+  await expect(unavailable).toBeEnabled();
+  await unavailable.click();
+  await expect(unavailable).toHaveAttribute("aria-pressed", "true");
+  await expect(reasonItem(page, /This request gives 1 hour 15 minutes/)).toBeVisible();
+  await expectAccessible(page);
+  await starts.screenshot({ path: testInfo.outputPath("start-picker.png") });
+  await starts.getByRole("button", { name: "11:00 Available", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("This time is available");
+  await page.getByRole("combobox", { name: "Service", exact: true }).selectOption("dressing");
+  await page.getByRole("combobox", { name: "Practitioner preference" }).selectOption("rao");
+  await expect(
+    starts.getByRole("button", { name: "11:00 Unavailable", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("combobox", { name: "Appointment date" }).selectOption("2026-11-22");
+  await expect(starts.getByText("There are no scheduled starts on this date.")).toBeVisible();
+  await expect(page.getByRole("status")).toHaveText(
+    "This appointment is unavailable at the requested time.",
+  );
+  await page.getByRole("radio", { name: "Staff" }).check();
+  await page.getByRole("button", { name: "Reset selections" }).click();
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("combobox", { name: "Scenario" })).toBeFocused();
+  await expect(page.getByRole("radio", { name: "Patient" })).toBeChecked();
+  await expect(page.getByRole("combobox", { name: "Scenario" })).toHaveValue("H1");
+});
+
+test("shows actionable guidance when the search finds no verified alternative", async ({
+  page,
+}) => {
+  await page.goto("/?scenarioId=H4");
+  await expect(explanation(page).getByText(/an initial appointment or assessment/)).toBeVisible();
+  const alternatives = page.getByRole("region", { name: "Verified alternatives" });
+  await expect(alternatives.getByText("No verified alternatives to show.")).toBeVisible();
+  await expect(alternatives.getByRole("button")).toHaveCount(0);
 });

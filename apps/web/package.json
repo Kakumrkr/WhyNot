@@ -13,6 +13,7 @@
     "@whynot/contracts": "workspace:*",
     "@whynot/engine": "workspace:*",
     "@whynot/fixtures": "workspace:*",
+    "@whynot/narrator": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
