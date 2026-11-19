@@ -78,10 +78,11 @@ test("rejects unsafe or invalid link selections and resets with keyboard focus",
   page,
 }) => {
   for (const query of [
-    "scenarioId=H9",
+    "scenarioId=H12",
     "audience=administrator",
     "date=2026-02-30",
     "date=2099-11-17",
+    "days=8",
     "serviceId=unknown",
     "practitionerId=unknown",
     "audience=staff&audience=patient",
