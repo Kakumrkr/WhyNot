@@ -31,7 +31,7 @@ const scenarios = [
   { id: "H6", label: "Wound dressing", day: 1, time: "11:00", serviceId: "dressing" },
   {
     id: "H7",
-    label: "Consultation with a preferred practitioner",
+    label: "Consultation with Dr. Okafor",
     day: 2,
     time: "09:00",
     serviceId: "consult",
