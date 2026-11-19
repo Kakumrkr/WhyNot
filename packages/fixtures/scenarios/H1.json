@@ -15,7 +15,11 @@
     ["practitioner-hours", "harris"],
     ["practitioner-skill", "chen"]
   ],
+  "policyChanges": [
+    { "entity": "service", "id": "minor-procedure", "field": "bufferAfterMin", "value": 0 }
+  ],
   "templates": {
+    "policySettings": ["Set the after-appointment buffer for Minor procedure to 0 minutes."],
     "patient": [
       "Sonographer Mei Chen does not offer this service.",
       "This time is outside Physio Tom Harris's working hours.",

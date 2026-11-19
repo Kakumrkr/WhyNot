@@ -8,7 +8,9 @@
   "serviceId": "consult",
   "patientId": "patient-0",
   "expected": [["min-notice", "riverside"]],
+  "policyChanges": [{ "entity": "policy", "field": "minNoticeMin", "value": 60 }],
   "templates": {
+    "policySettings": ["Set the clinic's minimum notice to 1 hour."],
     "patient": ["The clinic needs at least 2 hours of notice. This request gives 1 hour."],
     "staff": ["Minimum notice is 2 hours. The request gives 1 hour."]
   },

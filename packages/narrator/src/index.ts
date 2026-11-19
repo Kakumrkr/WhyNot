@@ -8,6 +8,7 @@ import {
 } from "@whynot/contracts";
 import { patientFact, staffFact } from "./facts.js";
 import { createFormat, type Format, type TemplateDisplay } from "./format.js";
+import { policySetting } from "./policy.js";
 
 export type { TemplateDisplay } from "./format.js";
 
@@ -22,6 +23,7 @@ export type TemplateNarration = {
   guidance: CitedSentence[];
   alternatives: string[];
   searchNote: string | null;
+  policyFix?: { summary: CitedSentence; settings: string[] };
 };
 
 const groupLabels = {
@@ -151,8 +153,20 @@ export const TemplateNarrator = {
         return empty(evaluation.status, "The appointment request or clinic data is invalid.");
       case "bookable":
         return empty(evaluation.status, "This appointment can be booked.");
-      case "blocked":
-        return blocked(evaluation, createFormat(display), staffFact, staffGuidance);
+      case "blocked": {
+        const format = createFormat(display);
+        const narration = blocked(evaluation, format, staffFact, staffGuidance);
+        if (evaluation.adminFix !== null) {
+          narration.policyFix = {
+            summary: {
+              text: "These hypothetical settings would make the original request bookable. Review them before changing clinic policy.",
+              factIds: evaluation.adminFix.factIds,
+            },
+            settings: evaluation.adminFix.changes.map((change) => policySetting(change, format)),
+          };
+        }
+        return narration;
+      }
     }
   },
 };

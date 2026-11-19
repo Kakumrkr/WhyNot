@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [4.1 — Verified policy patch engine](sessions/session-4.1.md), branch `session/4.1-policy-preview`.
-- **Last confirmed session merge at handoff:** 3.2 via [PR #18](https://github.com/Kakumrkr/WhyNot/pull/18) at `6247535`.
+- **Next card after this PR merges:** [4.2 — Range explanations and next-available search](sessions/session-4.2.md).
+- **Last confirmed session merge at handoff:** 3.3 via [PR #19](https://github.com/Kakumrkr/WhyNot/pull/19) at `854e14a`. [PR #20](https://github.com/Kakumrkr/WhyNot/pull/20) records the published preview link.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 qualification list.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 4.1 — Verified policy patch engine. Card: docs/sessions/session-4.1.md
+Session 4.2 — Range explanations and next-available search. Card: docs/sessions/session-4.2.md
 ```
 
 ## Status
@@ -33,8 +33,8 @@ Session 4.1 — Verified policy patch engine. Card: docs/sessions/session-4.1.md
 | [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | done        | done         | done   | [#16](https://github.com/Kakumrkr/WhyNot/pull/16) |
 | [3.1](sessions/session-3.1.md) | Static playground design and shell               | done        | done         | done   | [#17](https://github.com/Kakumrkr/WhyNot/pull/17) |
 | [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | done        | done         | done   | [#18](https://github.com/Kakumrkr/WhyNot/pull/18) |
-| [3.3](sessions/session-3.3.md) | Inspector and first public preview               | done        | —            | —      | [#19](https://github.com/Kakumrkr/WhyNot/pull/19) |
-| [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | —           | —            | —      | —                                                 |
+| [3.3](sessions/session-3.3.md) | Inspector and first public preview               | done        | done         | done   | [#19](https://github.com/Kakumrkr/WhyNot/pull/19) |
+| [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | done        | —            | —      | [#21](https://github.com/Kakumrkr/WhyNot/pull/21) |
 | [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | —           | —            | —      | —                                                 |
 | [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | —           | —            | —      | —                                                 |
 | [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | —           | —            | —      | —                                                 |
@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**3.3 — Inspector and first public preview.** Staff can inspect the engine's candidate/fact matrix, primary explanation coverage, reduction, search nodes and trace limits. Verified alternatives include their engine categories and search scores. The production browser suite covers the H1 trace, keyboard and mobile interaction, axe and links under the repository path. GitHub Pages uses the main-branch deployment workflow. [External feedback is pending](reviews/session-3.3-preview.md).
+**4.1 — Verified policy patch engine.** Staff evaluations include the least-cost supported patch whose candidate passes all rules after the settings change. Policy previews compare copied snapshots for the same request and clock, with fix generation disabled. Staff templates describe hypothetical settings and cite their supporting facts. `pnpm verify` passed 218 tests, and P11 and P15 each passed 5,000 runs. Full default evaluation measured 133.27 ms S p95. Range evaluations can disable policy fixes through `includeAdminFix: false`.

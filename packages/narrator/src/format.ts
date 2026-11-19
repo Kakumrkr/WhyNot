@@ -4,6 +4,7 @@ export type TemplateDisplay = {
   timeZone: ClinicSnapshot["clinic"]["timezone"];
   locale?: string;
   practitioners?: ReadonlyMap<string, string>;
+  services?: ReadonlyMap<string, string>;
   rooms?: ReadonlyMap<string, string>;
   equipment?: ReadonlyMap<string, string>;
 };
@@ -58,6 +59,8 @@ export function createFormat({ timeZone, locale = "en-GB", ...labels }: Template
     instant,
     practitioner: (id?: string) =>
       (id === undefined ? undefined : labels.practitioners?.get(id)) ?? "This practitioner",
+    staffPractitioner: (id: string) => labels.practitioners?.get(id) ?? id,
+    staffService: (id: string) => labels.services?.get(id) ?? id,
     staffResource: (type: "room" | "equipment", id: string) =>
       (type === "room" ? labels.rooms : labels.equipment)?.get(id) ?? id,
     until,

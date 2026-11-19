@@ -8,7 +8,9 @@
   "serviceId": "bloods",
   "patientId": "patient-0",
   "expected": [["patient-daily-limit", "patient-0"]],
+  "policyChanges": [{ "entity": "policy", "field": "patientMaxBookingsPerDay", "value": 2 }],
   "templates": {
+    "policySettings": ["Set the clinic's daily booking limit per patient to 2."],
     "patient": ["You already have the maximum of 1 appointment that day."],
     "staff": ["The patient has reached the daily booking limit (1 booked, limit 1)."]
   },
