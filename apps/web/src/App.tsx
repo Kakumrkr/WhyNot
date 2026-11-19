@@ -17,6 +17,7 @@ export function App() {
   const [screen, setScreen] = useState(openSelection);
   const { selection } = screen;
   const [checked, setChecked] = useState<SlotCheck | "failed" | null>(null);
+  const playground = useRef<HTMLElement>(null);
   const scenarioPicker = useRef<HTMLSelectElement>(null);
   const requestTitle = useRef<HTMLHeadingElement>(null);
   const focusAfterReset = useRef(false);
@@ -80,7 +81,14 @@ export function App() {
 
   return (
     <>
-      <a className="skip-link" href="#playground">
+      <a
+        className="skip-link"
+        href="#playground"
+        onClick={(event) => {
+          event.preventDefault();
+          playground.current?.focus();
+        }}
+      >
         Skip to playground
       </a>
       <header className="site-header">
@@ -90,7 +98,7 @@ export function App() {
           <span className="brand-clinic">Riverside Family Clinic</span>
         </div>
       </header>
-      <main id="playground" className="frame" tabIndex={-1}>
+      <main id="playground" ref={playground} className="frame" tabIndex={-1}>
         <div className="intro">
           <h1>Appointment playground</h1>
           <p>Explore how Riverside checks a requested appointment in patient and staff views.</p>

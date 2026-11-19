@@ -205,17 +205,41 @@ test("reviews the H7 preference change with keyboard focus and honest search sta
   await expectAccessible(page);
   await page.screenshot({ path: testInfo.outputPath("explanation-journey.png"), fullPage: true });
 
+  await page.evaluate(() => {
+    document.addEventListener("focusin", ({ target }) => {
+      if (!(target instanceof HTMLButtonElement) || target.textContent !== "Cancel") return;
+      const dialog = target.closest("dialog");
+      if (!dialog) return;
+      const description = dialog.getAttribute("aria-describedby");
+      if (description)
+        dialog.setAttribute(
+          "data-description-at-focus",
+          document.getElementById(description)?.textContent ?? "",
+        );
+    });
+  });
   const review = alternatives.getByRole("button", { name: /review alternative.*09:00.*Rao/i });
   await review.focus();
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "Check this alternative?" });
   await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
-  await expect(dialog).toHaveAccessibleDescription(/09:00.*with Dr\. Asha Rao/);
+  const raoChoice = /09:00.*with Dr\. Asha Rao/;
+  await expect(dialog).toHaveAccessibleDescription(raoChoice);
+  await expect(dialog).toHaveAttribute("data-description-at-focus", raoChoice);
   await expectAccessible(page);
   await page.screenshot({ path: testInfo.outputPath("alternative-dialog.png") });
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(review).toBeFocused();
+  const earlierReview = alternatives.getByRole("button", {
+    name: /review alternative.*18 Nov.*10:00.*Okafor/i,
+  });
+  await earlierReview.focus();
+  await page.keyboard.press("Enter");
+  await expect(dialog).toHaveAttribute("data-description-at-focus", /10:00.*with Dr\. Lena Okafor/);
+  await page.keyboard.press("Escape");
+  await expect(earlierReview).toBeFocused();
+  await review.focus();
   await page.keyboard.press("Enter");
   await page.keyboard.press("Tab");
   await expect(dialog.getByRole("button", { name: "Check alternative" })).toBeFocused();
@@ -240,6 +264,11 @@ test("updates availability with service, practitioner, date and explainable star
   const unavailable = starts.getByRole("button", { name: "10:15 Unavailable", exact: true });
   await expect(unavailable).toBeEnabled();
   await unavailable.click();
+  await expect(unavailable).toHaveAttribute("aria-pressed", "true");
+  await expect(reasonItem(page, /This request gives 1 hour 15 minutes/)).toBeVisible();
+  await page.getByRole("link", { name: "Skip to playground" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("main")).toBeFocused();
   await expect(unavailable).toHaveAttribute("aria-pressed", "true");
   await expect(reasonItem(page, /This request gives 1 hour 15 minutes/)).toBeVisible();
   await expectAccessible(page);
