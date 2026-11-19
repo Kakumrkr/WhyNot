@@ -1,15 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { staticAdapter } from "./adapter/staticAdapter.js";
+import { anyPractitioner, staticAdapter, type SlotCheck } from "./adapter/staticAdapter.js";
+import { ExplanationJourney } from "./ExplanationJourney.js";
 import "./styles.css";
+
+function openSelection() {
+  const history = window.history.state as { start?: unknown } | null;
+  try {
+    return { selection: staticAdapter.open(window.location.search, history?.start) };
+  } catch {
+    return { selection: null, failed: true };
+  }
+}
 
 /** Riverside's curated playground and shareable selection controls. */
 export function App() {
-  const [selection, setSelection] = useState(() => staticAdapter.open(window.location.search));
+  const [screen, setScreen] = useState(openSelection);
+  const { selection } = screen;
+  const [checked, setChecked] = useState<SlotCheck | "failed" | null>(null);
+  const playground = useRef<HTMLElement>(null);
   const scenarioPicker = useRef<HTMLSelectElement>(null);
+  const requestTitle = useRef<HTMLHeadingElement>(null);
   const focusAfterReset = useRef(false);
 
   useEffect(() => {
-    const restore = () => setSelection(staticAdapter.open(window.location.search));
+    const restore = () => {
+      setChecked(null);
+      setScreen(openSelection());
+    };
     window.addEventListener("popstate", restore);
     return () => window.removeEventListener("popstate", restore);
   }, []);
@@ -21,23 +38,57 @@ export function App() {
     }
   }, [selection]);
 
-  function update(query: URLSearchParams, reset = false) {
-    const serialized = query.toString();
-    const next = staticAdapter.open(serialized);
+  useEffect(() => {
+    if (!selection) return;
+    // Check after rendering the selection so the pending state can be announced.
+    const timer = window.setTimeout(() => {
+      try {
+        setChecked(selection.check());
+      } catch {
+        setChecked("failed");
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [selection]);
+
+  function update(query: URLSearchParams, start?: number, reset = false) {
     const url = new URL(window.location.href);
-    url.search = serialized;
+    url.search = query.toString();
     if (reset) {
       window.history.replaceState(null, "", url);
       focusAfterReset.current = true;
     } else {
-      window.history.pushState(null, "", url);
+      window.history.pushState(start === undefined ? null : { start }, "", url);
     }
-    setSelection(next);
+    setChecked(null);
+    setScreen(openSelection());
   }
+
+  function edit(changes: Record<string, string>, start?: number) {
+    const query = new URLSearchParams(window.location.search);
+    for (const [key, value] of Object.entries(changes)) query.set(key, value);
+    update(query, start);
+  }
+
+  const verdict =
+    checked === null
+      ? "Checking this appointment…"
+      : checked === "failed" || checked.status === "invalid_request"
+        ? "Could not check this appointment"
+        : checked.status === "bookable"
+          ? "This time is available"
+          : checked.narration.headline;
 
   return (
     <>
-      <a className="skip-link" href="#playground">
+      <a
+        className="skip-link"
+        href="#playground"
+        onClick={(event) => {
+          event.preventDefault();
+          playground.current?.focus();
+        }}
+      >
         Skip to playground
       </a>
       <header className="site-header">
@@ -47,7 +98,7 @@ export function App() {
           <span className="brand-clinic">Riverside Family Clinic</span>
         </div>
       </header>
-      <main id="playground" className="frame" tabIndex={-1}>
+      <main id="playground" ref={playground} className="frame" tabIndex={-1}>
         <div className="intro">
           <h1>Appointment playground</h1>
           <p>Explore how Riverside checks a requested appointment in patient and staff views.</p>
@@ -55,92 +106,177 @@ export function App() {
 
         {selection ? (
           <div className="workspace">
-            <section className="card setup" aria-labelledby="setup-title">
-              <h2 id="setup-title">Set up a request</h2>
-              <label htmlFor="scenario">Scenario</label>
-              <select
-                id="scenario"
-                ref={scenarioPicker}
-                value={selection.scenarioId}
-                onChange={(event) =>
-                  update(
-                    new URLSearchParams({
-                      scenarioId: event.target.value,
-                      audience: selection.audience,
-                    }),
-                  )
-                }
-              >
-                {staticAdapter.scenarios.map(({ id, label }) => (
-                  <option key={id} value={id}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <fieldset>
-                <legend>View as</legend>
-                <div className="audience">
-                  {(["patient", "staff"] as const).map((audience) => (
-                    <label key={audience}>
-                      <input
-                        type="radio"
-                        name="audience"
-                        value={audience}
-                        checked={selection.audience === audience}
-                        onChange={() => {
-                          const query = new URLSearchParams(window.location.search);
-                          query.set("audience", audience);
-                          update(query);
-                        }}
-                      />
-                      {audience === "patient" ? "Patient" : "Staff"}
-                    </label>
+            <div className="workspace-column">
+              <section className="card setup" aria-labelledby="setup-title">
+                <h2 id="setup-title">Set up a request</h2>
+                <label htmlFor="scenario">Scenario</label>
+                <select
+                  id="scenario"
+                  ref={scenarioPicker}
+                  value={selection.scenarioId}
+                  onChange={(event) =>
+                    update(
+                      new URLSearchParams({
+                        scenarioId: event.target.value,
+                        audience: selection.audience,
+                      }),
+                    )
+                  }
+                >
+                  {staticAdapter.scenarios.map(({ id, label }) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
                   ))}
-                </div>
-              </fieldset>
-            </section>
+                </select>
+                <fieldset>
+                  <legend>View as</legend>
+                  <div className="audience">
+                    {(["patient", "staff"] as const).map((audience) => (
+                      <label key={audience}>
+                        <input
+                          type="radio"
+                          name="audience"
+                          value={audience}
+                          checked={selection.audience === audience}
+                          onChange={() => edit({ audience }, selection.start)}
+                        />
+                        {audience === "patient" ? "Patient" : "Staff"}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <label htmlFor="service">Service</label>
+                <select
+                  id="service"
+                  value={selection.serviceId}
+                  onChange={(event) => edit({ serviceId: event.target.value }, selection.start)}
+                >
+                  {selection.services.map(({ id, label }) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <label htmlFor="practitioner">Practitioner preference</label>
+                <select
+                  id="practitioner"
+                  value={selection.practitionerId}
+                  onChange={(event) =>
+                    edit({ practitionerId: event.target.value }, selection.start)
+                  }
+                >
+                  <option value={anyPractitioner}>Any practitioner</option>
+                  {selection.practitioners.map(({ id, label }) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <label htmlFor="date">Appointment date</label>
+                <select
+                  id="date"
+                  value={selection.date}
+                  onChange={(event) => edit({ date: event.target.value })}
+                >
+                  {selection.dates.map((date) => (
+                    <option key={date}>{date}</option>
+                  ))}
+                </select>
+                <button
+                  className="secondary reset"
+                  type="button"
+                  onClick={() => update(new URLSearchParams(), undefined, true)}
+                >
+                  Reset selections
+                </button>
+              </section>
+              <section className="card starts" aria-labelledby="starts-title">
+                <h2 id="starts-title">Appointment starts</h2>
+                {selection.starts.length === 0 ? (
+                  <p className="supporting">There are no scheduled starts on this date.</p>
+                ) : (
+                  <details key={selection.scenarioId}>
+                    <summary>Choose a start</summary>
+                    <ul className="start-grid">
+                      {selection.starts.map(({ start, time, available }) => (
+                        <li key={start}>
+                          <button
+                            className="secondary start"
+                            type="button"
+                            aria-pressed={selection.start === start}
+                            onClick={() => edit({}, start)}
+                          >
+                            <strong>{time}</strong>
+                            <span>{available ? "Available" : "Unavailable"}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </section>
+            </div>
 
-            <section className="card requested" aria-labelledby="request-title">
-              <h2 id="request-title">Requested appointment</h2>
-              <div className="request-info" aria-live="polite" aria-atomic="true">
-                <p className="service">{selection.service}</p>
-                <dl className="details">
-                  <div>
-                    <dt>Requested start</dt>
-                    <dd>
-                      <time dateTime={`${selection.date}T${selection.time}`}>
-                        {selection.date} at {selection.time}
-                      </time>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Practitioner</dt>
-                    <dd>{selection.practitioner}</dd>
-                  </div>
-                </dl>
-                <p className="verdict">
-                  {selection.status === "bookable"
-                    ? "This time is available"
-                    : "This time is unavailable"}
-                </p>
-              </div>
-              <div className="clock">
-                <strong>Frozen demo clock</strong>
-                <span>
-                  <time dateTime={selection.clock}>
-                    {selection.clock.slice(0, 10)} at {selection.clock.slice(11, 16)}
-                  </time>
-                  {" · "}
-                  {selection.timezone}
-                </span>
-              </div>
-            </section>
+            <div className="workspace-column">
+              <section className="card requested" aria-labelledby="request-title">
+                <h2 id="request-title" ref={requestTitle} tabIndex={-1}>
+                  Requested appointment
+                </h2>
+                <div className="request-info">
+                  <p className="service">{selection.service}</p>
+                  <dl className="details">
+                    <div>
+                      <dt>Requested start</dt>
+                      <dd>
+                        <time dateTime={selection.instant}>
+                          {selection.date} at {selection.instant.slice(11, 16)}
+                        </time>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Practitioner</dt>
+                      <dd>{selection.practitioner}</dd>
+                    </div>
+                  </dl>
+                  <p className="verdict" role="status">
+                    {verdict}
+                  </p>
+                </div>
+                <div className="clock">
+                  <strong>Frozen demo clock</strong>
+                  <span>
+                    <time dateTime={selection.clock}>
+                      {selection.clock.slice(0, 10)} at {selection.clock.slice(11, 16)}
+                    </time>
+                    {" · "}
+                    {selection.timezone}
+                  </span>
+                </div>
+              </section>
+              {!checked ? null : checked === "failed" || checked.status === "invalid_request" ? (
+                <section className="card outcome invalid" aria-labelledby="check-error">
+                  <h2 id="check-error">Appointment check failed</h2>
+                  <p>Choose another start or reset the playground to try again.</p>
+                </section>
+              ) : (
+                <ExplanationJourney
+                  result={checked}
+                  onAlternative={({ date, practitionerId, start }) => {
+                    requestTitle.current?.focus();
+                    edit({ date, practitionerId: practitionerId ?? anyPractitioner }, start);
+                  }}
+                />
+              )}
+            </div>
           </div>
         ) : (
           <section className="card invalid" aria-labelledby="invalid-title">
-            <h2 id="invalid-title">This playground link is invalid</h2>
+            <h2 id="invalid-title">
+              {screen.failed ? "Could not open the playground" : "This playground link is invalid"}
+            </h2>
             <p>Reset the link to open the default scenario and patient view.</p>
-            <button type="button" onClick={() => update(new URLSearchParams(), true)}>
+            <button type="button" onClick={() => update(new URLSearchParams(), undefined, true)}>
               Reset selections
             </button>
           </section>
