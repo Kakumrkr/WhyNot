@@ -77,10 +77,38 @@ select {
 }
 
 .brand-clinic {
+  min-width: 0;
+  overflow-wrap: anywhere;
   border-left: 1px solid var(--line);
   padding-left: 0.75rem;
   color: var(--quiet);
   font-size: 0.875rem;
+}
+
+.snapshot-controls {
+  margin-block-start: 1.25rem;
+}
+
+.snapshot-controls p,
+.snapshot-controls input,
+.snapshot-controls label {
+  display: block;
+  margin-block-start: 0.65rem;
+}
+
+.snapshot-controls input {
+  max-width: 100%;
+  min-height: 2.75rem;
+}
+
+.snapshot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.snapshot-actions button {
+  margin-block-start: 0.75rem;
 }
 
 .skip-link {
@@ -132,6 +160,7 @@ h2 {
   grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
   gap: 1.25rem;
   align-items: start;
+  overflow-wrap: anywhere;
 }
 
 .card {

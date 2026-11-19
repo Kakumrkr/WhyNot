@@ -2,10 +2,12 @@ import {
   BookingRequestSchema,
   ClinicSnapshotSchema,
   DateSchema,
+  schemaVersion,
   type Alternative,
   type BookingRequest,
   type ClinicSnapshot,
   type StaffEvaluation,
+  type SyntheticSnapshotEnvelope,
 } from "@whynot/contracts";
 import {
   addLocalDays,
@@ -20,7 +22,7 @@ import {
   resolveRecurringBoundary,
 } from "@whynot/engine";
 import { buildScenario, demoNow } from "@whynot/fixtures";
-import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
+import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator/templates";
 import { calendarRange } from "./calendarRange.js";
 import { policyPreview } from "./policyPreview.js";
 import { scenarios } from "./scenarios.js";
@@ -157,19 +159,167 @@ function availability(
   request: BookingRequest,
   date: string,
   now: number,
+  importedDuration?: number,
 ) {
   const { timezone, openingHours, slotGridMinutes, closedDates } = snapshot.clinic;
   if (closedDates.includes(date)) return [];
-  const hours = timeValue(datedSchedule(openingHours, date, timezone));
+  const schedule = datedSchedule(openingHours, date, timezone);
+  if (!schedule.ok && importedDuration !== undefined) return [];
+  const hours = timeValue(schedule);
   if (hours.length === 0) return [];
-  const starts = timeValue(gridStarts(date, timezone, slotGridMinutes));
+  const grid = gridStarts(date, timezone, slotGridMinutes);
+  const starts = importedDuration === undefined ? timeValue(grid) : grid.ok ? grid.value : [];
   return starts
     .filter((start) => hours.some(({ from, to }) => start >= from && start < to))
+    .filter(
+      (start) =>
+        importedDuration === undefined ||
+        (start >= snapshot.coverage.from && start + importedDuration <= snapshot.coverage.to),
+    )
     .map((start) => ({
       start,
       time: timeValue(formatOffsetInstant(start, timezone)).slice(11, 16),
       available: isBookable(snapshot, { ...request, start }, now),
     }));
+}
+
+type ImportedSelections = {
+  audience?: "patient" | "staff";
+  date?: string;
+  days?: number;
+  start?: number | null;
+  serviceId?: string;
+  practitionerId?: string | undefined;
+};
+
+function practitionerPreference(id: string | undefined) {
+  return id === anyPractitioner ? undefined : id;
+}
+
+function openSnapshot(
+  envelope: SyntheticSnapshotEnvelope,
+  {
+    scenarioId,
+    date: preferredDate,
+    audience,
+    days: preferredDays,
+    start: selectedStart,
+    serviceId,
+    practitionerId,
+    patientId,
+    fallbackTime,
+  }: Omit<ImportedSelections, "audience" | "start"> & {
+    scenarioId?: string;
+    audience: "patient" | "staff";
+    start?: unknown;
+    patientId: string;
+    fallbackTime?: string;
+  },
+) {
+  const { snapshot, now } = envelope;
+  const { timezone, slotGridMinutes } = snapshot.clinic;
+  const firstDate = timeValue(localDate(snapshot.coverage.from, timezone));
+  const lastDate = timeValue(localDate(snapshot.coverage.to - 1, timezone));
+  const date = preferredDate ?? firstDate;
+  if (date < firstDate || date > lastDate) return null;
+  const periods = calendarPeriods.flatMap((period) => {
+    const end = addLocalDays(date, period.days - 1);
+    return end.ok && end.value <= lastDate ? [{ ...period, endDate: end.value }] : [];
+  });
+  const period = periods.find(({ days }) => days === (preferredDays ?? 1)) ?? periods.at(-1);
+  if (!period) throw new Error("No calendar period for a covered date");
+  const { days, endDate } = period;
+  const service = snapshot.services.find(({ id }) => id === serviceId);
+  const practitioner = snapshot.practitioners.find(({ id }) => id === practitionerId);
+  if (!service || (practitionerId !== undefined && !practitioner)) return null;
+  const preference = practitioner ? { practitionerId: practitioner.id } : {};
+  const baseRequest = { patientId, serviceId: service.id, ...preference };
+  // Availability checks supply their own start. Use the same request preferences for each check.
+  const starts = availability(
+    snapshot,
+    { ...baseRequest, start: snapshot.coverage.from },
+    date,
+    now,
+    scenarioId === undefined ? service.durationMin : undefined,
+  );
+  const selected =
+    typeof selectedStart === "number" &&
+    Number.isSafeInteger(selectedStart) &&
+    selectedStart >= snapshot.coverage.from &&
+    selectedStart < snapshot.coverage.to &&
+    (scenarioId !== undefined || selectedStart + service.durationMin <= snapshot.coverage.to) &&
+    timeValue(localDate(selectedStart, timezone)) === date &&
+    timeValue(isOnLocalGrid(selectedStart, timezone, slotGridMinutes));
+  const grid =
+    !selected && fallbackTime === undefined && starts.length === 0
+      ? gridStarts(date, timezone, slotGridMinutes)
+      : null;
+  const start = selected
+    ? selectedStart
+    : fallbackTime !== undefined
+      ? timeValue(resolveRecurringBoundary(date, fallbackTime, timezone))
+      : (starts[0]?.start ??
+        (grid?.ok
+          ? grid.value.find(
+              (minute) =>
+                minute >= snapshot.coverage.from &&
+                minute + service.durationMin <= snapshot.coverage.to,
+            )
+          : undefined) ??
+        null);
+  const request = start === null ? null : BookingRequestSchema.parse({ ...baseRequest, start });
+  const services = options(snapshot.services);
+  const practitioners = options(snapshot.practitioners);
+  const display = {
+    timeZone: timezone,
+    services: labels(snapshot.services),
+    practitioners: labels(snapshot.practitioners),
+    rooms: labels(snapshot.rooms),
+    equipment: labels(snapshot.equipment),
+  };
+  const dates: string[] = [];
+  for (let day = firstDate; ; day = timeValue(addLocalDays(day, 1))) {
+    dates.push(day);
+    if (day === lastDate) break;
+  }
+
+  return {
+    scenarioId,
+    envelope,
+    audience,
+    timezone,
+    date,
+    days,
+    endDate,
+    periods,
+    start,
+    instant: start === null ? null : timeValue(formatOffsetInstant(start, timezone)),
+    serviceId: service.id,
+    service: service.displayName,
+    practitionerId: practitioner?.id,
+    practitioner: practitioner?.displayName ?? "Any practitioner",
+    clock: timeValue(formatOffsetInstant(now, timezone)),
+    dates,
+    services,
+    practitioners,
+    starts,
+    check: () => (request ? check(snapshot, request, now, audience, display) : null),
+    range: () =>
+      calendarRange(
+        snapshot,
+        {
+          fromDate: date,
+          days,
+          patientId,
+          serviceId: service.id,
+          ...preference,
+        },
+        now,
+        audience,
+        display,
+      ),
+    policy: request && audience === "staff" ? policyPreview(snapshot, request, now, display) : null,
+  };
 }
 
 /** Curated Riverside options and the synchronous, audience-projected slot operation. */
@@ -203,94 +353,37 @@ export const staticAdapter = {
         )
       : demoNow;
     const date = params.get("date") ?? defaultDate;
-    const firstDate = timeValue(localDate(snapshot.coverage.from, timezone));
-    const lastDate = timeValue(localDate(snapshot.coverage.to - 1, timezone));
-    if (date < firstDate || date > lastDate) return null;
-    const periods = calendarPeriods
-      .map((period) => ({ ...period, endDate: timeValue(addLocalDays(date, period.days - 1)) }))
-      .filter(({ endDate }) => endDate <= lastDate);
-    const period = periods.find(({ days }) => days === preferredDays) ?? periods.at(-1);
-    if (!period) throw new Error("No calendar period for a covered date");
-    const { days, endDate } = period;
-    const fallback = timeValue(resolveRecurringBoundary(date, scenario.time, timezone));
-    const start =
-      typeof selectedStart === "number" &&
-      Number.isSafeInteger(selectedStart) &&
-      selectedStart >= snapshot.coverage.from &&
-      selectedStart < snapshot.coverage.to &&
-      timeValue(localDate(selectedStart, timezone)) === date &&
-      timeValue(isOnLocalGrid(selectedStart, timezone, snapshot.clinic.slotGridMinutes))
-        ? selectedStart
-        : fallback;
-    const service = snapshot.services.find(
-      ({ id }) => id === (params.get("serviceId") ?? scenario.serviceId),
-    );
-    const preferred = params.get("practitionerId") ?? scenario.practitionerId;
-    const practitionerId = preferred === anyPractitioner ? undefined : preferred;
-    const practitioner = snapshot.practitioners.find(({ id }) => id === practitionerId);
-    if (!service || (practitionerId !== undefined && !practitioner)) return null;
-
-    const request = BookingRequestSchema.parse({
-      patientId: scenario.patientId ?? "patient-0",
-      serviceId: service.id,
-      start,
-      ...(practitioner ? { practitionerId: practitioner.id } : {}),
-    });
-
-    const services = options(snapshot.services);
-    const practitioners = options(snapshot.practitioners);
-    const display = {
-      timeZone: timezone,
-      services: labels(snapshot.services),
-      practitioners: labels(snapshot.practitioners),
-      rooms: labels(snapshot.rooms),
-      equipment: labels(snapshot.equipment),
-    };
-    const dates: string[] = [];
-    for (let day = firstDate; day <= lastDate; day = timeValue(addLocalDays(day, 1))) {
-      dates.push(day);
-    }
-
-    return {
-      scenarioId: scenario.id,
-      audience,
-      timezone,
-      date,
-      days,
-      endDate,
-      periods,
-      start,
-      instant: timeValue(formatOffsetInstant(start, timezone)),
-      serviceId: service.id,
-      service: service.displayName,
-      practitionerId: practitioner?.id ?? anyPractitioner,
-      practitioner: practitioner?.displayName ?? "Any practitioner",
-      clock: timeValue(formatOffsetInstant(now, timezone)),
-      dates,
-      services,
-      practitioners,
-      starts: availability(snapshot, request, date, now),
-      check: () => check(snapshot, request, now, audience, display),
-      range: () =>
-        calendarRange(
-          snapshot,
-          {
-            fromDate: date,
-            days,
-            patientId: request.patientId,
-            serviceId: request.serviceId,
-            ...(request.practitionerId === undefined
-              ? {}
-              : { practitionerId: request.practitionerId }),
-          },
-          now,
-          audience,
-          display,
+    return openSnapshot(
+      { schemaVersion, snapshot, now },
+      {
+        scenarioId: scenario.id,
+        date,
+        audience,
+        days: preferredDays,
+        start: selectedStart,
+        serviceId: params.get("serviceId") ?? scenario.serviceId,
+        practitionerId: practitionerPreference(
+          params.get("practitionerId") ?? scenario.practitionerId,
         ),
-      policy: audience === "staff" ? policyPreview(snapshot, request, now, display) : null,
-    };
+        patientId: scenario.patientId ?? "patient-0",
+        fallbackTime: scenario.time,
+      },
+    );
+  },
+
+  openImported(envelope: SyntheticSnapshotEnvelope, changes: ImportedSelections = {}) {
+    const { snapshot } = envelope;
+    const patient = snapshot.patients[0];
+    const service = snapshot.services[0];
+    if (!patient || !service) return null;
+    return openSnapshot(envelope, {
+      ...changes,
+      audience: changes.audience ?? "patient",
+      patientId: patient.id,
+      serviceId: changes.serviceId ?? service.id,
+    });
   },
 };
 
 export type Selection = NonNullable<ReturnType<typeof staticAdapter.open>>;
-export type SlotCheck = ReturnType<Selection["check"]>;
+export type SlotCheck = NonNullable<ReturnType<Selection["check"]>>;

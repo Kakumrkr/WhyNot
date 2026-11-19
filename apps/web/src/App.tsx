@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import type { SyntheticSnapshotEnvelope } from "@whynot/contracts";
 import { anyPractitioner, staticAdapter, type SlotCheck } from "./adapter/staticAdapter.js";
 import { CalendarJourney, type CalendarCheck } from "./CalendarJourney.js";
 import { ExplanationJourney } from "./ExplanationJourney.js";
 import { PolicyPlayground } from "./PolicyPlayground.js";
+import { SnapshotControls } from "./SnapshotControls.js";
 import "./styles.css";
 
 function openSelection() {
@@ -18,6 +20,8 @@ function openSelection() {
 export function App() {
   const [screen, setScreen] = useState(openSelection);
   const { selection } = screen;
+  const [imported, setImported] = useState<SyntheticSnapshotEnvelope>();
+  const noPreference = imported ? "" : anyPractitioner;
   const [checked, setChecked] = useState<SlotCheck | "failed" | null>(null);
   const [calendar, setCalendar] = useState<CalendarCheck | "failed" | null>(null);
   const playground = useRef<HTMLElement>(null);
@@ -27,6 +31,7 @@ export function App() {
 
   useEffect(() => {
     const restore = () => {
+      setImported(undefined);
       setChecked(null);
       setCalendar(null);
       setScreen(openSelection());
@@ -74,20 +79,69 @@ export function App() {
     setScreen(openSelection());
   }
 
-  function edit(changes: Record<string, string>, start?: number, days = selection?.days) {
+  function openImported(envelope: SyntheticSnapshotEnvelope) {
+    let next;
+    try {
+      next = staticAdapter.openImported(envelope);
+    } catch {
+      throw new Error("This snapshot could not be opened. Check its clinic schedule and coverage.");
+    }
+    setImported(envelope);
+    setChecked(null);
+    setCalendar(null);
+    setScreen({ selection: next });
+  }
+
+  function resetImported() {
+    setImported(undefined);
+    setChecked(null);
+    setCalendar(null);
+    setScreen(openSelection());
+  }
+
+  function edit(
+    changes: {
+      audience?: "patient" | "staff";
+      date?: string;
+      serviceId?: string;
+      practitionerId?: string;
+    },
+    start?: number | null,
+    days = selection?.days,
+  ) {
+    if (imported && selection) {
+      setChecked(null);
+      setCalendar(null);
+      setScreen({
+        selection: staticAdapter.openImported(imported, {
+          audience: changes.audience ?? selection.audience,
+          date: changes.date ?? selection.date,
+          serviceId: changes.serviceId ?? selection.serviceId,
+          practitionerId:
+            changes.practitionerId === undefined
+              ? selection.practitionerId
+              : changes.practitionerId || undefined,
+          ...(days === undefined ? {} : { days }),
+          ...(start === undefined ? {} : { start }),
+        }),
+      });
+      return;
+    }
     const query = new URLSearchParams(window.location.search);
     for (const [key, value] of Object.entries(changes)) query.set(key, value);
-    update(query, start, false, days);
+    update(query, start ?? undefined, false, days);
   }
 
   const verdict =
-    checked === null
-      ? "Checking this appointment…"
-      : checked === "failed" || checked.status === "invalid_request"
-        ? "Could not check this appointment"
-        : checked.status === "bookable"
-          ? "This time is available"
-          : checked.narration.headline;
+    selection?.start === null
+      ? "No start fits in snapshot coverage on this date"
+      : checked === null
+        ? "Checking this appointment…"
+        : checked === "failed" || checked.status === "invalid_request"
+          ? "Could not check this appointment"
+          : checked.status === "bookable"
+            ? "This time is available"
+            : checked.narration.headline;
 
   return (
     <>
@@ -105,13 +159,15 @@ export function App() {
         <div className="frame brand">
           <span className="brand-mark" aria-hidden="true" />
           <span className="brand-name">WhyNot</span>
-          <span className="brand-clinic">Riverside Family Clinic</span>
+          <span className="brand-clinic">
+            {imported?.snapshot.clinic.name ?? "Riverside Family Clinic"}
+          </span>
         </div>
       </header>
       <main id="playground" ref={playground} className="frame" tabIndex={-1}>
         <div className="intro">
           <h1>Appointment playground</h1>
-          <p>Explore how Riverside checks a requested appointment in patient and staff views.</p>
+          <p>Explore how the clinic checks a requested appointment in patient and staff views.</p>
         </div>
 
         {selection ? (
@@ -119,26 +175,30 @@ export function App() {
             <div className="workspace-column">
               <section className="card setup" aria-labelledby="setup-title">
                 <h2 id="setup-title">Set up a request</h2>
-                <label htmlFor="scenario">Scenario</label>
-                <select
-                  id="scenario"
-                  ref={scenarioPicker}
-                  value={selection.scenarioId}
-                  onChange={(event) =>
-                    update(
-                      new URLSearchParams({
-                        scenarioId: event.target.value,
-                        audience: selection.audience,
-                      }),
-                    )
-                  }
-                >
-                  {staticAdapter.scenarios.map(({ id, label }) => (
-                    <option key={id} value={id}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                {!imported && (
+                  <>
+                    <label htmlFor="scenario">Scenario</label>
+                    <select
+                      id="scenario"
+                      ref={scenarioPicker}
+                      value={selection.scenarioId}
+                      onChange={(event) =>
+                        update(
+                          new URLSearchParams({
+                            scenarioId: event.target.value,
+                            audience: selection.audience,
+                          }),
+                        )
+                      }
+                    >
+                      {staticAdapter.scenarios.map(({ id, label }) => (
+                        <option key={id} value={id}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
                 <fieldset>
                   <legend>View as</legend>
                   <div className="audience">
@@ -171,12 +231,12 @@ export function App() {
                 <label htmlFor="practitioner">Practitioner preference</label>
                 <select
                   id="practitioner"
-                  value={selection.practitionerId}
+                  value={selection.practitionerId ?? noPreference}
                   onChange={(event) =>
                     edit({ practitionerId: event.target.value }, selection.start)
                   }
                 >
-                  <option value={anyPractitioner}>Any practitioner</option>
+                  <option value={noPreference}>Any practitioner</option>
                   {selection.practitioners.map(({ id, label }) => (
                     <option key={id} value={id}>
                       {label}
@@ -205,13 +265,15 @@ export function App() {
                     </option>
                   ))}
                 </select>
-                <button
-                  className="secondary reset"
-                  type="button"
-                  onClick={() => update(new URLSearchParams(), undefined, true)}
-                >
-                  Reset selections
-                </button>
+                {!imported && (
+                  <button
+                    className="secondary reset"
+                    type="button"
+                    onClick={() => update(new URLSearchParams(), undefined, true)}
+                  >
+                    Reset selections
+                  </button>
+                )}
               </section>
               <CalendarJourney
                 result={calendar}
@@ -219,7 +281,7 @@ export function App() {
                 endDate={selection.endDate}
                 onNext={({ date, practitionerId, start }) => {
                   requestTitle.current?.focus();
-                  edit({ date, practitionerId: practitionerId ?? anyPractitioner }, start, 1);
+                  edit({ date, practitionerId: practitionerId ?? noPreference }, start, 1);
                 }}
               />
               <section className="card starts" aria-labelledby="starts-title">
@@ -260,9 +322,13 @@ export function App() {
                     <div>
                       <dt>Requested start</dt>
                       <dd>
-                        <time dateTime={selection.instant}>
-                          {selection.date} at {selection.instant.slice(11, 16)}
-                        </time>
+                        {selection.instant === null ? (
+                          selection.date
+                        ) : (
+                          <time dateTime={selection.instant}>
+                            {selection.date} at {selection.instant.slice(11, 16)}
+                          </time>
+                        )}
                       </dd>
                     </div>
                     <div>
@@ -295,22 +361,28 @@ export function App() {
                   result={checked}
                   onAlternative={({ date, practitionerId, start }) => {
                     requestTitle.current?.focus();
-                    edit({ date, practitionerId: practitionerId ?? anyPractitioner }, start);
+                    edit({ date, practitionerId: practitionerId ?? noPreference }, start);
                   }}
                 />
               )}
-              {selection.policy &&
+              {selection.instant !== null &&
+                selection.policy &&
                 checked &&
                 checked !== "failed" &&
                 checked.status !== "invalid_request" && (
                   <PolicyPlayground
                     policy={selection.policy}
-                    request={selection}
+                    request={{ ...selection, instant: selection.instant }}
                     suggested={checked.status === "blocked" ? checked.suggestedChanges : undefined}
                   />
                 )}
             </div>
           </div>
+        ) : imported ? (
+          <section className="card invalid" aria-labelledby="import-empty">
+            <h2 id="import-empty">No appointment request to check</h2>
+            <p>Add at least one synthetic patient and service to the file, then import it again.</p>
+          </section>
         ) : (
           <section className="card invalid" aria-labelledby="invalid-title">
             <h2 id="invalid-title">
@@ -322,6 +394,12 @@ export function App() {
             </button>
           </section>
         )}
+        <SnapshotControls
+          envelope={imported ?? selection?.envelope}
+          imported={imported !== undefined}
+          onImport={openImported}
+          onReset={resetImported}
+        />
         <footer className="disclosure">
           Riverside Family Clinic is fictional. This playground uses synthetic data only.
         </footer>

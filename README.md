@@ -14,6 +14,12 @@ To run the preview locally, install dependencies with `pnpm install`, then run `
 
 Curated links retain the scenario, audience, date, service and practitioner preference. For example, append `?scenarioId=H1&audience=staff` to the playground address to open the minor-procedure inspector.
 
+Open **Synthetic snapshot files** in the playground to import a fictional clinic or download the current snapshot and frozen clock. Use **Reset imported snapshot** to restore the curated view.
+
+## Use the engine in Node
+
+Build and validate the local packages with the [independent Node example](examples/node/README.md). The [integration guide](docs/integration.md) covers ESM imports, mapping clinic records, using patient projection, and the model and search limits.
+
 ## First release
 
 Browser/Node engine, documented schemas, independent integration example, patient/staff views, empty-calendar explanations, alternatives, policy playground and inspector. Free static demo; no server, account, DB or model key.

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "now": 29913600,
+  "snapshot": {
+    "clinic": {
+      "id": "harbor-clinic",
+      "name": "Harbor Walk-in Clinic",
+      "timezone": "UTC",
+      "slotGridMinutes": 15,
+      "openingHours": [{ "weekday": 1, "from": "09:00", "to": "12:00" }],
+      "closedDates": []
+    },
+    "coverage": { "from": 29913120, "to": 29923200 },
+    "practitioners": [
+      {
+        "id": "harbor-practitioner",
+        "displayName": "Taylor Lee",
+        "role": "Clinician",
+        "skills": ["intake"],
+        "workingHours": [{ "weekday": 1, "from": "09:00", "to": "12:00" }],
+        "breaks": [],
+        "timeOff": []
+      }
+    ],
+    "rooms": [
+      { "id": "intake-room", "displayName": "Intake room", "capabilities": [], "maintenance": [] }
+    ],
+    "equipment": [],
+    "services": [
+      {
+        "id": "intake",
+        "displayName": "Intake visit",
+        "durationMin": 30,
+        "requiredSkill": "intake",
+        "bufferAfterMin": 0,
+        "roomTurnoverMin": 0,
+        "eligibility": "any"
+      }
+    ],
+    "patients": [
+      { "id": "case-example", "displayName": "Morgan Green", "isReturning": false, "referrals": [] }
+    ],
+    "bookings": [],
+    "policy": {
+      "versionId": "harbor-v1",
+      "minNoticeMin": 90,
+      "maxAdvanceDays": 7,
+      "patientMaxBookingsPerDay": 1
+    }
+  }
+}

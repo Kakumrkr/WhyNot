@@ -37,7 +37,7 @@ export function PolicyPlayground({
 }: {
   policy: Policy;
   suggested?: PolicyPatch | undefined;
-  request: Pick<Selection, "service" | "date" | "instant" | "practitioner">;
+  request: Pick<Selection, "service" | "date" | "practitioner"> & { instant: string };
 }) {
   const [setting, setSetting] = useState("");
   const [value, setValue] = useState("");

@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [5.1 — Developer adoption and package validation](sessions/session-5.1.md).
-- **Last confirmed session merge at handoff:** 4.2 via [PR #22](https://github.com/Kakumrkr/WhyNot/pull/22) at `cfce830`.
+- **Next card after this PR merges:** [5.2 — First release, evidence and handoff](sessions/session-5.2.md).
+- **Last confirmed session merge at handoff:** 4.3 via [PR #23](https://github.com/Kakumrkr/WhyNot/pull/23) at `50d92bf`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 5.1 — Developer adoption and package validation. Card: docs/sessions/session-5.1.md
+Session 5.2 — First release, evidence and handoff. Card: docs/sessions/session-5.2.md
 ```
 
 ## Status
@@ -36,8 +36,8 @@ Session 5.1 — Developer adoption and package validation. Card: docs/sessions/s
 | [3.3](sessions/session-3.3.md) | Inspector and first public preview               | done        | done         | done   | [#19](https://github.com/Kakumrkr/WhyNot/pull/19) |
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | done        | done         | done   | [#21](https://github.com/Kakumrkr/WhyNot/pull/21) |
 | [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | done        | done         | done   | [#22](https://github.com/Kakumrkr/WhyNot/pull/22) |
-| [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | done        | —            | —      | [#23](https://github.com/Kakumrkr/WhyNot/pull/23) |
-| [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | —           | —            | —      | —                                                 |
+| [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | done        | done         | done   | [#23](https://github.com/Kakumrkr/WhyNot/pull/23) |
+| [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | done        | —            | —      | [#24](https://github.com/Kakumrkr/WhyNot/pull/24) |
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff              | —           | —            | —      | —                                                 |
 | [P1](sessions/session-P1.md)   | Persistence schema and database verification     | —           | —            | —      | —                                                 |
 | [P2](sessions/session-P2.md)   | Seed, frozen clock and snapshot loader           | —           | —            | —      | —                                                 |
@@ -77,6 +77,6 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**4.3 — Policy playground and empty-calendar journey.** Staff can preview custom settings or verified fixes against the original request, compare assignments and blockers, and reset the preview. The calendar renders projected engine output for H9–H11 and supports navigation to verified openings with an explicit practitioner change where needed. Calendar periods fit fixture coverage and are kept in browser history. The affirmative qualification wording remains open for H1 and H11.
+**5.1 — Developer adoption and package validation.** Built ESM roots, schema/template subpaths and an independent Harbor clinic example with isolated tarball installation and declaration checks. The playground imports and exports versioned synthetic snapshots with a frozen clock, validates ingestion limits and references, and keeps imported selections in memory. The integration guide documents record mapping, rule extension and supported limits.
 
-`pnpm verify` and `pnpm test:deep` each passed 235 tests. Playwright passed the desktop and mobile suite, including axe, and the focused review regressions. The Windows benchmark passed on retry, with Small p95 of 44.48 ms for one-day ranges and 30.46 ms for seven-day ranges.
+`pnpm verify` passed all 235 tests. Playwright passed all 60 desktop and mobile checks, including axe, import limits, text rendering, reset, export and privacy. The clean package consumer passed. The affirmative qualification wording for H1 and H11 remains open.
