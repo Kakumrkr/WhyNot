@@ -394,7 +394,9 @@ div.outcome {
 
 .explanation summary,
 .inspector summary,
-.starts summary {
+.starts summary,
+.calendar-journey summary,
+.policy-playground summary {
   align-content: center;
   min-height: 2.75rem;
   color: var(--accent);

@@ -77,6 +77,6 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**4.3 — Policy playground and empty-calendar journey.** Staff can preview custom settings or verified fixes against the original request, compare assignments and blockers, and reset the preview. The calendar renders projected engine output for H9–H11 and supports navigation to verified openings with an explicit practitioner change where needed. Calendar period is kept in browser history. The affirmative qualification wording remains open for H1 and H11.
+**4.3 — Policy playground and empty-calendar journey.** Staff can preview custom settings or verified fixes against the original request, compare assignments and blockers, and reset the preview. The calendar renders projected engine output for H9–H11 and supports navigation to verified openings with an explicit practitioner change where needed. Calendar periods fit fixture coverage and are kept in browser history. The affirmative qualification wording remains open for H1 and H11.
 
-`pnpm verify` and `pnpm test:deep` each passed 235 tests. Playwright passed 52 desktop and mobile checks, including axe. The Windows benchmark passed on retry, with Small p95 of 44.48 ms for one-day ranges and 30.46 ms for seven-day ranges.
+`pnpm verify` and `pnpm test:deep` each passed 235 tests. Playwright passed the desktop and mobile suite, including axe, and the focused review regressions. The Windows benchmark passed on retry, with Small p95 of 44.48 ms for one-day ranges and 30.46 ms for seven-day ranges.

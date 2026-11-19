@@ -46,7 +46,7 @@ export function PolicyPlayground({
   const useSuggestion = setting === "suggested";
   const needsValue = selected !== undefined && selected.field !== "eligibility";
 
-  function manualChange(change: PolicyChange): PolicyChange {
+  function manualChange(change: Policy["settings"][number]["change"]): PolicyChange {
     if (change.field === "eligibility") return change;
     return { ...change, value: /^\d+$/.test(value.trim()) ? Number(value) : Number.NaN };
   }

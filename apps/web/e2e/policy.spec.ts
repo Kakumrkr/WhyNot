@@ -16,6 +16,7 @@ for (const [scenario, delta, practitioner] of [
     await expect(panel).toBeVisible();
     const originalVerdict = await request.getByRole("status").innerText();
     const toggle = panel.getByText("Explore policy changes");
+    expect((await toggle.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await toggle.focus();
     await page.keyboard.press("Enter");
     await panel.getByLabel("Setting to preview").selectOption("suggested");
@@ -69,4 +70,22 @@ test("validates manual changes, preserves physical conflicts and clears state on
   await page.getByRole("radio", { name: "Staff" }).check();
   await panel.getByText("Explore policy changes").click();
   await expect(panel.getByLabel("Setting to preview")).toHaveValue("");
+});
+
+test("requires an explicit daily cap for an uncapped practitioner", async ({ page }) => {
+  await page.goto("/?scenarioId=H11&audience=staff");
+  const panel = page.getByRole("region", { name: "Policy playground" });
+  await panel.getByText("Explore policy changes").click();
+  await panel.getByLabel("Setting to preview").selectOption({
+    label: "Dr. Asha Rao · Practitioner daily cap",
+  });
+  const value = panel.getByLabel("New value");
+  const preview = panel.getByRole("button", { name: "Preview change" });
+  await expect(value).toHaveValue("");
+  await preview.click();
+  await expect(panel.getByRole("status")).toHaveText("Invalid or conflicting policy changes");
+  await expect(panel.getByText("No cap → 0")).toHaveCount(0);
+  await value.fill("0");
+  await preview.click();
+  await expect(panel.getByText("No cap → 0")).toBeVisible();
 });
