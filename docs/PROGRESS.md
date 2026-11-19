@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [3.3 — Inspector and first public preview](sessions/session-3.3.md), branch `session/3.3-inspector-preview`.
-- **Last confirmed session merge at handoff:** 3.1 via [PR #17](https://github.com/Kakumrkr/WhyNot/pull/17) at `9091669`.
+- **Next card after this PR merges:** [4.1 — Verified policy patch engine](sessions/session-4.1.md), branch `session/4.1-policy-preview`.
+- **Last confirmed session merge at handoff:** 3.2 via [PR #18](https://github.com/Kakumrkr/WhyNot/pull/18) at `6247535`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 qualification list.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 3.3 — Inspector and first public preview. Card: docs/sessions/session-3.3.md
+Session 4.1 — Verified policy patch engine. Card: docs/sessions/session-4.1.md
 ```
 
 ## Status
@@ -32,8 +32,8 @@ Session 3.3 — Inspector and first public preview. Card: docs/sessions/session-
 | [2.2](sessions/session-2.2.md) | Templates, grouping and helpfulness              | done        | done         | done   | [#15](https://github.com/Kakumrkr/WhyNot/pull/15) |
 | [2.3](sessions/session-2.3.md) | Verified alternatives and truthful search        | done        | done         | done   | [#16](https://github.com/Kakumrkr/WhyNot/pull/16) |
 | [3.1](sessions/session-3.1.md) | Static playground design and shell               | done        | done         | done   | [#17](https://github.com/Kakumrkr/WhyNot/pull/17) |
-| [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | done        | —            | —      | [#18](https://github.com/Kakumrkr/WhyNot/pull/18) |
-| [3.3](sessions/session-3.3.md) | Inspector and first public preview               | —           | —            | —      | —                                                 |
+| [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | done        | done         | done   | [#18](https://github.com/Kakumrkr/WhyNot/pull/18) |
+| [3.3](sessions/session-3.3.md) | Inspector and first public preview               | done        | —            | —      | [#19](https://github.com/Kakumrkr/WhyNot/pull/19) |
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | —           | —            | —      | —                                                 |
 | [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | —           | —            | —      | —                                                 |
 | [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | —           | —            | —      | —                                                 |
@@ -60,7 +60,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | ---------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | Core 1.6         | passed       | PR #12 CI ran 5000-run properties and S benchmark (runs 44126309537, 44126295724); baselines in packages/engine/bench/ |
 | Alternatives 2.3 | passed       | Local deep suite passed at 5000 runs per property. S alternatives p95 131.7 ms (400 ms target). Evidence in PR #16.    |
-| Preview 3.3      | pending      | —                                                                                                                      |
+| Preview 3.3      | local passed | 5000-run properties, built-app browser checks and the S benchmark passed locally. PR #19 tracks CI and deployment.     |
 | Policy/range 4.3 | pending      | —                                                                                                                      |
 | Release 5.2      | pending      | —                                                                                                                      |
 | Optional P/H/A   | not selected | Human selection after first release                                                                                    |
@@ -77,4 +77,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**3.2 — Patient and staff explanation journey.** The adapter checks starts with the engine and renders projected patient templates or staff templates with per-practitioner candidate summaries. Verified alternatives display changes and search scope, then re-evaluate the revised request. Selected start times live in browser history state. Curated URLs retain scenario, audience, date, service and practitioner selections. Verification covers 210 unit/property tests and 24 built-app browser checks at 1280 and 390 pixels, with screenshots and axe scans. [Human helpfulness validation is pending](reviews/session-2.2-helpfulness.md).
+**3.3 — Inspector and first public preview.** Staff can inspect the engine's candidate/fact matrix, primary explanation coverage, reduction, search nodes and trace limits. Verified alternatives include their engine categories and search scores. The production browser suite covers the H1 trace, keyboard and mobile interaction, axe and links under the repository path. GitHub Pages uses the main-branch deployment workflow. [External feedback is pending](reviews/session-3.3-preview.md).

@@ -21,6 +21,7 @@ import {
 } from "@whynot/engine";
 import { buildScenario, demoNow } from "@whynot/fixtures";
 import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
+import { staffInspector } from "./staffInspector.js";
 
 const scenarios = [
   { id: "H1", label: "Minor procedure", day: 1, time: "14:30", serviceId: "minor-procedure" },
@@ -71,14 +72,9 @@ function labels(entries: readonly { id: string; displayName: string }[]) {
 
 function staffCandidates(
   result: Extract<StaffEvaluation, { status: "blocked" }>,
-  narration: ReturnType<typeof TemplateNarrator.renderStaff>,
+  sentences: ReadonlyMap<string, string>,
   display: TemplateDisplay,
 ) {
-  const sentences = new Map(
-    narration.details.groups.flatMap(({ sentences }) =>
-      sentences.flatMap(({ text, factIds }) => factIds.map((id) => [id, text] as const)),
-    ),
-  );
   return result.explanation.perCandidateSummary.map(({ practitionerId, candidate, factIds }) => ({
     practitioner: display.practitioners?.get(practitionerId),
     room: display.rooms?.get(candidate.roomId),
@@ -97,7 +93,7 @@ function check(
   audience: "patient" | "staff",
   display: TemplateDisplay,
 ) {
-  const evaluated = evaluate(snapshot, request, { now: demoNow });
+  const evaluated = evaluate(snapshot, request, { now: demoNow, trace: audience === "staff" });
   const context = { requesterPatientId: request.patientId };
   const patient = audience === "patient" ? projectForAudience(evaluated, "patient", context) : null;
   const result = patient ?? evaluated;
@@ -108,10 +104,20 @@ function check(
   if (result.status === "invalid_request") return { status: result.status, narration };
   const practitionerName = (id: string | null) =>
     id === null ? "Any practitioner" : (display.practitioners?.get(id) ?? "Practitioner");
+  const sentences = new Map(
+    narration.details.groups.flatMap(({ sentences }) =>
+      sentences.flatMap(({ text, factIds }) => factIds.map((id) => [id, text] as const)),
+    ),
+  );
+  const inspector =
+    patient || evaluated.status === "invalid_request"
+      ? null
+      : staffInspector(evaluated, sentences, display);
   if (result.status === "bookable")
     return {
       status: result.status,
       practitioner: practitionerName(result.assignment.practitionerId),
+      inspector,
     };
 
   const instant = (start: number) => timeValue(formatOffsetInstant(start, display.timeZone));
@@ -134,12 +140,16 @@ function check(
   return {
     status: result.status,
     narration,
-    candidates: "adminFix" in result ? staffCandidates(result, narration, display) : [],
-    alternatives: result.alternatives.map(({ assignment, changes }, index) => {
+    inspector,
+    candidates: "adminFix" in result ? staffCandidates(result, sentences, display) : [],
+    alternatives: result.alternatives.map((alternative, index) => {
+      const { assignment, changes, category, cost } = alternative;
       const preference = changes.find((change) => change.field === "practitionerId");
       return {
         title: narration.alternatives[index] ?? readable(assignment.start),
         changes: changes.map(changeText),
+        category,
+        cost,
         start: assignment.start,
         date: instant(assignment.start).slice(0, 10),
         practitionerId: preference ? preference.to : request.practitionerId,

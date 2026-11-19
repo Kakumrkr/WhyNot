@@ -4,7 +4,15 @@
 
 An open-source TypeScript appointment engine and static playground for fictional Riverside Family Clinic. The engine computes sufficient, irredundant blockers, rechecked alternatives and staff policy previews. Templates explain them; no model decides.
 
-> Status: Sessions through 1.5 are reviewed and merged. Session 1.6 implements minimal explanations and public evaluation; final benchmark evidence, review and merge status are tracked in [progress](docs/PROGRESS.md). Patient projection, templates and the playground arrive in later cards.
+## Playground preview
+
+The Riverside playground checks appointments against a fictional clinic with a frozen clock. Select a scenario to see patient explanations and verified alternatives, then switch to Staff to inspect candidate combinations and their blockers.
+
+Open the latest **github-pages** deployment for the hosted preview. [Deployment history](https://github.com/Kakumrkr/WhyNot/deployments)
+
+To run the preview locally, install dependencies with `pnpm install`, then run `pnpm dev` and open the address it prints. For a production build, run `pnpm build` followed by `pnpm --filter @whynot/web exec vite preview`.
+
+Curated links retain the scenario, audience, date, service and practitioner preference. For example, append `?scenarioId=H1&audience=staff` to the playground address to open the minor-procedure inspector.
 
 ## First release
 
@@ -41,4 +49,4 @@ Select current work from [progress](docs/PROGRESS.md) and [active cards](docs/se
 | [Progress](docs/PROGRESS.md)               | Implemented/reviewed/merged state                  |
 | [Questions](docs/QUESTIONS.md)             | Issues and resolutions                             |
 
-Use Node 24.22.3 and pnpm 12.21.0. Run pnpm install, pnpm verify, then pnpm dev for the minimal static page. pnpm verify checks formatting, lint, types, tests and builds in order. See [AGENTS.md](AGENTS.md) for the complete command table and [D-043](docs/08-decisions.md) for version selection. Original code is [MIT licensed](LICENSE).
+Use Node 24.22.3 and pnpm 12.21.0. `pnpm verify` checks formatting, lint, types, tests and builds in order. See the [command table](AGENTS.md) and [version decision](docs/08-decisions.md). Original code is [MIT licensed](LICENSE).
