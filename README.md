@@ -8,7 +8,7 @@ An open-source TypeScript appointment engine and static playground for fictional
 
 The Riverside playground checks appointments against a fictional clinic with a frozen clock. Select a scenario to see patient explanations and verified alternatives, then switch to Staff to inspect candidate combinations and their blockers.
 
-Open the latest **github-pages** deployment for the hosted preview. [Deployment history](https://github.com/Kakumrkr/WhyNot/deployments)
+[Open the Riverside playground](https://kakumrkr.github.io/WhyNot/)
 
 To run the preview locally, install dependencies with `pnpm install`, then run `pnpm dev` and open the address it prints. For a production build, run `pnpm build` followed by `pnpm --filter @whynot/web exec vite preview`.
 
