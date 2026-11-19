@@ -78,3 +78,5 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 ## Last handoff
 
 **4.2 — Range explanations and next-available search.** Range evaluation counts local grid starts, returns closed dates and sufficient evidence, and verifies the next opening with preference-first bounded search. Patient projection remaps facts and templates describe start windows. H9–H11 use isolated snapshots, so H1 retains its 14:45 opening. D-074 specifies empty range and search evidence. D-075 aligns start windows to the actual grid and accepts continuous openings across schedule boundaries. The affirmative H11 qualification wording shares the open H1 contract question.
+
+`pnpm verify` passed 235 tests and the range property suite passed 5,000 runs. The Windows range baseline records Small p95 of 84.09 ms for one day and 52.05 ms for seven days.
