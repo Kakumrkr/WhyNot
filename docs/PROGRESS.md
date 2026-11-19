@@ -60,7 +60,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | ---------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | Core 1.6         | passed       | PR #12 CI ran 5000-run properties and S benchmark (runs 44126309537, 44126295724); baselines in packages/engine/bench/ |
 | Alternatives 2.3 | passed       | Local deep suite passed at 5000 runs per property. S alternatives p95 131.7 ms (400 ms target). Evidence in PR #16.    |
-| Preview 3.3      | local passed | 5000-run properties, 30 built-app browser checks and the S benchmark passed locally. PR #19 tracks CI and deployment.  |
+| Preview 3.3      | local passed | 5000-run properties, built-app browser checks and the S benchmark passed locally. PR #19 tracks CI and deployment.     |
 | Policy/range 4.3 | pending      | —                                                                                                                      |
 | Release 5.2      | pending      | —                                                                                                                      |
 | Optional P/H/A   | not selected | Human selection after first release                                                                                    |

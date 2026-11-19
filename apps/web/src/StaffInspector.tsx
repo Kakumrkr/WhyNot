@@ -47,12 +47,24 @@ export function StaffInspector({ inspection }: { inspection: StaffInspection }) 
         <details>
           <summary>Fact key ({columns.length})</summary>
           <dl className="inspector-facts">
-            {columns.map(({ id, code, text, primary }) => (
+            {columns.map(({ id, code, text, details, primary }) => (
               <div key={id}>
                 <dt className={primary ? "primary-fact" : undefined}>
                   {code} · {primary ? "Primary" : "Other violation"}
                 </dt>
-                <dd>{text}</dd>
+                <dd>
+                  {text}
+                  {details.length > 0 && (
+                    <dl className="trace-parameters">
+                      {details.map(({ label, value }) => (
+                        <div key={label}>
+                          <dt>{label}</dt>
+                          <dd>{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                </dd>
               </div>
             ))}
           </dl>

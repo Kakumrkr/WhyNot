@@ -1,5 +1,20 @@
-import type { StaffEvaluation } from "@whynot/contracts";
+import type { Fact, StaffEvaluation } from "@whynot/contracts";
+import { formatOffsetInstant } from "@whynot/engine";
 import type { TemplateDisplay } from "@whynot/narrator";
+
+function traceDetails({ params, window }: Fact, timeZone: string) {
+  const details = Object.entries(params).map(([field, value]) => ({
+    label: field.replace(/[A-Z]/g, (char) => ` ${char.toLowerCase()}`),
+    value: String(value),
+  }));
+  if (window) {
+    const from = formatOffsetInstant(window.from, timeZone);
+    const to = formatOffsetInstant(window.to, timeZone);
+    if (!from.ok || !to.ok) throw new Error("Invalid staff trace window");
+    details.push({ label: "window", value: `${from.value} → ${to.value}` });
+  }
+  return details;
+}
 
 /** Attach display labels to the staff trace without changing its facts or candidate order. */
 export function staffInspector(
@@ -11,16 +26,20 @@ export function staffInspector(
   if (!trace) throw new Error("Missing staff trace");
   const { candidates, facts, selected, reducedRows, searchNodes } = trace;
   const selectedIds = new Set(selected);
-  const columns = facts.map(({ id, ruleId, subject }, index) => {
+  const columns = facts.map((fact, index) => {
+    const { id, ruleId, subject } = fact;
     const subjectName =
       display.practitioners?.get(subject.id) ??
       display.rooms?.get(subject.id) ??
       display.equipment?.get(subject.id);
+    const sentence = sentences.get(id);
     return {
       id,
       code: `F${index + 1}`,
       ruleId,
-      text: sentences.get(id) ?? (subjectName ? `${ruleId} · ${subjectName}` : ruleId),
+      text: sentence ?? (subjectName ? `${ruleId} · ${subjectName}` : ruleId),
+      // Bookable narration has no explanation groups, but the trace still carries facts.
+      details: sentence === undefined ? traceDetails(fact, display.timeZone) : [],
       primary: selectedIds.has(id),
     };
   });
