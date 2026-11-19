@@ -35,6 +35,7 @@ dd {
 }
 
 button,
+input,
 select {
   font: inherit;
 }
@@ -163,6 +164,32 @@ select {
   padding: 0.55rem;
   color: var(--ink);
   background-color: var(--surface);
+}
+
+.policy-playground form > label {
+  display: block;
+  margin-block: 0.8rem 0.25rem;
+}
+
+.policy-playground form > input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--control-line);
+  border-radius: 0.5rem;
+  padding: 0.55rem;
+}
+
+.policy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+
+.policy-comparison {
+  display: grid;
+  gap: 1rem;
+  margin-block-start: 1rem;
 }
 
 fieldset {
