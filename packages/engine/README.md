@@ -1,6 +1,6 @@
 # Engine capabilities
 
-`evaluate(snapshot, request, { now, alternatives?, costWeights?, trace? })` returns a schema-valid staff
+`evaluate(snapshot, request, { now, alternatives?, costWeights?, trace?, includeAdminFix? })` returns a schema-valid staff
 evaluation: `bookable` with a canonical load-ranked assignment, `blocked` with a
 sufficient and irredundant explanation, or `invalid_request` with safe errors.
 `isBookable(snapshot, request, now)` returns a boolean and rejects invalid input.
@@ -23,13 +23,18 @@ including starts near the end of the last requested date. A budget-exhausted rep
 bounds the evaluated appointments, and its
 optional trace identifies individual attempts, capped at 3000 entries. Ordering
 prefers the cheapest verified result followed by still-unrepresented categories.
-Policy fixes arrive in 4.1. Use `projectForAudience` before rendering or serializing
-a patient result.
+Since 4.1, blocked evaluations can include the least-cost verified policy fix among
+supported candidate patches. Set `includeAdminFix: false` to disable fix generation.
+`applyPolicyChanges(snapshot, changes)` returns a patched copy or validation issues.
+`previewPolicyChanges(snapshot, request, changes, options)` returns the patch and two
+evaluations of the original request at the supplied clock time with fix generation disabled.
+Use `projectForAudience` before rendering or serializing a patient result.
 
 Run `pnpm bench` for external S/M/L p50/p95 measurements, warm-up and hardware
 metadata. S p95 gates are 2 ms for isBookable and 20 ms for evaluation without
-alternatives/fixes, and 400 ms for evaluation with alternatives. The alternatives
-workload uses 40 warm-ups and 120 samples per dataset. Same-platform/runtime/CPU baselines flag greater than 50%
+alternatives/fixes, and 400 ms for evaluation with alternatives, including the
+full default evaluation with alternatives and fixes. Each search workload uses
+40 warm-ups and 120 samples per dataset. Same-platform/runtime/CPU baselines flag greater than 50%
 regression; different hardware is reported as incomparable and still runs the
 absolute gates. CI stores its measured report as core-benchmark. No timing enters
 engine results.

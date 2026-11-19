@@ -15,7 +15,9 @@
     ["practitioner-hours", "iyer"],
     ["practitioner-hours", "chen"]
   ],
+  "policyChanges": [{ "entity": "practitioner", "id": "harris", "field": "dailyCap", "value": 7 }],
   "templates": {
+    "policySettings": ["Set Physio Tom Harris's daily appointment cap to 7."],
     "patient": [
       "Physio Tom Harris is fully booked that day.",
       "This time is outside Dr. Asha Rao's working hours.",

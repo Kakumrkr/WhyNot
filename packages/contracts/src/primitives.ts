@@ -76,7 +76,7 @@ export const EvaluateOptionsSchema = z.strictObject({
     .default({ max: 3, searchDays: 14, budgetEvals: 3000 }),
   costWeights: CostWeightsSchema.optional(),
   trace: z.boolean().default(false),
-  includeAdminFix: z.boolean().default(false),
+  includeAdminFix: z.boolean().default(true),
 });
 export const SearchReportSchema = z.discriminatedUnion("status", [
   z.strictObject({

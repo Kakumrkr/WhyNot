@@ -1,10 +1,19 @@
-import type { Explanation, StaffEvaluation, Trace } from "@whynot/contracts";
+import {
+  EvaluateOptionsSchema,
+  type Explanation,
+  type PolicyPreview,
+  type StaffEvaluation,
+  type Trace,
+} from "@whynot/contracts";
 import { validateRequest } from "./validateRequest.js";
 import { buildMatrix } from "./matrix.js";
 import { chooseAssignment } from "./feasibility.js";
 import { explain } from "./explain.js";
 import { groupFacts, summarizePractitioners } from "./groups.js";
 import { searchAlternatives } from "./alternatives.js";
+import { findAdminFix } from "./adminFix.js";
+import { applyPatch } from "./policy.js";
+import type { TimeResult } from "./time.js";
 
 /** Evaluate untrusted inputs with an injected clock and optional alternative search. */
 export function evaluate(snapshot: unknown, request: unknown, options: unknown): StaffEvaluation {
@@ -89,8 +98,34 @@ export function evaluate(snapshot: unknown, request: unknown, options: unknown):
     explanation,
     alternatives: search.alternatives,
     search: search.search,
-    adminFix: null,
+    adminFix: context.options.includeAdminFix ? findAdminFix(context, matrix) : null,
     meta,
     ...traced,
+  };
+}
+
+/** Evaluate the same request before and after an in-memory policy patch at the same clock time. */
+export function previewPolicyChanges(
+  snapshot: unknown,
+  request: unknown,
+  changes: unknown,
+  options: unknown,
+): TimeResult<PolicyPreview> {
+  const applied = applyPatch(snapshot, changes);
+  if (!applied.ok) return applied;
+  const parsed = EvaluateOptionsSchema.safeParse(options);
+  if (!parsed.success)
+    return {
+      ok: false,
+      issues: [{ code: "invalid_request", path: ["options"], message: "Invalid preview options" }],
+    };
+  const previewOptions = { ...parsed.data, includeAdminFix: false };
+  return {
+    ok: true,
+    value: {
+      changes: applied.value.changes,
+      baseline: evaluate(snapshot, request, previewOptions),
+      modified: evaluate(applied.value.snapshot, request, previewOptions),
+    },
   };
 }

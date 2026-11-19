@@ -74,9 +74,10 @@ for (const [name, resources, bookings] of [
     snapshot: scale(entry.snapshot, resources, bookings),
   }));
   const metrics = {};
-  for (const operation of ["isBookable", "evaluate", "evaluateAlternatives"]) {
+  for (const operation of ["isBookable", "evaluate", "evaluateAlternatives", "evaluateFull"]) {
     const run = (i) => {
       const entry = cases[i % cases.length];
+      if (operation === "evaluateFull") return evaluate(entry.snapshot, entry.request, { now });
       if (operation === "evaluateAlternatives")
         return evaluate(entry.snapshot, entry.request, { now, includeAdminFix: false });
       return operation === "isBookable"
@@ -87,8 +88,9 @@ for (const [name, resources, bookings] of [
             includeAdminFix: false,
           });
     };
-    const measured = operation === "evaluateAlternatives" ? alternativesSamples : samples;
-    const warmed = operation === "evaluateAlternatives" ? alternativesWarmup : warmup;
+    const searches = operation === "evaluateAlternatives" || operation === "evaluateFull";
+    const measured = searches ? alternativesSamples : samples;
+    const warmed = searches ? alternativesWarmup : warmup;
     for (let i = 0; i < warmed; i++) run(i);
     const durations = [];
     for (let i = 0; i < measured; i++) {
@@ -127,6 +129,7 @@ for (const [operation, target] of [
   ["isBookable", 2],
   ["evaluate", 20],
   ["evaluateAlternatives", 400],
+  ["evaluateFull", 400],
 ]) {
   if (datasets.S[operation].p95Ms > target)
     throw new Error(`${operation} S p95 exceeds ${target}ms`);
@@ -144,7 +147,7 @@ if (baseline !== undefined) {
       (key) => baseline.environment[key] === environment[key],
     ) && JSON.stringify(baseline.environment.nodeFlags) === JSON.stringify(environment.nodeFlags);
   if (comparable) {
-    for (const operation of ["isBookable", "evaluate", "evaluateAlternatives"]) {
+    for (const operation of ["isBookable", "evaluate", "evaluateAlternatives", "evaluateFull"]) {
       const prior = baseline.datasets.S[operation];
       if (prior !== undefined && datasets.S[operation].p95Ms > prior.p95Ms * 1.5)
         throw new Error(`${operation} S p95 regressed by >50%`);
