@@ -3,7 +3,7 @@ import { buildRiverside, riversideMinute } from "./clinic.js";
 
 /** Isolated named hero overrides; unrelated background load cannot obscure the authored story. */
 export function buildScenario(id: string, demoDate = "2026-11-16"): ClinicSnapshot {
-  if (!/^H[1-8]$/.test(id)) throw new Error("Unknown Riverside scenario");
+  if (!/^H(?:[1-9]|10|11)$/.test(id)) throw new Error("Unknown Riverside scenario");
   const snapshot = buildRiverside(demoDate);
   const minute = (day: number, time: string) => riversideMinute(day, time, demoDate);
   const protectedWindows: Record<string, [number, string, string][]> = {
@@ -20,6 +20,12 @@ export function buildScenario(id: string, demoDate = "2026-11-16"): ClinicSnapsh
     H8: [
       [1, "10:00", "12:00"],
       [2, "10:00", "12:00"],
+    ],
+    H9: [],
+    H10: [[7, "10:00", "10:15"]],
+    H11: [
+      [1, "08:00", "18:00"],
+      [2, "08:00", "08:30"],
     ],
   };
   const windows = protectedWindows[id]!.map(([day, from, to]) => ({
@@ -84,5 +90,26 @@ export function buildScenario(id: string, demoDate = "2026-11-16"): ClinicSnapsh
       start: minute(1, "08:00"),
       end: minute(1, "08:15"),
     });
+  if (id === "H11") {
+    const rao = snapshot.practitioners.find(({ id }) => id === "rao")!;
+    const mehta = snapshot.practitioners.find(({ id }) => id === "mehta")!;
+    rao.breaks = rao.breaks.filter(({ weekday }) => weekday !== 2);
+    rao.workingHours.find(({ weekday }) => weekday === 2)!.to = "16:15";
+    mehta.workingHours.find(({ weekday }) => weekday === 2)!.to = "18:00";
+    mehta.timeOff[0]!.to = minute(2, "00:00");
+    snapshot.rooms.find(({ id }) => id === "treatment")!.maintenance = [];
+    // Let the confirmed bookings carry the middle segment without a parallel buffer cause.
+    snapshot.services.find(({ id }) => id === "minor-procedure")!.bufferAfterMin = 0;
+    for (let start = minute(1, "10:30"), i = 0; start < minute(1, "16:00"); start += 15, i++)
+      add({
+        id: `h11-consult-${i}`,
+        patientId: `patient-${2 + (i % 10)}`,
+        serviceId: "consult",
+        practitionerId: "rao",
+        roomId: "consult-1",
+        start,
+        end: start + 15,
+      });
+  }
   return snapshot;
 }

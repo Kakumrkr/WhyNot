@@ -5,13 +5,15 @@ import process from "node:process";
 import console from "node:console";
 import { URL } from "node:url";
 import { getHeapStatistics } from "node:v8";
-import { evaluate, isBookable } from "../dist/index.js";
+import { evaluate, explainRange, isBookable } from "../dist/index.js";
 import { buildScenario, riversideMinute } from "../../fixtures/dist/index.js";
 
 const warmup = 1000;
 const samples = 300;
 const alternativesWarmup = 40;
 const alternativesSamples = 120;
+const rangeWarmup = 6;
+const rangeSamples = 24;
 const now = riversideMinute(0, "09:00");
 const scenarios = Array.from({ length: 8 }, (_, i) => {
   const golden = JSON.parse(
@@ -27,6 +29,24 @@ const scenarios = Array.from({ length: 8 }, (_, i) => {
     },
   };
 });
+const ranges = [9, 10, 11].map((index) => {
+  const golden = JSON.parse(
+    readFileSync(new URL(`../../fixtures/scenarios/H${index}.json`, import.meta.url), "utf8"),
+  );
+  return {
+    snapshot: buildScenario(golden.id),
+    request: golden.request,
+    now: riversideMinute(golden.now.day, golden.now.time),
+  };
+});
+const targets = [
+  ["isBookable", 2],
+  ["evaluate", 20],
+  ["evaluateAlternatives", 400],
+  ["evaluateFull", 400],
+  ["rangeDay", 300],
+  ["rangeWeek", 1500],
+];
 
 function scale(snapshot, resources, bookings) {
   const copy = JSON.parse(JSON.stringify(snapshot));
@@ -74,8 +94,17 @@ for (const [name, resources, bookings] of [
     snapshot: scale(entry.snapshot, resources, bookings),
   }));
   const metrics = {};
-  for (const operation of ["isBookable", "evaluate", "evaluateAlternatives", "evaluateFull"]) {
+  const rangeCases = ranges.map((entry) => ({
+    ...entry,
+    snapshot: scale(entry.snapshot, resources, bookings),
+  }));
+  for (const [operation] of targets) {
+    const range = operation === "rangeDay" || operation === "rangeWeek";
     const run = (i) => {
+      if (range) {
+        const { snapshot, request, now } = rangeCases[i % rangeCases.length];
+        return explainRange(snapshot, { ...request, days: operation === "rangeDay" ? 1 : 7 }, now);
+      }
       const entry = cases[i % cases.length];
       if (operation === "evaluateFull") return evaluate(entry.snapshot, entry.request, { now });
       if (operation === "evaluateAlternatives")
@@ -89,8 +118,8 @@ for (const [name, resources, bookings] of [
           });
     };
     const searches = operation === "evaluateAlternatives" || operation === "evaluateFull";
-    const measured = searches ? alternativesSamples : samples;
-    const warmed = searches ? alternativesWarmup : warmup;
+    const measured = range ? rangeSamples : searches ? alternativesSamples : samples;
+    const warmed = range ? rangeWarmup : searches ? alternativesWarmup : warmup;
     for (let i = 0; i < warmed; i++) run(i);
     const durations = [];
     for (let i = 0; i < measured; i++) {
@@ -109,6 +138,7 @@ for (const [name, resources, bookings] of [
     resources: resources,
     bookings: bookings,
     scenarioBookingCounts: cases.map((entry) => entry.snapshot.bookings.length),
+    rangeBookingCounts: rangeCases.map((entry) => entry.snapshot.bookings.length),
     ...metrics,
   };
 }
@@ -119,18 +149,16 @@ const report = {
   samples,
   alternativesWarmup,
   alternativesSamples,
+  rangeWarmup,
+  rangeSamples,
   dataset: "H1–H8 round robin; M 3x resources/2x bookings, L 10x resources/1x bookings",
+  rangeDataset: "H9–H11 round robin with one/seven days and the same S/M/L scaling",
   datasets,
 };
 console.log(JSON.stringify(report, null, 2));
 const output = process.argv.indexOf("--write");
 if (output >= 0) writeFileSync(process.argv[output + 1], JSON.stringify(report, null, 2) + "\n");
-for (const [operation, target] of [
-  ["isBookable", 2],
-  ["evaluate", 20],
-  ["evaluateAlternatives", 400],
-  ["evaluateFull", 400],
-]) {
+for (const [operation, target] of targets) {
   if (datasets.S[operation].p95Ms > target)
     throw new Error(`${operation} S p95 exceeds ${target}ms`);
 }
@@ -147,7 +175,7 @@ if (baseline !== undefined) {
       (key) => baseline.environment[key] === environment[key],
     ) && JSON.stringify(baseline.environment.nodeFlags) === JSON.stringify(environment.nodeFlags);
   if (comparable) {
-    for (const operation of ["isBookable", "evaluate", "evaluateAlternatives", "evaluateFull"]) {
+    for (const [operation] of targets) {
       const prior = baseline.datasets.S[operation];
       if (prior !== undefined && datasets.S[operation].p95Ms > prior.p95Ms * 1.5)
         throw new Error(`${operation} S p95 regressed by >50%`);

@@ -34,6 +34,15 @@
       "evaluateFull": {
         "p50Ms": 65.94020000000091,
         "p95Ms": 133.26900000000023
+      },
+      "rangeBookingCounts": [350, 350, 303],
+      "rangeDay": {
+        "p50Ms": 65.92149999999992,
+        "p95Ms": 84.08600000000001
+      },
+      "rangeWeek": {
+        "p50Ms": 25.292899999999918,
+        "p95Ms": 52.05059999999958
       }
     },
     "M": {
@@ -55,6 +64,15 @@
       "evaluateFull": {
         "p50Ms": 45.52180000000226,
         "p95Ms": 281.33920000000217
+      },
+      "rangeBookingCounts": [700, 700, 606],
+      "rangeDay": {
+        "p50Ms": 20.249300000000403,
+        "p95Ms": 164.28009999999995
+      },
+      "rangeWeek": {
+        "p50Ms": 32.043399999999565,
+        "p95Ms": 126.5670999999993
       }
     },
     "L": {
@@ -76,9 +94,21 @@
       "evaluateFull": {
         "p50Ms": 94.75209999998333,
         "p95Ms": 704.1987000000081
+      },
+      "rangeBookingCounts": [350, 350, 303],
+      "rangeDay": {
+        "p50Ms": 48.93950000000041,
+        "p95Ms": 362.6353999999992
+      },
+      "rangeWeek": {
+        "p50Ms": 79.15120000000024,
+        "p95Ms": 379.3063000000002
       }
     }
   },
   "alternativesWarmup": 40,
-  "alternativesSamples": 120
+  "alternativesSamples": 120,
+  "rangeWarmup": 6,
+  "rangeSamples": 24,
+  "rangeDataset": "H9–H11 round robin with one/seven days and the same S/M/L scaling"
 }
