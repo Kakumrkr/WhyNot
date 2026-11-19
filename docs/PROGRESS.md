@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [4.3 — Policy playground and empty-calendar journey](sessions/session-4.3.md).
-- **Last confirmed session merge at handoff:** 4.1 via [PR #21](https://github.com/Kakumrkr/WhyNot/pull/21) at `312eae7`.
+- **Next card after this PR merges:** [5.1 — Developer adoption and package validation](sessions/session-5.1.md).
+- **Last confirmed session merge at handoff:** 4.2 via [PR #22](https://github.com/Kakumrkr/WhyNot/pull/22) at `cfce830`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
 
@@ -13,7 +13,7 @@ Next prompt:
 
 ```text
 $whynot-session
-Session 4.3 — Policy playground and empty-calendar journey. Card: docs/sessions/session-4.3.md
+Session 5.1 — Developer adoption and package validation. Card: docs/sessions/session-5.1.md
 ```
 
 ## Status
@@ -35,8 +35,8 @@ Session 4.3 — Policy playground and empty-calendar journey. Card: docs/session
 | [3.2](sessions/session-3.2.md) | Patient and staff explanation journey            | done        | done         | done   | [#18](https://github.com/Kakumrkr/WhyNot/pull/18) |
 | [3.3](sessions/session-3.3.md) | Inspector and first public preview               | done        | done         | done   | [#19](https://github.com/Kakumrkr/WhyNot/pull/19) |
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | done        | done         | done   | [#21](https://github.com/Kakumrkr/WhyNot/pull/21) |
-| [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | done        | —            | —      | [#22](https://github.com/Kakumrkr/WhyNot/pull/22) |
-| [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | —           | —            | —      | —                                                 |
+| [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | done        | done         | done   | [#22](https://github.com/Kakumrkr/WhyNot/pull/22) |
+| [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | done        | —            | —      | [#23](https://github.com/Kakumrkr/WhyNot/pull/23) |
 | [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | —           | —            | —      | —                                                 |
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff              | —           | —            | —      | —                                                 |
 | [P1](sessions/session-P1.md)   | Persistence schema and database verification     | —           | —            | —      | —                                                 |
@@ -61,7 +61,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Core 1.6         | passed       | PR #12 CI ran 5000-run properties and S benchmark (runs 44126309537, 44126295724); baselines in packages/engine/bench/ |
 | Alternatives 2.3 | passed       | Local deep suite passed at 5000 runs per property. S alternatives p95 131.7 ms (400 ms target). Evidence in PR #16.    |
 | Preview 3.3      | local passed | 5000-run properties, built-app browser checks and the S benchmark passed locally. PR #19 tracks CI and deployment.     |
-| Policy/range 4.3 | pending      | —                                                                                                                      |
+| Policy/range 4.3 | local passed | 5,000-run properties, built-app Playwright and the Windows baseline benchmark passed. Evidence in PR #23.              |
 | Release 5.2      | pending      | —                                                                                                                      |
 | Optional P/H/A   | not selected | Human selection after first release                                                                                    |
 
@@ -77,6 +77,6 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**4.2 — Range explanations and next-available search.** Range evaluation counts local grid starts, returns closed dates and sufficient evidence, and verifies the next opening with preference-first bounded search. Patient projection remaps facts and templates describe start windows. H9–H11 use isolated snapshots, so H1 retains its 14:45 opening. D-074 specifies empty range and search evidence. D-075 aligns start windows to the actual grid and accepts continuous openings across schedule boundaries. The affirmative H11 qualification wording shares the open H1 contract question.
+**4.3 — Policy playground and empty-calendar journey.** Staff can preview custom settings or verified fixes against the original request, compare assignments and blockers, and reset the preview. The calendar renders projected engine output for H9–H11 and supports navigation to verified openings with an explicit practitioner change where needed. Calendar period is kept in browser history. The affirmative qualification wording remains open for H1 and H11.
 
-`pnpm verify` passed 235 tests and the range property suite passed 5,000 runs. The Windows range baseline records Small p95 of 84.09 ms for one day and 52.05 ms for seven days.
+`pnpm verify` and `pnpm test:deep` each passed 235 tests. Playwright passed 52 desktop and mobile checks, including axe. The Windows benchmark passed on retry, with Small p95 of 44.48 ms for one-day ranges and 30.46 ms for seven-day ranges.
