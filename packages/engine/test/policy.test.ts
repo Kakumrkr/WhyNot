@@ -72,6 +72,31 @@ it("chooses a lower-cost candidate and a canonical room on equal costs", () => {
   });
 });
 
+it("chooses the same concrete setting and witness after shuffling competing equal-cost fixes", () => {
+  const snapshot = buildMinimalSnapshot();
+  const first = snapshot.practitioners[0]!;
+  snapshot.practitioners = [
+    { ...first, id: "z", dailyCap: 0 },
+    { ...first, id: "a", dailyCap: 0 },
+  ];
+  snapshot.rooms.push({ ...snapshot.rooms[0]!, id: "a" });
+  snapshot.bookings = [
+    { ...booking("cancelled-a", "consult", 0, 15), practitionerId: "a", status: "cancelled" },
+    { ...booking("cancelled-z", "consult", 0, 15), practitionerId: "z", status: "cancelled" },
+  ];
+  const result = evaluate(snapshot, request, options);
+  if (result.status !== "blocked" || result.adminFix === null) throw new Error("Expected fix");
+  expect(result.adminFix).toMatchObject({
+    changes: [{ entity: "practitioner", id: "a", field: "dailyCap", value: 1 }],
+    viaCandidate: { practitionerId: "a", roomId: "a" },
+    cost: 3,
+  });
+  snapshot.practitioners.reverse();
+  snapshot.rooms.reverse();
+  snapshot.bookings.reverse();
+  expect(evaluate(snapshot, request, options)).toEqual(result);
+});
+
 it("rounds the elapsed advance threshold up to whole days and rejects past-slot notice fixes", () => {
   const snapshot = buildMinimalSnapshot();
   snapshot.policy.maxAdvanceDays = 1;
