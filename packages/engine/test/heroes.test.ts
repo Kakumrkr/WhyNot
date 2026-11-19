@@ -129,5 +129,5 @@ it("Riverside and named overrides are seeded, isolated and movable to another Mo
   expect(buildScenario("H1").practitioners).toHaveLength(6);
   expect(ClinicSnapshotSchema.safeParse(buildRiverside("2026-06-01")).success).toBe(true);
   expect(() => buildRiverside("2026-11-17")).toThrow("Monday");
-  expect(() => buildScenario("H11")).toThrow("Unknown");
+  expect(() => buildScenario("H12")).toThrow("Unknown");
 });

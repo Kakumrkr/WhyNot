@@ -16,10 +16,10 @@ export type Matrix = {
   rows: { assignment: Assignment; factIds: string[] }[];
 };
 
-/** Factor rule families once per resource; structural emptiness has no artificial row. */
-export function buildMatrix(context: RuleContext): Matrix {
+/** Evaluate violations in their independent dimensions, preserving structural emptiness. */
+export function factorViolations(context: RuleContext) {
   const missing = checkMissingResource(context);
-  if (missing.length > 0) return { basis: "missing_resource", facts: missing, rows: [] };
+  if (missing.length > 0) return { basis: "missing_resource" as const, facts: missing };
   const global = [...checkClinic(context), ...checkPatient(context), ...checkTiming(context)];
   const { snapshot } = context;
   const practitioners = new Map(
@@ -40,6 +40,14 @@ export function buildMatrix(context: RuleContext): Matrix {
     ...[...rooms.values()].flat(),
     ...[...equipment.values()].flat(),
   ]);
+  return { basis: "matrix" as const, facts, global, practitioners, rooms, equipment };
+}
+
+/** Factor rule families once per resource; structural emptiness has no artificial row. */
+export function buildMatrix(context: RuleContext): Matrix {
+  const factors = factorViolations(context);
+  if (factors.basis === "missing_resource") return { ...factors, rows: [] };
+  const { facts, global, practitioners, rooms, equipment } = factors;
   const indices = new Map(facts.map((fact, index) => [fact.id, index]));
   const indexed = (entries: Fact[]) => entries.map((fact) => indices.get(fact.id)!);
   const globalIndices = indexed(global);

@@ -9,8 +9,10 @@ import {
 import { patientFact, staffFact } from "./facts.js";
 import { createFormat, type Format, type TemplateDisplay } from "./format.js";
 import { policySetting } from "./policy.js";
+import { renderPatientRange, renderStaffRange } from "./range.js";
 
 export type { TemplateDisplay } from "./format.js";
+export type { RangeNarration } from "./range.js";
 
 export type CitedSentence = { text: string; factIds: string[] };
 
@@ -133,6 +135,8 @@ function blocked<F extends { id: string; ruleId: string }>(
 
 /** Deterministic wording over evaluated slots and caller-supplied display labels. */
 export const TemplateNarrator = {
+  renderPatientRange,
+  renderStaffRange,
   /** Render a patient result after projection. The strict contract is checked at this boundary. */
   renderPatient(evaluation: PatientEvaluation, display: TemplateDisplay): TemplateNarration {
     const result = PatientEvaluationSchema.parse(evaluation);

@@ -26,6 +26,7 @@ export function duration(minutes: number): string {
 /** Resolve display labels supplied by the caller and format instants in the clinic zone. */
 export function createFormat({ timeZone, locale = "en-GB", ...labels }: TemplateDisplay) {
   const day = new Intl.DateTimeFormat(locale, { timeZone, dateStyle: "medium" });
+  const date = new Intl.DateTimeFormat(locale, { timeZone: "UTC", dateStyle: "full" });
   const clock = new Intl.DateTimeFormat(locale, {
     timeZone,
     hour: "2-digit",
@@ -57,6 +58,7 @@ export function createFormat({ timeZone, locale = "en-GB", ...labels }: Template
   }
   return {
     instant,
+    date: (iso: string) => date.format(Date.parse(iso)),
     practitioner: (id?: string) =>
       (id === undefined ? undefined : labels.practitioners?.get(id)) ?? "This practitioner",
     staffPractitioner: (id: string) => labels.practitioners?.get(id) ?? id,
