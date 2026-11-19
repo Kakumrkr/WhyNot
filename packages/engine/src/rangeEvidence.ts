@@ -3,12 +3,18 @@ import { compareIds } from "./candidates.js";
 import { catalog } from "./catalog.js";
 import { explain } from "./explain.js";
 import { makeFact } from "./factId.js";
-import type { factorViolations } from "./matrix.js";
+import { factorViolations } from "./matrix.js";
+import { checkMissingResource } from "./rules/clinic.js";
+import { checkPatient } from "./rules/patient.js";
 import { canonicalFacts } from "./rules/resourceIntervals.js";
+import type { RuleContext } from "./validateRequest.js";
 
 type Factors = ReturnType<typeof factorViolations>;
-type Member = { start: number; factors: Factors };
-type Opening = { date: string; members: Member[] };
+type Opening = { date: string; members: { to: number; context: RuleContext }[] };
+type IndexedOpening = {
+  date: string;
+  members: { start: number; to: number; evidence: ReturnType<typeof index> }[];
+};
 const key = ({ ruleId, subject }: Fact) => JSON.stringify([ruleId, subject.id]);
 const ordered = (ids: string[]) => [...new Set(ids)].sort(compareIds);
 
@@ -26,6 +32,21 @@ function index(factors: Factors) {
           ...(factors.equipment.size === 0 ? [] : [[...factors.equipment.values()].map(ids)]),
         ];
   return { pairs, dimensions, facts };
+}
+
+function singleFact(fact: Fact): ReturnType<typeof index> {
+  return { pairs: new Map([[fact.id, key(fact)]]), dimensions: [[[fact.id]]], facts: [fact] };
+}
+
+function eligibilityEvidence(context: RuleContext | undefined) {
+  if (context === undefined || checkMissingResource(context).length > 0) return undefined;
+  const fact = checkPatient(context).find(
+    ({ ruleId }) =>
+      ruleId === "patient-eligibility-referral" || ruleId === "patient-eligibility-returning",
+  );
+  // Eligibility depends on the patient and service, so its global proof is identical
+  // at every open start. Avoid evaluating resource factors that cannot change it.
+  return fact === undefined ? undefined : singleFact(fact);
 }
 
 function sharedEvidence(members: ReturnType<typeof index>[]) {
@@ -94,16 +115,15 @@ function slotSignature(
   return new Set(best.primary.map((id) => pairs.get(id)!));
 }
 
-function segmentOpening(opening: Opening, context: Set<string>, common: Set<string>, grid: number) {
+function segmentOpening(opening: IndexedOpening, context: Set<string>, common: Set<string>) {
   const segments: Extract<RangeSegment, { closedDay: false }>[] = [];
   let previousSignature = "";
-  for (const { start, factors } of opening.members) {
-    const selected = common.size > 0 ? common : slotSignature(index(factors), context);
-    const facts = factors.facts.filter((fact) => selected.has(key(fact)));
+  for (const { start, to, evidence } of opening.members) {
+    const selected = common.size > 0 ? common : slotSignature(evidence, context);
+    const facts = evidence.facts.filter((fact) => selected.has(key(fact)));
     const signature = JSON.stringify(ordered(facts.map(key)));
     const factIds = facts.map(({ id }) => id);
     const previous = segments.at(-1);
-    const to = start + grid;
     if (previous?.to === start && previousSignature === signature) {
       previous.to = to;
       previous.memberStarts.push(start);
@@ -124,26 +144,30 @@ function segmentOpening(opening: Opening, context: Set<string>, common: Set<stri
 }
 
 /** Group starts by equivalent blocking signatures while retaining their individual witnesses. */
-export function rangeEvidence(
-  openings: Opening[],
-  closedDates: string[],
-  clinicId: string,
-  grid: number,
-) {
-  const members = openings.flatMap(({ members }) => members.map(({ factors }) => factors));
+export function rangeEvidence(openings: Opening[], closedDates: string[], clinicId: string) {
+  const eligibility = eligibilityEvidence(openings[0]?.members[0]?.context);
+  const indexed = openings.map(({ date, members }) => ({
+    date,
+    members: members.map(({ context, to }) => ({
+      start: context.interval.from,
+      to,
+      evidence: eligibility ?? index(factorViolations(context)),
+    })),
+  }));
   const closed = closedDates.map((date) =>
     makeFact("clinic-closed-day", { type: "clinic", id: clinicId }, { date }),
   );
-  const dictionary = canonicalFacts([...members.flatMap(({ facts }) => facts), ...closed]);
+  const evidence = [
+    ...indexed.flatMap(({ members }) => members.map(({ evidence }) => evidence)),
+    ...closed.map(singleFact),
+  ];
+  const dictionary = canonicalFacts(evidence.flatMap(({ facts }) => facts));
   if (dictionary.length === 0) return { facts: [], commonCause: [], context: [], segments: [] };
-  const { common, context } = sharedEvidence([
-    ...members.map(index),
-    ...closed.map((fact) => index({ basis: "missing_resource", facts: [fact] })),
-  ]);
+  const { common, context } = sharedEvidence(evidence);
   const references = (pairs: Set<string>) =>
     dictionary.filter((fact) => pairs.has(key(fact))).map(({ id }) => id);
   const segments: RangeSegment[] = [
-    ...openings.flatMap((opening) => segmentOpening(opening, context, common, grid)),
+    ...indexed.flatMap((opening) => segmentOpening(opening, context, common)),
     ...closedDates.map((date, index): RangeSegment => ({
       closedDay: true,
       date,
