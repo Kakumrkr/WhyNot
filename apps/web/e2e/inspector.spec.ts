@@ -90,6 +90,19 @@ test("shows H1 primary and other fact columns exactly where the staff trace plac
   await expect(page.locator("main")).not.toContainText("Fictional annual leave");
 });
 
+test("preserves staff trace details after checking a bookable alternative", async ({ page }) => {
+  await page.goto("/?scenarioId=H1&audience=staff");
+  await page.getByRole("button", { name: /Review alternative.*14:45.*Rao/ }).click();
+  await page.getByRole("button", { name: "Check alternative" }).click();
+  await expect(page.getByRole("heading", { name: "Bookable in this demo" })).toBeVisible();
+  const inspector = page.getByRole("region", { name: "Staff inspector" });
+  await inspector.getByText(/^Fact key /).click();
+  await expect(inspector.getByText("Fictional annual leave", { exact: true })).toBeVisible();
+  await page.getByRole("radio", { name: "Patient" }).check();
+  await expect(inspector).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText("Fictional annual leave");
+});
+
 test("labels the fallback explanation and each capped trace independently", async ({ page }) => {
   const inspection = staticAdapter.open("?scenarioId=H1&audience=staff")?.check();
   if (inspection?.status !== "blocked" || !inspection.inspector) {
