@@ -1,0 +1,274 @@
+:root {
+  color-scheme: light;
+  --paper: #f8f7f2;
+  --surface: #fff;
+  --tint: #eaf3ee;
+  --ink: #172d2a;
+  --quiet: #4a6059;
+  --accent: #1c5c4f;
+  --accent-ink: #fff;
+  --line: #d5e2d9;
+  --control-line: #6c8279;
+  --focus: #126f9a;
+  --alert: #8c3733;
+  --heading-font: Georgia, "Times New Roman", serif;
+  --body-font: system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  font: 1rem / 1.55 var(--body-font);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.frame {
+  width: min(100% - 2.5rem, 66rem);
+  margin-inline: auto;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 4.25rem;
+}
+
+.brand-mark {
+  flex: 0 0 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(var(--surface), var(--surface)) center / 50% 2px no-repeat,
+    linear-gradient(var(--surface), var(--surface)) center / 2px 50% no-repeat,
+    var(--accent);
+}
+
+.brand-name {
+  font-weight: 750;
+}
+
+.brand-clinic {
+  border-left: 1px solid var(--line);
+  padding-left: 0.75rem;
+  color: var(--quiet);
+  font-size: 0.875rem;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 1rem;
+  z-index: 1;
+  transform: translateY(-200%);
+  padding: 0.65rem 1rem;
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.intro {
+  padding-block: clamp(2.75rem, 8vw, 6rem) 2rem;
+}
+
+h1,
+h2,
+.service {
+  font-family: var(--heading-font);
+  font-weight: 400;
+  line-height: 1.13;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  letter-spacing: -0.045em;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+.intro p {
+  margin-top: 0.9rem;
+  color: var(--quiet);
+  font-size: 1.0625rem;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.card {
+  padding: clamp(1.25rem, 3.5vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.setup > label,
+legend {
+  font-weight: 650;
+}
+
+.setup > label {
+  display: block;
+  margin-block: 1.75rem 0.4rem;
+}
+
+select,
+.audience label,
+button {
+  min-height: 2.75rem;
+  border: 1px solid var(--control-line);
+  border-radius: 0.5rem;
+}
+
+select {
+  width: 100%;
+  padding: 0.55rem;
+  color: var(--ink);
+  background-color: var(--surface);
+}
+
+fieldset {
+  min-width: 0;
+  margin: 1.5rem 0 0;
+  border: 0;
+  padding: 0;
+}
+
+legend {
+  margin-bottom: 0.4rem;
+  padding: 0;
+}
+
+.audience {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.audience label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.audience label:has(:checked) {
+  border-color: var(--accent);
+  background: var(--tint);
+}
+
+.audience label:has(:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.audience input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.requested {
+  background: var(--tint);
+}
+
+.service {
+  margin-block: 1rem;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.75rem;
+}
+
+.details dt,
+.clock,
+.disclosure {
+  color: var(--quiet);
+  font-size: 0.875rem;
+}
+
+.details dd,
+.verdict {
+  font-weight: 650;
+}
+
+.verdict {
+  margin-top: 1.5rem;
+}
+
+.clock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  border-top: 1px solid var(--line);
+  margin-top: 1.25rem;
+  padding-top: 0.9rem;
+}
+
+.invalid h2 {
+  color: var(--alert);
+}
+
+.invalid p {
+  margin-block: 0.75rem 1.25rem;
+}
+
+button {
+  border-color: var(--accent);
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+
+.disclosure {
+  padding-block: 1.4rem 2.5rem;
+}
+
+@media (max-width: 46rem) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.875rem;
+  }
+}
