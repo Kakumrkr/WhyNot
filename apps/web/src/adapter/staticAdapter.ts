@@ -27,7 +27,7 @@ import { scenarios } from "./scenarios.js";
 import { staffInspector } from "./staffInspector.js";
 
 const parameters = new Set(["scenarioId", "audience", "date", "serviceId", "practitionerId"]);
-export const calendarPeriods = [
+const calendarPeriods = [
   { days: 1, label: "One day" },
   { days: 5, label: "Five days" },
   { days: 7, label: "Seven days" },
@@ -186,7 +186,7 @@ export const staticAdapter = {
     const audience = params.get("audience") ?? "patient";
     if (!scenario || (audience !== "patient" && audience !== "staff")) return null;
     if (params.has("date") && !DateSchema.safeParse(params.get("date")).success) return null;
-    const days =
+    const preferredDays =
       calendarPeriods.find((entry) => entry.days === selectedDays)?.days ?? scenario.days ?? 1;
 
     const snapshot = ClinicSnapshotSchema.parse(buildScenario(scenario.id));
@@ -206,7 +206,12 @@ export const staticAdapter = {
     const firstDate = timeValue(localDate(snapshot.coverage.from, timezone));
     const lastDate = timeValue(localDate(snapshot.coverage.to - 1, timezone));
     if (date < firstDate || date > lastDate) return null;
-    const endDate = timeValue(addLocalDays(date, days - 1));
+    const periods = calendarPeriods
+      .map((period) => ({ ...period, endDate: timeValue(addLocalDays(date, period.days - 1)) }))
+      .filter(({ endDate }) => endDate <= lastDate);
+    const period = periods.find(({ days }) => days === preferredDays) ?? periods.at(-1);
+    if (!period) throw new Error("No calendar period for a covered date");
+    const { days, endDate } = period;
     const fallback = timeValue(resolveRecurringBoundary(date, scenario.time, timezone));
     const start =
       typeof selectedStart === "number" &&
@@ -253,6 +258,7 @@ export const staticAdapter = {
       date,
       days,
       endDate,
+      periods,
       start,
       instant: timeValue(formatOffsetInstant(start, timezone)),
       serviceId: service.id,

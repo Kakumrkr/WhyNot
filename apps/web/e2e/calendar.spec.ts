@@ -52,7 +52,9 @@ test("H11 shows mixed start windows and projects the patient view", async ({ pag
   await expect(
     range.getByText("No appointment starts are available on these dates."),
   ).toBeVisible();
-  await range.getByText("Service requirements").click();
+  const requirements = range.getByText("Service requirements");
+  expect((await requirements.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await requirements.click();
   await expect(range.getByText(/lacks the required skill/).first()).toBeVisible();
   const segments = range.getByText(/^Starts from/);
   await expect(segments.first()).toContainText(/08:00.*10:30/);
@@ -97,9 +99,21 @@ test("renders engine counts, closed days and an incomplete search with no checke
   await page.goto("/?scenarioId=H1&date=2026-11-22");
   await expect(calendar(page).getByText(/The clinic is closed on/)).toBeVisible();
   await page.goto("/?scenarioId=H9&date=2026-12-16");
-  await page.getByLabel("Calendar period").selectOption("1");
+  const period = page.getByLabel("Calendar period");
+  await expect(period).toHaveValue("1");
+  await expect(period.locator("option")).toHaveText(["One day"]);
+  await expect(calendar(page).getByText("Ask your GP for a referral.")).toBeVisible();
   await expect(calendar(page).getByText(/More schedule data is needed/)).toBeVisible();
   await expect(calendar(page).getByRole("button")).toHaveCount(0);
+
+  await page.getByLabel("Appointment date").selectOption("2026-12-10");
+  await period.selectOption("7");
+  await page.getByLabel("Appointment date").selectOption("2026-12-12");
+  await expect(period).toHaveValue("5");
+  await expect(period.locator("option")).toHaveText(["One day", "Five days"]);
+  await page.goBack();
+  await expect(period).toHaveValue("7");
+
   await page.getByRole("button", { name: "Reset selections" }).click();
   await expect(page).toHaveURL("/");
   await expect(page.getByLabel("Calendar period")).toHaveValue("1");

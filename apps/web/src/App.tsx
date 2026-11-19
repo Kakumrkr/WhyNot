@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  anyPractitioner,
-  calendarPeriods,
-  staticAdapter,
-  type SlotCheck,
-} from "./adapter/staticAdapter.js";
+import { anyPractitioner, staticAdapter, type SlotCheck } from "./adapter/staticAdapter.js";
 import { CalendarJourney, type CalendarCheck } from "./CalendarJourney.js";
 import { ExplanationJourney } from "./ExplanationJourney.js";
 import { PolicyPlayground } from "./PolicyPlayground.js";
@@ -204,7 +199,7 @@ export function App() {
                   value={selection.days}
                   onChange={(event) => edit({}, selection.start, Number(event.target.value))}
                 >
-                  {calendarPeriods.map(({ days, label }) => (
+                  {selection.periods.map(({ days, label }) => (
                     <option key={days} value={days}>
                       {label}
                     </option>

@@ -7,6 +7,9 @@ import type {
 import { previewPolicyChanges } from "@whynot/engine";
 import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
 
+type DailyCapChange = Extract<PolicyChange, { entity: "practitioner" }>;
+type EditableSetting = PolicyChange | (Omit<DailyCapChange, "value"> & { value: undefined });
+
 const settingLabels = {
   minNoticeMin: "Minimum notice (minutes)",
   maxAdvanceDays: "Maximum advance window (days)",
@@ -17,7 +20,7 @@ const settingLabels = {
   eligibility: "Eligibility",
 } satisfies Record<PolicyChange["field"], string>;
 
-function settingLabel(change: PolicyChange, display: TemplateDisplay) {
+function settingLabel(change: EditableSetting, display: TemplateDisplay) {
   const field = settingLabels[change.field];
   if (change.entity === "policy") return field;
   const entries = change.entity === "service" ? display.services : display.practitioners;
@@ -49,7 +52,7 @@ export function policyPreview(
   now: number,
   display: TemplateDisplay,
 ) {
-  const settings: PolicyChange[] = [
+  const settings: EditableSetting[] = [
     { entity: "policy", field: "minNoticeMin", value: snapshot.policy.minNoticeMin },
     { entity: "policy", field: "maxAdvanceDays", value: snapshot.policy.maxAdvanceDays },
     {
@@ -61,7 +64,7 @@ export function policyPreview(
       entity: "practitioner" as const,
       id,
       field: "dailyCap" as const,
-      value: dailyCap ?? snapshot.policy.defaultDailyCap ?? 0,
+      value: dailyCap ?? snapshot.policy.defaultDailyCap,
     })),
   ];
   for (const service of snapshot.services) {
