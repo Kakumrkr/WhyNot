@@ -1,5 +1,6 @@
 import type { Rule, RuleId } from "@whynot/contracts";
 
+/** Version of the rule catalog shipped with this engine build. */
 export const catalogVersion = 1;
 
 function rule(

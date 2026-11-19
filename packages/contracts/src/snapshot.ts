@@ -94,6 +94,7 @@ export const PolicySchema = z.strictObject({
   patientMaxBookingsPerDay: NonnegativeSchema,
   defaultDailyCap: NonnegativeSchema.optional(),
 });
+/** Validate a clinic snapshot, including unique IDs and booking and referral references. */
 export const ClinicSnapshotSchema = z
   .strictObject({
     clinic: ClinicSchema,
@@ -196,7 +197,7 @@ export const EvaluationInputSchema = z
         });
     }
   });
-// Only playground imports have these bounds; engine consumers may supply larger snapshots.
+/** Validate snapshot structure and resource bounds for the synthetic playground. */
 export const SyntheticClinicSnapshotSchema = ClinicSnapshotSchema.safeExtend({
   practitioners: z.array(PractitionerSchema).max(100),
   rooms: z.array(RoomSchema).max(100),
@@ -215,6 +216,7 @@ export const SyntheticClinicSnapshotSchema = ClinicSnapshotSchema.safeExtend({
       });
   });
 });
+/** Versioned synthetic snapshot and injected clock, measured in UTC epoch minutes. */
 export const SyntheticSnapshotEnvelopeSchema = z.strictObject({
   schemaVersion: SchemaVersionSchema,
   snapshot: SyntheticClinicSnapshotSchema,
