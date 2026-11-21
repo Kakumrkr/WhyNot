@@ -1,0 +1,24 @@
+{
+  "name": "@whynot/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "db:seed": "node --env-file-if-exists=../../.env dist/seed/cli.js"
+  },
+  "dependencies": {
+    "@whynot/contracts": "workspace:*",
+    "@whynot/engine": "workspace:*",
+    "@whynot/fixtures": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "fastify": "5.12.8",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.17",
+    "@types/pg": "8.23.1"
+  }
+}

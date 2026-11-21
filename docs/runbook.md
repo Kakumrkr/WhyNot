@@ -40,3 +40,18 @@ The **Playground Pages** workflow deploys `apps/web/dist/` from `main`. At the p
 If the app or assets fail to load, inspect the run's build and deploy jobs and reproduce from a locked install and production preview. Fix source or workflow defects on a PR. The Pages workflow also supports a manual run on `main` for a transient deployment failure.
 
 Open **Synthetic snapshot files** to try the fictional Harbor example. Use **Reset imported snapshot** to return to the current curated selection. Import reads only a local UTF-8 JSON envelope. The export button downloads that envelope and its frozen clock. [Example snapshot](../examples/node/snapshot.json) · [Import limits](integration.md#use-snapshot-files-in-the-playground)
+
+## Seed the optional local database
+
+Use the loopback PostgreSQL demo database for fictional data. Copy `.env.example` to `.env`, then run:
+
+```sh
+docker compose up -d --wait db
+pnpm db:seed
+```
+
+The seed command applies outstanding migrations and initializes Riverside. It preserves existing bookings and the active policy on repeated runs. The clock is fixed at 09:00 Europe/London on `DEMO_DATE`, which defaults to Monday, November 16, 2026. A new demo date needs a fresh database.
+
+To reset the disposable Compose database, `docker compose down --volumes` deletes its demo data. Start the service and seed it again with the commands above.
+
+`pnpm test:quick apps/api/test/db.test.ts apps/api/test/snapshot.test.ts` runs the portable checks with PGlite. Set `WHYNOT_TEST_DATABASE_URL` to a disposable PostgreSQL 16 database supporting `CREATE EXTENSION` and run `pnpm test:db:pg` for schema parity and cross-connection checks.

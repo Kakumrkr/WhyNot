@@ -20,6 +20,8 @@
     "build": "pnpm -r build",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "dev": "pnpm --filter @whynot/web dev",
+    "db:seed": "pnpm --filter @whynot/api... build && pnpm --filter @whynot/api db:seed",
+    "test:db:pg": "vitest run --config vitest.pg.config.ts",
     "bench": "pnpm -r --filter \"./packages/**\" build && node --max-semi-space-size=64 packages/engine/bench/run.mjs"
   },
   "devDependencies": {

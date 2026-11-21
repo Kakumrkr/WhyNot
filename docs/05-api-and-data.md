@@ -12,7 +12,7 @@ Curated links encode scenarioId, audience and validated date/service/practitione
 
 Expose engine-shaped evaluate, availability, explainRange, policy preview and scenario/reset operations. Static adapter is synchronous internally; UI may wrap it for pending/error handling. Avoid artificial network infrastructure. Later HTTP adapter implements the same semantic operations; components do not branch business rules by mode.
 
-## Persistence milestone P1–P5
+## Persistence milestone (P1, P3 and P5)
 
 Pin supported Postgres and Drizzle versions at P1. Fastify routes and all wire schemas belong to contracts; instants use explicit-offset ISO. Error envelope is { error: { code, message, details? } }. Validate responses in tests/development. Demo role headers are not authentication and never justify real data use.
 
@@ -20,9 +20,9 @@ Pin supported Postgres and Drizzle versions at P1. Fastify routes and all wire s
 | --- | --- | --- |
 | GET /api/health, /api/clinic, /api/availability | Health/public configuration/grid | P3 |
 | POST /api/explain, /api/explain-range | Projected engine decisions | P3 |
-| POST /api/bookings, DELETE /api/bookings/:id | Create / soft cancel with demo ownership guards | P4 |
-| GET/POST /api/admin/policies | Immutable policy versions and atomic activation | P4 |
-| POST /api/demo/reset | Environment-gated, rate-limited reset | P4 |
+| POST /api/bookings, DELETE /api/bookings/:id | Create / soft cancel with demo ownership guards | P3 |
+| GET/POST /api/admin/policies | Immutable policy versions and atomic activation | P3 |
+| POST /api/demo/reset | Environment-gated, rate-limited reset | P3 |
 | GET /api/admin/evaluations/:id/trace | Stored-input replay, not current-snapshot reconstruction | H1 |
 | GET /api/admin/insights | Descriptive aggregates | H2 |
 | POST /api/admin/simulate | Independent historical policy replay | H3 |
@@ -49,6 +49,8 @@ PGlite runs portable integration tests without Docker. P1 probes btree_gist supp
 ## Frozen clock and reset
 
 Default DEMO_DATE Monday and DEMO_NOW Monday 09:00 Europe/London, fixed for all scenarios except explicit scenario overrides. No real-time offset. Seed/reset deterministic and idempotent, with fixture dependency isolated to seed.
+
+Riverside persists its original demo request window separately from known search coverage. The full snapshot includes the default alternative lookback, the forward alternative and range horizons, and the maximum appointment tail (D-080). A narrow loader window is useful for fixture parity and cannot assert coverage beyond the database bounds.
 
 ## Insights and replay H1–H4
 
