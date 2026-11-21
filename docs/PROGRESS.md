@@ -4,7 +4,7 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Active card:** [P1 — Database foundation, seed and snapshot loader](sessions/session-P1.md). D-076 selects persistence and sets the order P1 → P3 → P5.
+- **Next card after this PR merges:** [P3 — API, input capture and transactional booking](sessions/session-P3.md). Use the starter prompt on that card. D-076 sets the order P1 → P3 → P5.
 - **Last confirmed session merge at handoff:** 5.2 via [PR #25](https://github.com/Kakumrkr/WhyNot/pull/25) at `7bca46d`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **External validation:** Clinical usefulness and developer adoption are pending. See the [first-release evidence](reviews/session-5.2-release.md).
@@ -33,7 +33,7 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 | [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey   | done        | done        | done   | [#23](https://github.com/Kakumrkr/WhyNot/pull/23) |
 | [5.1](sessions/session-5.1.md) | Developer adoption and package validation      | done        | done        | done   | [#24](https://github.com/Kakumrkr/WhyNot/pull/24) |
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff            | done        | —           | done   | [#25](https://github.com/Kakumrkr/WhyNot/pull/25) |
-| [P1](sessions/session-P1.md)   | Database foundation, seed and snapshot loader  | —           | —           | —      | —                                                 |
+| [P1](sessions/session-P1.md)   | Database foundation, seed and snapshot loader  | done        | —           | —      | [#26](https://github.com/Kakumrkr/WhyNot/pull/26) |
 | [P3](sessions/session-P3.md)   | API, input capture and transactional booking   | —           | —           | —      | —                                                 |
 | [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | —           | —           | —      | —                                                 |
 | [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | —           | —           | —      | —                                                 |
@@ -70,8 +70,8 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**5.2 — First release, evidence and handoff.** Audited the static and package release boundaries, fixed pending imports surviving Back or Reset selections, and prepared release notes, a clean-clone runbook, an algorithm write-up and demo media. The release audit includes the retrospective independent review of 0.0. See the [release evidence](reviews/session-5.2-release.md).
+**P1 — Database foundation, seed and snapshot loader.** D-076 combined P1/P2 and P3/P4. This card adds the shared migration, immutable policy and evaluation rows, physical overlap backstops, frozen seed, and bounded snapshot loader.
 
-Locally passed 236 standard and 5,000-case deep tests, 68 Chromium checks, S/M/L benchmark, clean clone and packed consumer. Observed the public preview at desktop and mobile widths.
+PGlite and PostgreSQL apply one schema migration (D-078). The separate PostgreSQL job runs three checks, including concurrent inserts on two connections. The portable suites cover 21 checks, including all eleven isolated fixtures and adjacent coverage. D-079 fixes H8's generated overlap with the original expectations intact.
 
-External usefulness and adoption validation remain pending. The release is tagged `v1.0.0`. D-076 records the subsequent selection of persistence.
+P3 should load current data in the same transaction as the read or booking decision, store the actual input bundle, and run its booking races on real PostgreSQL. The CLI seed preserves local activity. See the [runbook](runbook.md#seed-the-optional-local-database).

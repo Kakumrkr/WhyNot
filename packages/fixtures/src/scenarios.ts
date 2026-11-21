@@ -80,16 +80,26 @@ export function buildScenario(id: string, demoDate = "2026-11-16"): ClinicSnapsh
       start: minute(1, "11:00"),
       end: minute(1, "11:30"),
     });
-  if (id === "H8")
+  if (id === "H8") {
+    const start = minute(1, "08:00");
+    const end = minute(1, "08:15");
+    // The authored daily-limit booking owns this practitioner and room for its interval.
+    snapshot.bookings = snapshot.bookings.filter(
+      (booking) =>
+        booking.start >= end ||
+        booking.end <= start ||
+        (booking.practitionerId !== "rao" && booking.roomId !== "consult-1"),
+    );
     add({
       id: "h8-existing",
       patientId: "patient-0",
       serviceId: "consult",
       practitionerId: "rao",
       roomId: "consult-1",
-      start: minute(1, "08:00"),
-      end: minute(1, "08:15"),
+      start,
+      end,
     });
+  }
   if (id === "H11") {
     const rao = snapshot.practitioners.find(({ id }) => id === "rao")!;
     const mehta = snapshot.practitioners.find(({ id }) => id === "mehta")!;

@@ -32,6 +32,10 @@ Add new items here as `### Q-<card>-<slug>` with the question, options considere
 | R-011 | Historical settings cannot be reconstructed from current state | Immutable full input bundles and explicit unsupported versions                    | D-058    |
 | R-012 | Skills/agents tied to old roadmap                              | Eight scoped skills, optional reviewer roles, just-in-time capability checks      | D-059    |
 
+## Persistence
+
+- Q-P1-H8-overlap: H8’s authored daily-limit booking overlapped generated load on the same practitioner and room. D-079 preserves the authored booking and removes the conflicting background booking.
+
 ## Workflow maintenance resolution — 2026-11-16
 
 Q-AUTO-1 is withdrawn: the user cancelled cloud automation and scheduling. No executor or schedule was activated. D-064 (now streamlined by D-071) covers session completion and recovery; there is no remaining cloud setup blocker.

@@ -19,6 +19,7 @@
 - .github/workflows/ci.yml
 - Root DB scripts
 - docs/runbook.md
+- packages/fixtures/src/scenarios.ts for the D-079 H8 fixture correction.
 - docs/08-decisions.md
 - docs/PROGRESS.md and docs/QUESTIONS.md for truthful handoff/questions; specification changes outside listed files require a decision.
 - Public behavior/interfaces are only those in the Build list. Follow authoritative docs 02–05; infer shared types from contracts.
@@ -27,7 +28,7 @@
 
 - Pin supported Postgres/Fastify/Drizzle/PGlite versions; introduce API package only now and migrate normalized clinic/resources/services/patients/bookings/policy/evaluation-input tables.
 - Add immutable version data, atomic active-policy uniqueness, confirmed overlap exclusion constraints and needed indexes.
-- Probe PGlite btree_gist and transaction concurrency; record Q-2/D-044 evidence. Add dedicated real-Postgres CI script for unsupported features without skipped tests.
+- Probe PGlite btree_gist and transaction concurrency; record Q-2 evidence in doc 08. Add a dedicated real-Postgres CI script for cross-connection checks without skipped tests.
 - Compose local DB and portable test factory; migrations are append-only after merge.
 - Idempotently seed base clinic from fixture entry point; preserve isolated scenario selections for API tests without combining contradictory overrides.
 - Implement frozen DEMO_NOW/DEMO_DATE and bounded snapshot coverage including alternative/range horizons and adjacent buffers.
