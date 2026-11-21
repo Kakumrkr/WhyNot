@@ -19,6 +19,7 @@ import { ClinicSchema, PolicySchema, PractitionerSchema, ServiceSchema } from ".
 
 export const demoRoleHeader = "x-demo-role";
 export const demoPatientHeader = "x-demo-patient-id";
+export const evaluationIdHeader = "x-whynot-evaluation-id";
 export const DemoRoleSchema = z.enum(["patient", "staff"]);
 // These values can be written to PostgreSQL text and JSONB.
 const ApiIdSchema = IdSchema.max(128).regex(/^[^\p{Cc}\p{Cs}]+$/u);
@@ -29,6 +30,8 @@ const RequestIdentitySchema = BookingRequestSchema.omit({ start: true }).extend(
 });
 export const ApiBookingRequestSchema = RequestIdentitySchema.extend({ start: OffsetIsoSchema });
 export const BookingParamsSchema = z.strictObject({ id: ApiIdSchema });
+export const EvaluationTraceParamsSchema = z.strictObject({ id: ApiIdSchema });
+export const EvaluationSourceSchema = z.enum(["live_demo", "synthetic_history"]);
 export const AvailabilityQuerySchema = RequestIdentitySchema.extend({ date: DateSchema });
 const ApiEvaluateOptionsSchema = EvaluateOptionsSchema.omit({ now: true }).extend({
   alternatives: z
@@ -113,6 +116,8 @@ const ApiErrorCodeSchema = z.enum([
   "rate_limited",
   "booking_conflict",
   "contended",
+  "unsupported_version",
+  "incomplete_evidence",
   "internal_error",
 ]);
 export const ApiErrorSchema = z.strictObject({
@@ -193,6 +198,12 @@ export function apiResults(time: TimeBoundary) {
   const patientSlot = resultCodec(PatientEvaluationSchema, time);
   const staffRange = resultCodec(RangeExplanationSchema, time);
   const patientRange = resultCodec(PatientRangeExplanationSchema, time);
+  const historicalEvaluation = {
+    id: ApiIdSchema,
+    source: EvaluationSourceSchema,
+    evaluatedAt: OffsetIsoSchema,
+    engineVersion: IdSchema,
+  };
   const evaluationError = <S extends z.ZodType>(schema: S) =>
     z.strictObject({
       error: ApiErrorSchema.shape.error.extend({
@@ -204,6 +215,10 @@ export function apiResults(time: TimeBoundary) {
     patientSlot,
     staffRange,
     patientRange,
+    evaluationTrace: z.discriminatedUnion("kind", [
+      z.strictObject({ ...historicalEvaluation, kind: z.literal("slot"), evaluation: staffSlot }),
+      z.strictObject({ ...historicalEvaluation, kind: z.literal("range"), evaluation: staffRange }),
+    ]),
     staffSlotError: evaluationError(staffSlot),
     patientSlotError: evaluationError(patientSlot),
     staffRangeError: evaluationError(staffRange),
