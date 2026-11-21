@@ -131,6 +131,49 @@ test("rejects malformed, unsupported, oversized and invalid-reference imports be
   }
 });
 
+for (const { method, restore } of [
+  { method: "browser Back", restore: (page: Page) => page.goBack() },
+  {
+    method: "Reset selections",
+    restore: (page: Page) => page.getByRole("button", { name: "Reset selections" }).click(),
+  },
+]) {
+  test(`discards a pending local file read after ${method}`, async ({ page }) => {
+    await page.addInitScript(() => {
+      const read = File.prototype.arrayBuffer;
+      File.prototype.arrayBuffer = function () {
+        const resume = new Promise<void>((resolve) => {
+          window.addEventListener("continue-snapshot-read", () => resolve(), { once: true });
+        });
+        return Promise.all([read.call(this), resume]).then(([bytes]) => {
+          window.dispatchEvent(new Event("snapshot-read-complete"));
+          return bytes;
+        });
+      };
+    });
+    await page.goto("/?scenarioId=H1");
+    await page.getByLabel("Scenario").selectOption("H2");
+    const file = await openFiles(page);
+    const envelope = SyntheticSnapshotEnvelopeSchema.parse(
+      JSON.parse(await readFile(ownSnapshot, "utf8")),
+    );
+    await file.setInputFiles(jsonFile(envelope));
+    await expect(page.getByText("Reading snapshot…")).toBeVisible();
+    await restore(page);
+    await expect(page.getByText("Reading snapshot…")).toHaveCount(0);
+    await page.evaluate(async () => {
+      const readComplete = new Promise<void>((resolve) => {
+        window.addEventListener("snapshot-read-complete", () => resolve(), { once: true });
+      });
+      window.dispatchEvent(new Event("continue-snapshot-read"));
+      await readComplete;
+      await new Promise(requestAnimationFrame);
+    });
+    await expect(page.getByLabel("Scenario")).toHaveValue("H1");
+    await expect(page.getByText("Imported snapshot active.")).toHaveCount(0);
+  });
+}
+
 test("opens the exported curated snapshot and handles the absence of a usable start", async ({
   page,
 }) => {
