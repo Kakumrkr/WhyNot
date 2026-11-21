@@ -42,7 +42,7 @@ function FullPlayground() {
     api,
     selection,
   );
-  const actions = useBookingActions(selection);
+  const actions = useBookingActions(api, selection);
   const view = selection?.view;
   const selectedTime = Array.isArray(starts)
     ? starts.find(({ start }) => start === view?.start)?.time

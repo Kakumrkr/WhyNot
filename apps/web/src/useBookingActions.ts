@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { hashKey, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { hashKey, useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import type { BookingRequest } from "@whynot/contracts";
 import type { FullSelection } from "./adapter/fullSelection.js";
 import { HttpError, type BookingReceipt, type HttpAdapter } from "./adapter/httpAdapter.js";
@@ -23,9 +23,40 @@ export function appointmentKey({ view, requester, slot }: FullSelection) {
 }
 
 /** Retain cancellation handles in this tab and reconcile every mutation with live queries. */
-export function useBookingActions(selection: FullSelection | null) {
+export function useBookingActions(api: HttpAdapter, selection: FullSelection | null) {
   const client = useQueryClient();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const scope = selection?.view.scenarioId;
+  const selectedKey = selection ? hashKey(appointmentKey(selection)) : null;
+  useEffect(() => {
+    if (scope)
+      void client.invalidateQueries({ queryKey: [scope, "receipt"] }, { cancelRefetch: false });
+  }, [client, scope, selectedKey]);
+  const visibleReceipts = receipts.filter(
+    (record) =>
+      selection &&
+      record.scope === scope &&
+      (selection.requester.audience === "staff" ||
+        selection.requester.patientId === record.request.patientId),
+  );
+  const checks = useQueries({
+    queries: selection
+      ? visibleReceipts.map(({ booking }) => ({
+          queryKey: [scope, "receipt", selection.requester, booking.id],
+          queryFn: ({ signal }: { signal: AbortSignal }) =>
+            api.bookingReceipt(booking.id, selection.requester, signal),
+          initialData: booking,
+          refetchOnWindowFocus: true,
+        }))
+      : [],
+  });
+  const missing = visibleReceipts.filter((_record, index) => checks[index]?.data === null);
+  useEffect(() => {
+    if (!scope || missing.length === 0) return;
+    const ids = new Set(missing.map(({ booking }) => booking.id));
+    setReceipts((current) => current.filter(({ booking }) => !ids.has(booking.id)));
+    void client.invalidateQueries({ queryKey: [scope, "schedule"] });
+  }, [client, missing, scope]);
   const mutation = useMutation({
     async mutationFn(action: Action) {
       const {
@@ -60,7 +91,12 @@ export function useBookingActions(selection: FullSelection | null) {
         }
         return;
       }
-      await client.invalidateQueries({ queryKey: action.kind === "reset" ? [scope] : schedule });
+      await Promise.all([
+        client.invalidateQueries({ queryKey: schedule }),
+        ...(action.kind === "reset"
+          ? [client.invalidateQueries({ queryKey: [scope, "policies"] })]
+          : []),
+      ]);
       if (response.kind === "book" && response.result.status === "confirmed") {
         const { booking } = response.result;
         setReceipts((current) => [
@@ -86,9 +122,13 @@ export function useBookingActions(selection: FullSelection | null) {
         setReceipts((current) => current.filter((receipt) => receipt.scope !== scope));
       }
     },
-    async onError(_error, action) {
+    async onError(error, action) {
       // A lost or malformed response can follow a committed change.
       await client.invalidateQueries({ queryKey: [action.selection.view.scenarioId, "schedule"] });
+      if (action.kind === "cancel" && error instanceof HttpError && error.code === "not_found")
+        setReceipts((current) =>
+          current.filter(({ booking }) => booking.id !== action.receipt.booking.id),
+        );
     },
   });
 
@@ -117,7 +157,9 @@ export function useBookingActions(selection: FullSelection | null) {
       currentAction === "book"
         ? "The clinic could not confirm this appointment. Check availability before trying again."
         : currentAction === "cancel"
-          ? "The clinic could not cancel this appointment."
+          ? mutation.error instanceof HttpError && mutation.error.code === "not_found"
+            ? "This booking is no longer on the clinic schedule."
+            : "The clinic could not cancel this appointment."
           : mutation.error instanceof HttpError && mutation.error.code === "not_found"
             ? "Demo reset is disabled on this server."
             : "The clinic could not reset this demo.";
@@ -137,23 +179,20 @@ export function useBookingActions(selection: FullSelection | null) {
         : "Another change was in progress. Review availability before trying again.";
   }
 
+  const activeReceipts = visibleReceipts.flatMap((receipt, index) =>
+    checks[index]?.data === null
+      ? []
+      : [{ ...receipt, verified: checks[index]?.isSuccess === true }],
+  );
   return {
     pending: mutation.isPending,
     message,
     confirmed:
       selection !== null &&
-      receipts.some(
-        (receipt) =>
-          receipt.scope === selection.view.scenarioId &&
-          hashKey([receipt.request]) === hashKey([selection.slot]),
+      activeReceipts.some(
+        ({ request, verified }) => verified && hashKey([request]) === hashKey([selection.slot]),
       ),
-    receipts: receipts.filter(
-      (receipt) =>
-        selection &&
-        receipt.scope === selection.view.scenarioId &&
-        (selection.requester.audience === "staff" ||
-          selection.requester.patientId === receipt.request.patientId),
-    ),
+    receipts: activeReceipts,
     run: mutation.mutate,
   };
 }

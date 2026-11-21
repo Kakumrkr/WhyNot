@@ -104,7 +104,9 @@ export function BookingPanel({
           {actions.receipts.map((receipt) => (
             <li key={receipt.booking.id}>
               <p>
-                <strong>Appointment confirmed</strong>
+                <strong>
+                  {receipt.verified ? "Appointment confirmed" : "Could not recheck this booking"}
+                </strong>
               </p>
               <p>
                 {receipt.service} · {receipt.when} · {receipt.practitioner}

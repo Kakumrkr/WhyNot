@@ -125,6 +125,46 @@ test("replaces a stale bookable result with the projected 409 explanation", asyn
   }
 });
 
+test("rechecks a receipt after another client resets its scope", async ({ page }) => {
+  const book = await selectOpening(page);
+  const confirmed = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`${scope}/bookings`) && response.request().method() === "POST",
+  );
+  const rechecked = page.waitForResponse(
+    (response) =>
+      response.url().includes(`${scope}/bookings/`) && response.request().method() === "GET",
+  );
+  await book.click();
+  await page.getByRole("button", { name: "Confirm booking" }).click();
+  const stored = await confirmed;
+  expect(stored.status()).toBe(201);
+  const { id } = BookingResponseSchema.parse(await stored.json());
+  let reset = false;
+  try {
+    expect((await rechecked).status()).toBe(200);
+    await expect(bookingPanel(page).getByText("Appointment confirmed")).toBeVisible();
+    const resetResponse = await page.request.post(`${scope}/demo/reset`, { headers: staff });
+    expect(resetResponse.status()).toBe(200);
+    reset = true;
+    const expired = page.waitForResponse(
+      (response) =>
+        response.url().endsWith(`${scope}/bookings/${id}`) && response.request().method() === "GET",
+    );
+    await page.evaluate(() => window.dispatchEvent(new Event("visibilitychange")));
+    expect((await expired).status()).toBe(404);
+    await expect(bookingPanel(page).getByText("Appointment confirmed")).toHaveCount(0);
+    await expect(book).toBeEnabled();
+    await expect(page.getByRole("button", { name: "11:00 Available", exact: true })).toBeVisible();
+  } finally {
+    if (!reset) {
+      expect(
+        (await page.request.delete(`${scope}/bookings/${id}`, { headers: patient })).ok(),
+      ).toBe(true);
+    }
+  }
+});
+
 test("rejects an invalid success response without displaying a booking receipt", async ({
   page,
 }) => {

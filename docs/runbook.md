@@ -64,7 +64,7 @@ pnpm dev:full
 
 Open [the full local app](http://127.0.0.1:5173/). Vite proxies `/api` to Fastify on loopback port 8787. If Docker is unavailable, create an empty PostgreSQL 16 database with permission to create schemas and install `btree_gist`, then set `DATABASE_URL` to its local connection string before seeding and starting the API.
 
-Choose **Riverside clinic** for the base schedule or select a curated scenario. The API initializes separate PostgreSQL schemas for the scenarios on first startup. Bookings are scoped to that selection and survive restarts. The booking panel keeps cancellation handles for the current browser tab until reload. Choose an available start, open **Book appointment**, then confirm. Cancel a booking from its receipt. **Patient** and **Staff** are fictional demo roles.
+Choose **Riverside clinic** for the base schedule or select a curated scenario. The API initializes separate PostgreSQL schemas for the scenarios on first startup. Bookings are scoped to that selection and survive restarts. Choose an available start, open **Book appointment**, then confirm. Cancel a booking from its receipt. The booking panel keeps cancellation handles until the page reloads and rechecks them when you return to the tab or change the request. **Patient** and **Staff** are fictional demo roles.
 
 To enable **Reset demo data**, set `DEMO_RESET_ENABLED=true` in `.env` and restart the API. Staff can then restore the selected scope's initial bookings and active policy. To discard the entire disposable Compose demo database, run `docker compose down --volumes`, then start and seed it again.
 

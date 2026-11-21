@@ -223,6 +223,21 @@ export function httpAdapter(scope: string) {
         CancellationResponseSchema,
       );
     },
+    async bookingReceipt(id: string, requester: Requester, signal: AbortSignal) {
+      const params = BookingParamsSchema.parse({ id });
+      const response = await send(
+        `/bookings/${encodeURIComponent(params.id)}`,
+        requester,
+        "GET",
+        undefined,
+        signal,
+      );
+      if (response.status === 404 && ApiErrorSchema.parse(response.body).error.code === "not_found")
+        return null;
+      const booking = decode(response, BookingResponseSchema);
+      if (booking.id !== id) throw new Error("Unexpected booking receipt");
+      return booking;
+    },
     async reset(requester: Requester) {
       return decode(await send("/demo/reset", requester, "POST"), ResetResponseSchema);
     },

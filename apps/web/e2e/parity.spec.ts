@@ -35,6 +35,13 @@ for (const { scenario, reasons, alternative, selected, preference } of [
       await expect(
         explanation.getByText(/Fictional annual leave/).filter({ visible: true }),
       ).toBeVisible();
+      await explanation.getByText("Candidate blockers by practitioner", { exact: true }).click();
+      await expect(
+        explanation
+          .getByText(/^treatment(?: room)?(?: ·.*)?$/i)
+          .filter({ visible: true })
+          .first(),
+      ).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath("staff-explanation.png"), fullPage: true });
       await page.getByRole("radio", { name: "Patient" }).check();
       await expect(explanation.getByText(/Fictional annual leave/)).toHaveCount(0);

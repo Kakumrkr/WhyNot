@@ -339,3 +339,7 @@ initial date picker uses the authored window. Staff policy previews use
 `POST /api/admin/policies/preview` (or the corresponding
 scoped route) and the existing policy body and result codec. Previewing
 evaluates a copy without activating a version or writing evaluation history.
+The browser can recheck an individual booking receipt with
+`GET /api/bookings/:id`. This uses the cancellation handle and the same
+demo ownership guard. It returns the existing public receipt for a confirmed
+booking and 404 for an unknown, cancelled, or inaccessible booking.

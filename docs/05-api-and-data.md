@@ -21,6 +21,7 @@ Pin supported Postgres and Drizzle versions at P1. Fastify routes and all wire s
 | GET /api/health, /api/clinic, /api/availability | Health/public configuration/grid | P3 |
 | POST /api/explain, /api/explain-range | Projected engine decisions | P3 |
 | POST /api/bookings, DELETE /api/bookings/:id | Create / soft cancel with demo ownership guards | P3 |
+| GET /api/bookings/:id | Recheck a confirmed booking through its cancellation handle | P5 |
 | GET/POST /api/admin/policies | Immutable policy versions and atomic activation | P3 |
 | POST /api/admin/policies/preview | Staff-only hypothetical policy comparison | P5 |
 | POST /api/demo/reset | Environment-gated, rate-limited reset | P3 |

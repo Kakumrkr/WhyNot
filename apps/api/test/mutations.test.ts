@@ -82,6 +82,15 @@ describe("portable API mutations", () => {
       /patient-test|Other Patient|room-test|bookingId|roomId|equipmentId/u,
     );
     const url = `/api/bookings/${booking.id}`;
+    const read = (headers: Record<string, string>, path = url) =>
+      app.inject({ url: path, headers });
+    for (const headers of [patient(), staff]) {
+      const found = await read(headers);
+      expect(found.statusCode).toBe(200);
+      expect(BookingResponseSchema.parse(found.json<unknown>())).toEqual(booking);
+    }
+    expect((await read(patient("other-patient"))).statusCode).toBe(404);
+    expect((await read(patient(), `/api/bookings/${stored!.id}`)).statusCode).toBe(404);
     const cancel = (headers: Record<string, string>, path = url) =>
       app.inject({ method: "DELETE", url: path, headers });
     const unowned = await cancel(patient("other-patient"));
@@ -92,6 +101,7 @@ describe("portable API mutations", () => {
     );
     expect((await cancel(patient())).statusCode).toBe(200);
     expect((await cancel(patient())).json()).toEqual({ status: "cancelled" });
+    expect((await read(patient())).statusCode).toBe(404);
     expect(
       await connection.db
         .select({ status: bookings.status, cancelledAt: bookings.cancelledAt })

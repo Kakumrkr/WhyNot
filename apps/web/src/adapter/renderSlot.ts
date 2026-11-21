@@ -16,8 +16,10 @@ function staffCandidates(
 ) {
   return result.explanation.perCandidateSummary.map(({ practitionerId, candidate, factIds }) => ({
     practitioner: display.practitioners?.get(practitionerId),
-    room: display.rooms?.get(candidate.roomId),
-    equipment: candidate.equipmentId ? display.equipment?.get(candidate.equipmentId) : undefined,
+    room: display.rooms?.get(candidate.roomId) ?? candidate.roomId,
+    equipment: candidate.equipmentId
+      ? (display.equipment?.get(candidate.equipmentId) ?? candidate.equipmentId)
+      : undefined,
     blockers: factIds.map((id) => {
       const sentence = sentences.get(id);
       if (sentence === undefined) throw new Error("Missing candidate blocker template");
