@@ -22,16 +22,23 @@ async function book(tx: Database, request: BookingRequest, id: string, cancellat
   const result = evaluate(snapshot, request, { now: clock.now });
   if (result.status !== "bookable") return result;
   const { equipmentId, ...assignment } = result.assignment;
-  await tx.insert(bookings).values({
-    id,
-    cancellationId,
-    patientId: request.patientId,
-    serviceId: request.serviceId,
-    ...assignment,
-    equipmentId,
-    createdAt: clock.now,
-    status: "confirmed",
-  });
+  // Speculative insertion lets the exclusion indexes arbitrate concurrent writes without
+  // deadlock cascades. A conflict invisible to the serializable snapshot raises 40001.
+  const [inserted] = await tx
+    .insert(bookings)
+    .values({
+      id,
+      cancellationId,
+      patientId: request.patientId,
+      serviceId: request.serviceId,
+      ...assignment,
+      equipmentId,
+      createdAt: clock.now,
+      status: "confirmed",
+    })
+    .onConflictDoNothing()
+    .returning({ id: bookings.id });
+  if (inserted === undefined) throw new Error("Bookable assignment conflicts with a visible row");
   return result;
 }
 

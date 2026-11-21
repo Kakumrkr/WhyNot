@@ -16,9 +16,10 @@ import { loadSnapshot } from "../snapshotLoader/loadSnapshot.js";
 function availability(snapshot: ClinicSnapshot, query: AvailabilityQuery, now: number) {
   const { date, ...request } = query;
   const { timezone, openingHours, slotGridMinutes, closedDates } = snapshot.clinic;
+  const service = snapshot.services.find(({ id }) => id === request.serviceId);
   if (
     !snapshot.patients.some(({ id }) => id === request.patientId) ||
-    !snapshot.services.some(({ id }) => id === request.serviceId) ||
+    service === undefined ||
     (request.practitionerId !== undefined &&
       !snapshot.practitioners.some(({ id }) => id === request.practitionerId))
   )
@@ -27,8 +28,11 @@ function availability(snapshot: ClinicSnapshot, query: AvailabilityQuery, now: n
   const hours = datedSchedule(openingHours, date, timezone);
   const grid = gridStarts(date, timezone, slotGridMinutes);
   if (!hours.ok || !grid.ok) throw new ApiError("invalid_request");
-  const scheduled = grid.value.filter((start) =>
-    hours.value.some(({ from, to }) => start >= from && start < to),
+  const scheduled = grid.value.filter(
+    (start) =>
+      start >= snapshot.coverage.from &&
+      start + service.durationMin <= snapshot.coverage.to &&
+      hours.value.some(({ from, to }) => start >= from && start < to),
   );
   const slots = scheduled.map((start) => {
     const instant = isoInstant(start, timezone);
@@ -79,10 +83,10 @@ export function registerClinic(app: FastifyInstance, db: Database): void {
   app.get("/api/availability", async (http) => {
     const query = parseBody(AvailabilityQuerySchema, http.query);
     requireRequester(http, query.patientId);
-    const { snapshot, clock, demoWindow } = await read();
-    const first = localDate(demoWindow.from, snapshot.clinic.timezone);
-    const last = localDate(demoWindow.to - 1, snapshot.clinic.timezone);
-    if (!first.ok || !last.ok) throw new Error("Unsupported demo dates");
+    const { snapshot, clock } = await read();
+    const first = localDate(snapshot.coverage.from, snapshot.clinic.timezone);
+    const last = localDate(snapshot.coverage.to - 1, snapshot.clinic.timezone);
+    if (!first.ok || !last.ok) throw new Error("Unsupported coverage dates");
     if (query.date < first.value || query.date > last.value) throw new ApiError("invalid_request");
     return AvailabilityResponseSchema.parse({
       date: query.date,

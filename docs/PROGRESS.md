@@ -72,6 +72,6 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 **P3 — API, input capture and transactional booking.** Includes the former P4 scope under D-076. Fastify exposes the clinic and availability, projected slot/range explanations, booking and cancellation, policy list/activation, and an opt-in fixture reset. Successful bookings return a public cancellation ID distinct from internal evidence. Reset preserves immutable policy and evaluation history.
 
-The 17 new portable tests cover H1–H11 parity/capture, privacy, and mutation behavior. Five new real PostgreSQL tests cover the ten-request sole-assignment race, disjoint-slot buffer and cap races, and bounded retry exhaustion.
+The 19 new portable tests cover H1–H11 parity/capture, privacy, and mutation behavior. Five new real PostgreSQL tests cover the ten-request sole-assignment race, disjoint-slot buffer and cap races, and bounded retry exhaustion.
 
-P5 should mount `createApp` with the exact browser origin, use `apiResults` from `@whynot/contracts/api` to parse HTTP decisions back to engine minutes, and keep the returned cancellation ID for `DELETE /api/bookings/:id`. See the [API threat model](security/threat-model.md) for headers and reset configuration.
+P5 should mount `createApp` with the exact browser origin, use `apiResults` from `@whynot/contracts/api` to parse decisions back to engine minutes, and use the returned cancellation ID for `DELETE /api/bookings/:id`. Use `demoWindow` for initial date choices; availability covers dates within known database coverage so verified openings can be followed. See the [API threat model](security/threat-model.md) for headers and reset configuration.

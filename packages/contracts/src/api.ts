@@ -20,7 +20,8 @@ import { ClinicSchema, PolicySchema, PractitionerSchema, ServiceSchema } from ".
 export const demoRoleHeader = "x-demo-role";
 export const demoPatientHeader = "x-demo-patient-id";
 export const DemoRoleSchema = z.enum(["patient", "staff"]);
-const ApiIdSchema = IdSchema.max(128);
+// These values can be written to PostgreSQL text and JSONB.
+const ApiIdSchema = IdSchema.max(128).regex(/^[^\p{Cc}\p{Cs}]+$/u);
 const RequestIdentitySchema = BookingRequestSchema.omit({ start: true }).extend({
   patientId: ApiIdSchema,
   serviceId: ApiIdSchema,

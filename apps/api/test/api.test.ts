@@ -286,6 +286,67 @@ describe("portable API reads", () => {
     expect(logs).not.toMatch(/private-marker|patient-test/u);
   });
 
+  it("rejects invalid identifier characters before capture or cancellation lookup", async () => {
+    await seedSnapshot(connection.db, buildMinimalSnapshot(), demoClock());
+    app = createApp({ db: connection.db });
+    const request = wireSlot(buildMinimalRequest());
+    for (const serviceId of ["consult\0", "consult\uD800"]) {
+      const slot = await app.inject({
+        method: "POST",
+        url: "/api/explain",
+        headers: patient(),
+        payload: { request: { ...request, serviceId } },
+      });
+      const range = await app.inject({
+        method: "POST",
+        url: "/api/explain-range",
+        headers: patient(),
+        payload: {
+          request: { patientId: request.patientId, serviceId, fromDate: DEMO_DATE, days: 1 },
+        },
+      });
+      for (const response of [slot, range]) {
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ error: { code: "invalid_request" } });
+      }
+    }
+    const cancel = await app.inject({ method: "DELETE", url: "/api/bookings/%00", headers: staff });
+    expect(cancel.statusCode).toBe(400);
+    expect(cancel.json()).toMatchObject({ error: { code: "invalid_request" } });
+    expect(await connection.db.select().from(evaluationInputs)).toHaveLength(0);
+  });
+
+  it("returns covered openings after the authored demo window when policy permits them", async () => {
+    await seedRiverside(connection.db);
+    app = createApp({ db: connection.db });
+    const original = ClinicResponseSchema.parse((await app.inject("/api/clinic")).json<unknown>());
+    expect(original.demoWindow.to).toBe("2026-12-17T00:00:00Z");
+    const base = { patientId: "patient-0", serviceId: "consult" };
+    const policy = await app.inject({
+      method: "POST",
+      url: "/api/admin/policies",
+      headers: staff,
+      payload: {
+        request: { ...base, start: "2026-11-16T11:00:00Z" },
+        changes: [{ entity: "policy", field: "maxAdvanceDays", value: 45 }],
+      },
+    });
+    expect(policy.statusCode).toBe(201);
+    const availability = await app.inject({
+      url: "/api/availability?patientId=patient-0&serviceId=consult&date=2026-12-21",
+      headers: patient("patient-0"),
+    });
+    expect(availability.statusCode).toBe(200);
+    const { starts } = AvailabilityResponseSchema.parse(availability.json<unknown>());
+    expect(starts).toContainEqual({
+      start: "2026-12-21T11:00:00+00:00",
+      time: "11:00",
+      available: true,
+    });
+    const clinic = ClinicResponseSchema.parse((await app.inject("/api/clinic")).json<unknown>());
+    expect(clinic.demoWindow).toEqual(original.demoWindow);
+  });
+
   it("enforces body size, per-client request rate and explicit CORS", async () => {
     app = createApp({ db: connection.db, allowedOrigins: ["http://127.0.0.1:5173"] });
     const origin = "http://127.0.0.1:5173";
