@@ -1,5 +1,9 @@
 import { EvaluateOptionsSchema, RangeOptionsSchema } from "@whynot/contracts";
-import { ExplainBodySchema, ExplainRangeBodySchema } from "@whynot/contracts/api";
+import {
+  evaluationIdHeader,
+  ExplainBodySchema,
+  ExplainRangeBodySchema,
+} from "@whynot/contracts/api";
 import type { FastifyInstance } from "fastify";
 import type { Database } from "../db/database.js";
 import { captureEvaluation } from "../db/evaluations.js";
@@ -23,7 +27,8 @@ export function registerExplanations(app: FastifyInstance, db: Database): void {
       return captureEvaluation(tx, snapshot, { kind: "slot", request, options });
     });
     if (!saved.ok) throw new ApiError("contended");
-    return sendSlot(reply, saved.value, role);
+    if (role.audience === "staff") reply.header(evaluationIdHeader, saved.value.id);
+    return sendSlot(reply, saved.value.result, role);
   });
 
   app.post("/explain-range", async (http, reply) => {
@@ -35,6 +40,7 @@ export function registerExplanations(app: FastifyInstance, db: Database): void {
       return captureEvaluation(tx, snapshot, { kind: "range", request, options });
     });
     if (!saved.ok) throw new ApiError("contended");
-    return sendRange(reply, saved.value, role);
+    if (role.audience === "staff") reply.header(evaluationIdHeader, saved.value.id);
+    return sendRange(reply, saved.value.result, role);
   });
 }

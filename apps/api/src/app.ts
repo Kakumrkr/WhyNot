@@ -1,11 +1,17 @@
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import { demoPatientHeader, demoRoleHeader, type ApiErrorCode } from "@whynot/contracts/api";
+import {
+  demoPatientHeader,
+  demoRoleHeader,
+  evaluationIdHeader,
+  type ApiErrorCode,
+} from "@whynot/contracts/api";
 import fastify, { LogController, type FastifyReply, type FastifyServerOptions } from "fastify";
 import type { Database } from "./db/database.js";
 import { ApiError, apiError } from "./http.js";
 import { registerBookings } from "./routes/bookings.js";
 import { registerClinic } from "./routes/clinic.js";
+import { registerEvaluationTrace } from "./routes/evaluationTrace.js";
 import { registerExplanations } from "./routes/explanations.js";
 import { registerPolicies } from "./routes/policies.js";
 import { registerReset } from "./routes/reset.js";
@@ -81,6 +87,7 @@ export function createApp({
     origin: [...origins],
     methods: ["GET", "POST", "DELETE"],
     allowedHeaders: ["content-type", demoRoleHeader, demoPatientHeader],
+    exposedHeaders: [evaluationIdHeader],
     logLevel: "silent",
   });
   app.register(rateLimit, {
@@ -93,6 +100,7 @@ export function createApp({
       (routes, _options, done) => {
         registerClinic(routes, database);
         registerExplanations(routes, database);
+        registerEvaluationTrace(routes, database);
         registerBookings(routes, database);
         registerPolicies(routes, database);
         if (resetEnabled) registerReset(routes, database, scenarioId);

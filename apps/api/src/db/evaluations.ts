@@ -5,8 +5,8 @@ import {
   type BookingRequest,
   type ClinicSnapshot,
   type EvaluateOptions,
-  type RangeOptions,
   type RangeExplanation,
+  type RangeOptions,
   type RangeRequest,
   type StaffEvaluation,
 } from "@whynot/contracts";
@@ -14,7 +14,10 @@ import { engineVersion, evaluate, explainRange } from "@whynot/engine";
 import type { Database } from "./database.js";
 import { evaluationInputs } from "./schema.js";
 
-type Capture =
+export const evaluationInputVersion = 1;
+export const syntheticHistoryPrefix = "synthetic-history-";
+
+export type Capture =
   | {
       kind: "slot";
       request: BookingRequest;
@@ -26,42 +29,48 @@ type Capture =
       options: Required<RangeOptions>;
     };
 
-/** Evaluate and append the complete original input/result before returning any projection. */
+/** Give a slot capture its persisted lookup ID before any response is projected. */
 export function captureEvaluation(
   db: Database,
   snapshot: ClinicSnapshot,
   input: Extract<Capture, { kind: "slot" }>,
-): Promise<StaffEvaluation>;
-/** Evaluate and append the complete original input/result before returning any projection. */
+): Promise<{ id: string; result: StaffEvaluation }>;
+/** Give a range capture its persisted lookup ID before any response is projected. */
 export function captureEvaluation(
   db: Database,
   snapshot: ClinicSnapshot,
   input: Extract<Capture, { kind: "range" }>,
-): Promise<RangeExplanation>;
+): Promise<{ id: string; result: RangeExplanation }>;
 export async function captureEvaluation(
   db: Database,
   snapshot: ClinicSnapshot,
   input: Capture,
-): Promise<StaffEvaluation | RangeExplanation> {
+): Promise<{ id: string; result: StaffEvaluation | RangeExplanation }> {
+  const id = randomUUID();
   const started = performance.now();
-  const evaluated =
+  const record = evaluationRecord(id, snapshot, input);
+  const durationMs = performance.now() - started;
+  await db.insert(evaluationInputs).values({ ...record, durationMs });
+  return { id, result: record.result };
+}
+
+/** Materialize an independent evaluation with its original input and version metadata. */
+export function evaluationRecord(id: string, snapshot: ClinicSnapshot, input: Capture) {
+  const result =
     input.kind === "slot"
       ? evaluate(snapshot, input.request, input.options)
       : explainRange(snapshot, input.request, input.options);
-  const durationMs = performance.now() - started;
-  await db.insert(evaluationInputs).values({
-    id: randomUUID(),
+  return {
+    id,
     kind: input.kind,
     snapshot,
     request: input.request,
     now: input.options.now,
     options: input.options,
-    inputVersion: 1,
+    inputVersion: evaluationInputVersion,
     schemaVersion,
     engineVersion,
     policyVersionId: snapshot.policy.versionId,
-    result: evaluated,
-    durationMs,
-  });
-  return evaluated;
+    result,
+  };
 }

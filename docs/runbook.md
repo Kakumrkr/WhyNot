@@ -68,6 +68,20 @@ Choose **Riverside clinic** for the base schedule or select a curated scenario. 
 
 To enable **Reset demo data**, set `DEMO_RESET_ENABLED=true` in `.env` and restart the API. Staff can then restore the selected scope's initial bookings and active policy. To discard the entire disposable Compose demo database, run `docker compose down --volumes`, then start and seed it again.
 
+### Replay a staff evaluation
+
+Staff responses from `POST /api/explain` and `POST /api/explain-range` include an `X-WhyNot-Evaluation-Id` header. Use that ID in `GET /api/admin/evaluations/:id/trace` with `X-Demo-Role: staff`. For a curated scenario, use the same `/api/demo/Hn` prefix as the original request.
+
+`pnpm db:seed` also adds 12 synthetic history records to base Riverside, including on databases initialized before H1. They cover slot and range requests at frozen clocks one and two weeks before `DEMO_DATE`. Repeating the seed preserves existing evaluations and live state. Seeded responses carry `source: synthetic_history` and have no observed runtime measurement.
+
+With the default demo date and the API running, replay a seeded slot request with this command.
+
+```sh
+curl -H 'X-Demo-Role: staff' http://127.0.0.1:8787/api/admin/evaluations/synthetic-history-2026-11-09-slot-notice/trace
+```
+
+The response includes the original evaluation time and engine version. Slot replay adds the engine's candidate trace when the original request did not ask for it. Range replay returns the engine's range evidence. HTTP 409 with `unsupported_version` means the required engine version is unavailable. `incomplete_evidence` means the saved bundle cannot reproduce the original result.
+
 ### Verify full mode
 
 Stop the manually started API and any preview on port 4174. With `DATABASE_URL` pointing to a fresh disposable database and Chromium installed, run the full browser check.

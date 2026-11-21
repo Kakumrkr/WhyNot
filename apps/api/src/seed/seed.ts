@@ -13,13 +13,23 @@ import type { Database } from "../db/database.js";
 import { policyVersion } from "../db/policyVersion.js";
 import * as tables from "../db/schema.js";
 import { riversideSearchCoverage } from "./searchCoverage.js";
+import { seedSyntheticHistory } from "./syntheticHistory.js";
 
 type SeedResult = "seeded" | "already_seeded";
 
 /** Seed the base clinic once, preserving bookings and active policy on subsequent calls. */
 export function seedRiverside(db: Database, clock = demoClock()): Promise<SeedResult> {
   const snapshot = buildRiverside(clock.date);
-  return seedSnapshot(db, snapshot, clock, riversideSearchCoverage(snapshot, clock.now));
+  return db.transaction(async (tx) => {
+    const initialized = await seedSnapshot(
+      tx,
+      snapshot,
+      clock,
+      riversideSearchCoverage(snapshot, clock.now),
+    );
+    await seedSyntheticHistory(tx, clock);
+    return initialized;
+  });
 }
 
 function scenarioClock(id: string, date: string): DemoClock {
