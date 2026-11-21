@@ -19,6 +19,7 @@ import {
   type TimeResult,
 } from "./time.js";
 import { buildSlotContext } from "./validateRequest.js";
+import { engineVersion } from "./version.js";
 
 type RangeInput = Extract<ReturnType<typeof resolveInput>, { ok: true }>["value"];
 type Bounds = { from: number; to: number };
@@ -208,7 +209,7 @@ export function explainRange(
   }
   const meta = {
     schemaVersion: 1 as const,
-    engineVersion: "0.0.0",
+    engineVersion,
     policyVersionId: value.snapshot.policy.versionId,
     evaluatedAt: value.options.now,
   };

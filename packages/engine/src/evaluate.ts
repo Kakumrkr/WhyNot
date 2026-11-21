@@ -14,6 +14,7 @@ import { searchAlternatives } from "./alternatives.js";
 import { findAdminFix } from "./adminFix.js";
 import { applyPatch } from "./policy.js";
 import type { TimeResult } from "./time.js";
+import { engineVersion } from "./version.js";
 
 /** Evaluate untrusted inputs with an injected clock and optional alternative search. */
 export function evaluate(snapshot: unknown, request: unknown, options: unknown): StaffEvaluation {
@@ -24,7 +25,7 @@ export function evaluate(snapshot: unknown, request: unknown, options: unknown):
   const assignment = chooseAssignment(context, matrix);
   const meta = {
     schemaVersion: 1 as const,
-    engineVersion: "0.0.0",
+    engineVersion,
     policyVersionId: context.snapshot.policy.versionId,
     evaluatedAt: context.options.now,
   };

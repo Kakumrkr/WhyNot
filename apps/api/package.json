@@ -10,6 +10,8 @@
     "db:seed": "node --env-file-if-exists=../../.env dist/seed/cli.js"
   },
   "dependencies": {
+    "@fastify/cors": "11.1.0",
+    "@fastify/rate-limit": "10.3.0",
     "@whynot/contracts": "workspace:*",
     "@whynot/engine": "workspace:*",
     "@whynot/fixtures": "workspace:*",

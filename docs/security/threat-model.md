@@ -1,0 +1,15 @@
+# Riverside API threat model
+
+The API serves the fictional Riverside clinic. The datastore contains synthetic people, appointments and rule evidence. `x-demo-role: staff` is a client-controlled view switch. A patient supplies `x-demo-role: patient` and `x-demo-patient-id`. Staff can read the full synthetic decision, change policies, cancel any booking and request an enabled reset. Use the server on a trusted local machine with a disposable, loopback PostgreSQL instance.
+
+| Boundary | Protection | Residual exposure |
+| --- | --- | --- |
+| Client to API | Explicit CORS allowlist, 32 KiB JSON bodies, strict endpoint schemas, and per-IP rate limits (120 requests per minute, two resets per minute). Forwarded IP headers are ignored. | Non-browser clients can set either role and choose any existing fictional requester. Rate limits are in memory per API process. |
+| Patient decisions | Use `projectForAudience` on slot, range and booking conflict evaluations before encoding. Validate patient responses against distinct public schemas. A patient requests only their selected identity, and cancellation uses the same owner scope. Unowned and missing bookings use the same response. | Public practitioner names, availability and projected causes are visible. A successful booking returns a separate public cancellation ID. |
+| Staff decisions | Staff routes and trace options require the staff view. The health and clinic routes expose only public configuration. Strict output contracts and `Cache-Control: no-store` apply at the API boundary. | Anyone with local API access can switch to staff. Staff evidence may include synthetic leave reasons, internal references and booking IDs. |
+| Database | Booking rechecks the engine inside a serializable transaction with bounded retries. PostgreSQL exclusions protect physical overlaps. Atomic version activation records before/after inputs. Evaluation and policy histories use immutable rows. | Database operators have full access to retained snapshots and results. A sustained synthetic workload can grow the retained history. |
+| Reset and logging | Reset is staff-only, disabled unless configured with `DEMO_RESET_ENABLED=true`, and restores live bookings and the base policy in one transaction. Logs omit request, body, headers, SQL errors and decisions. Error envelopes use fixed messages and allowlisted engine details. | Enabled reset can discard current demo bookings. Immutable evaluation and policy history survives reset. |
+
+The API factory accepts exact browser origins through `allowedOrigins`. The local application must include its browser origin, even when it serves the API and UI together. The browser and API use explicit-offset minute-precision timestamps. Use `apiResults` from `@whynot/contracts/api` to decode explanation and conflict payloads back to engine minutes.
+
+HTTP calls do not accept arbitrary snapshots, clock overrides or external URLs. Serving real records would require a separate security design covering authenticated identity, authorization, privacy controls, audit and retention.
