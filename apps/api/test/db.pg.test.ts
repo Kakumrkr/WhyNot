@@ -108,6 +108,24 @@ describe("real PostgreSQL persistence", () => {
           { source: "synthetic_history", rangeEvaluations: 4, slots: { total: 8 } },
         ],
       });
+      const firstWeek = now - 14 * 1440;
+      const lastId = rows
+        .filter((row) => row.now === firstWeek)
+        .map((row) => row.id)
+        .sort()
+        .at(-1)!;
+      query.set("afterAt", isoInstant(firstWeek));
+      query.set("afterId", lastId);
+      const next = await app.inject({ url: `/api/admin/insights?${query}`, headers: staff });
+      expect(next.statusCode).toBe(200);
+      expect(InsightsResponseSchema.parse(next.json<unknown>())).toMatchObject({
+        status: "ok",
+        sources: [
+          { source: "live_demo", rangeEvaluations: 0, slots: { total: 0 } },
+          { source: "synthetic_history", rangeEvaluations: 2, slots: { total: 4 } },
+        ],
+        nextCursor: null,
+      });
     } finally {
       await app.close();
     }

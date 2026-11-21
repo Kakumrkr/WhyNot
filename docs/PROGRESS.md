@@ -72,8 +72,8 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**H2 — Descriptive insight aggregates.** Staff `GET /api/admin/insights` accepts explicit-offset `from` and `to` on the recorded demo evaluation clock, including `from` and excluding `to`. It reports empty windows and windows exceeding 2,000 evaluations explicitly. Live demo and seeded synthetic records have separate counts, with range requests separate from slot outcomes. Repeated records count separately within each source.
+**H2 — Descriptive insight aggregates.** Staff `GET /api/admin/insights` accepts explicit-offset `from` and `to` on the recorded demo evaluation clock, including `from` and excluding `to`. It reports empty windows explicitly. Partial responses summarize up to 2,000 records and return `nextCursor` fields to pass with the same window. Sum counts and denominators per source across pages and calculate blocked share from those sums.
 
-Blocked share uses decided slots. Reported primary rules count once per blocked slot per selected rule. Explanation weights influence attribution. Verified fixes use blocked slots assessed for a fix and their saved engine results.
+Counts separate live demo records, seeded synthetic records, and range requests. Repeated records count separately. Blocked share uses decided slots. Reported primary rules count once per blocked slot per selected rule. Explanation weights influence attribution. Verified fixes use blocked slots assessed for a fix and their saved engine results.
 
 Local `pnpm verify` passed 285 tests. The real PostgreSQL suite passed 10 tests, including seeded slot and range counts through the insights endpoint.

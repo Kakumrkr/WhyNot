@@ -6,15 +6,15 @@ import {
   type InsightsResponse,
 } from "@whynot/contracts/api";
 import { parseOffsetInstant } from "@whynot/engine";
-import { and, gte, lt, sql } from "drizzle-orm";
+import { and, asc, eq, gt, gte, lt, or, sql } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import type { Database } from "../db/database.js";
 import { syntheticHistoryPrefix } from "../db/evaluations.js";
 import { evaluationInputs } from "../db/schema.js";
 import { requireStaff } from "../demoRole.js";
-import { ApiError, parseBody } from "../http.js";
+import { ApiError, isoInstant, parseBody } from "../http.js";
 
-type SourceInsights = Extract<InsightsResponse, { sources: unknown }>["sources"][number];
+type SourceInsights = InsightsResponse["sources"][number];
 type Evidence = Pick<typeof evaluationInputs.$inferSelect, "id" | "kind" | "result"> & {
   includeAdminFix: unknown;
 };
@@ -86,30 +86,44 @@ function summarize(rows: readonly Evidence[], source: SourceInsights["source"]):
 export function registerInsights(app: FastifyInstance, db: Database): void {
   app.get("/admin/insights", async (http) => {
     requireStaff(http);
-    const window = parseBody(InsightsQuerySchema, http.query);
+    const query = parseBody(InsightsQuerySchema, http.query);
+    const window = { from: query.from, to: query.to };
     const from = parseOffsetInstant(window.from);
     const to = parseOffsetInstant(window.to);
     if (!from.ok || !to.ok || from.value >= to.value) throw new ApiError("invalid_request");
 
     const { id, kind, now, result, options } = evaluationInputs;
+    // Live captures can share one frozen minute. Use the ID to resume within that minute.
+    const orderedId = sql`convert_to(${id}, 'UTF8')`;
+    let afterCursor;
+    if ("afterAt" in query) {
+      const after = parseOffsetInstant(query.afterAt);
+      if (!after.ok || after.value < from.value || after.value >= to.value)
+        throw new ApiError("invalid_request");
+      afterCursor = or(
+        gt(now, after.value),
+        and(eq(now, after.value), sql`${orderedId} > convert_to(${query.afterId}, 'UTF8')`),
+      );
+    }
     const rows = await db
       .select({
         id,
         kind,
+        now,
         // Range internals and optional diagnostic traces do not enter the aggregation.
         result: sql`case when ${kind} = 'slot' and jsonb_typeof(${result}) = 'object' then ${result} - 'trace' end`,
         includeAdminFix: sql`${options}->'includeAdminFix'`,
       })
       .from(evaluationInputs)
-      .where(and(gte(now, from.value), lt(now, to.value)))
+      .where(and(gte(now, from.value), lt(now, to.value), afterCursor))
+      .orderBy(asc(now), orderedId)
       .limit(insightsEvaluationLimit + 1);
 
+    let nextCursor = null;
     if (rows.length > insightsEvaluationLimit) {
-      return InsightsResponseSchema.parse({
-        status: "limit_exceeded",
-        window,
-        maxEvaluations: insightsEvaluationLimit,
-      });
+      rows.pop();
+      const last = rows.at(-1)!;
+      nextCursor = { afterAt: isoInstant(last.now), afterId: last.id };
     }
     const liveDemo: Evidence[] = [];
     const syntheticHistory: Evidence[] = [];
@@ -117,9 +131,10 @@ export function registerInsights(app: FastifyInstance, db: Database): void {
       (row.id.startsWith(syntheticHistoryPrefix) ? syntheticHistory : liveDemo).push(row);
     }
     return InsightsResponseSchema.parse({
-      status: rows.length === 0 ? "empty" : "ok",
+      status: nextCursor !== null ? "partial" : rows.length === 0 ? "empty" : "ok",
       window,
       sources: [summarize(liveDemo, "live_demo"), summarize(syntheticHistory, "synthetic_history")],
+      nextCursor,
     });
   });
 }

@@ -35,7 +35,13 @@ export const EvaluationTraceParamsSchema = z.strictObject({ id: ApiIdSchema });
 export const EvaluationSourceSchema = z.enum(["live_demo", "synthetic_history"]);
 export const insightsEvaluationLimit = 2000;
 /** Half-open bounds on the evaluation's recorded clock, at minute precision. */
-export const InsightsQuerySchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
+const InsightsWindowSchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
+const InsightsCursorSchema = z.strictObject({ afterAt: OffsetIsoSchema, afterId: ApiIdSchema });
+/** Continue a bounded scan with both cursor fields from the previous page. */
+export const InsightsQuerySchema = z.union([
+  InsightsWindowSchema,
+  InsightsWindowSchema.extend(InsightsCursorSchema.shape),
+]);
 export const AvailabilityQuerySchema = RequestIdentitySchema.extend({ date: DateSchema });
 const ApiEvaluateOptionsSchema = EvaluateOptionsSchema.omit({ now: true }).extend({
   alternatives: z
@@ -138,20 +144,22 @@ const InsightsSourceSchema = z.strictObject({
   }),
 });
 
-/** Counts evaluation records, so repeated demo requests count separately within their source. */
+const InsightsPageSchema = z.strictObject({
+  window: InsightsWindowSchema,
+  sources: z.tuple([
+    InsightsSourceSchema.extend({ source: z.literal("live_demo") }),
+    InsightsSourceSchema.extend({ source: z.literal("synthetic_history") }),
+  ]),
+});
+/** Each page counts evaluation records, so repeated requests count separately within their source. */
 export const InsightsResponseSchema = z.discriminatedUnion("status", [
-  z.strictObject({
+  InsightsPageSchema.extend({
     status: z.enum(["ok", "empty"]),
-    window: InsightsQuerySchema,
-    sources: z.tuple([
-      InsightsSourceSchema.extend({ source: z.literal("live_demo") }),
-      InsightsSourceSchema.extend({ source: z.literal("synthetic_history") }),
-    ]),
+    nextCursor: z.null(),
   }),
-  z.strictObject({
-    status: z.literal("limit_exceeded"),
-    window: InsightsQuerySchema,
-    maxEvaluations: z.literal(insightsEvaluationLimit),
+  InsightsPageSchema.extend({
+    status: z.literal("partial"),
+    nextCursor: InsightsCursorSchema,
   }),
 ]);
 export type InsightsResponse = z.infer<typeof InsightsResponseSchema>;

@@ -17,8 +17,8 @@ import { openPortableDatabase } from "./helpers/portableDatabase.js";
 
 const clock = demoClock();
 const fixture = buildMinimalSnapshot();
-const url = (from: string, to: string, prefix = "/api") =>
-  `${prefix}/admin/insights?${new URLSearchParams({ from, to })}`;
+const url = (from: string, to: string, prefix = "/api", cursor?: Record<string, string>) =>
+  `${prefix}/admin/insights?${new URLSearchParams({ from, to, ...cursor })}`;
 const from = "2026-11-16T10:00:00+01:00";
 const to = "2026-11-16T09:15:00Z";
 
@@ -113,6 +113,7 @@ describe("staff descriptive insights", () => {
     expect(InsightsResponseSchema.parse(response.json<unknown>())).toEqual({
       status: "ok",
       window: { from, to },
+      nextCursor: null,
       sources: [
         {
           source: "live_demo",
@@ -178,12 +179,18 @@ describe("staff descriptive insights", () => {
       { ...emptySource, source: "live_demo" },
       { ...emptySource, source: "synthetic_history" },
     ];
-    expect(await read()).toEqual({ status: "empty", window: { from, to }, sources });
+    expect(await read()).toEqual({
+      status: "empty",
+      window: { from, to },
+      sources,
+      nextCursor: null,
+    });
     await connection.db.insert(evaluationInputs).values(range("range-only", clock.now + 14));
     expect(await read()).toEqual({
       status: "ok",
       window: { from, to },
       sources: [{ ...sources[0], rangeEvaluations: 1 }, sources[1]],
+      nextCursor: null,
     });
   });
 
@@ -204,6 +211,8 @@ describe("staff descriptive insights", () => {
       url("2026-11-16T09:00:00", to),
       `${url(from, to)}&from=${encodeURIComponent(from)}`,
       `${url(from, to)}&patientId=patient-test`,
+      url(from, to, "/api", { afterId: "no-clock" }),
+      url(from, to, "/api", { afterAt: to, afterId: "outside-window" }),
     ]) {
       const result = await app.inject({ url: path, headers: staff });
       expect(result.statusCode).toBe(400);
@@ -211,7 +220,8 @@ describe("staff descriptive insights", () => {
     }
   });
 
-  it("returns exact counts at the record limit and an explicit result above it", async () => {
+  it("paginates a one-minute window without losing or repeating records at the same instant", async () => {
+    const end = isoInstant(clock.now + 1);
     await connection.db.insert(evaluationInputs).values(range("range-seed"));
     const copies = insightsEvaluationLimit - 1;
     await connection.db.execute(sql`
@@ -222,19 +232,46 @@ describe("staff descriptive insights", () => {
       from evaluation_inputs cross join generate_series(1, ${copies}::int) as series
       where id = 'range-seed'
     `);
-    const exact = await app.inject({ url: url(from, to), headers: staff });
+    const exact = await app.inject({ url: url(from, end), headers: staff });
     expect(exact.statusCode).toBe(200);
     expect(InsightsResponseSchema.parse(exact.json<unknown>())).toMatchObject({
       status: "ok",
       sources: [{ rangeEvaluations: insightsEvaluationLimit }, { rangeEvaluations: 0 }],
+      nextCursor: null,
     });
-    await connection.db.insert(evaluationInputs).values(range("range-extra"));
-    const limited = await app.inject({ url: url(from, to), headers: staff });
-    expect(limited.statusCode).toBe(200);
-    expect(InsightsResponseSchema.parse(limited.json<unknown>())).toEqual({
-      status: "limit_exceeded",
-      window: { from, to },
-      maxEvaluations: insightsEvaluationLimit,
+    const capture = await app.inject({
+      method: "POST",
+      url: "/api/explain",
+      headers: staff,
+      payload: { request: wireSlot(buildMinimalRequest()), options: { alternatives: false } },
+    });
+    expect(capture.statusCode).toBe(200);
+    const first = await app.inject({ url: url(from, end), headers: staff });
+    expect(first.statusCode).toBe(200);
+    const page = InsightsResponseSchema.parse(first.json<unknown>());
+    expect(page).toMatchObject({
+      status: "partial",
+      window: { from, to: end },
+      sources: [
+        { rangeEvaluations: insightsEvaluationLimit - 1, slots: { total: 1, bookable: 1 } },
+        { rangeEvaluations: 0, slots: { total: 0 } },
+      ],
+      nextCursor: { afterAt: isoInstant(clock.now) },
+    });
+    if (page.status !== "partial") throw new Error("Expected another page");
+    const second = await app.inject({
+      url: url(from, end, "/api", page.nextCursor),
+      headers: staff,
+    });
+    expect(second.statusCode).toBe(200);
+    expect(InsightsResponseSchema.parse(second.json<unknown>())).toMatchObject({
+      status: "ok",
+      window: { from, to: end },
+      sources: [
+        { rangeEvaluations: 1, slots: { total: 0 } },
+        { rangeEvaluations: 0, slots: { total: 0 } },
+      ],
+      nextCursor: null,
     });
   });
 });
