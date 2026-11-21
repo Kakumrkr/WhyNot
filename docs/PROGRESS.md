@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [P5 — HTTP adapter and full local application](sessions/session-P5.md). Use the starter prompt on that card. D-076 sets the order P1 → P3 → P5.
-- **Last confirmed session merge at handoff:** P1 via [PR #26](https://github.com/Kakumrkr/WhyNot/pull/26) at `c57fcf8`.
+- **Next eligible history card after this PR merges:** [H1 — Historical replay inputs and trace access](sessions/session-H1.md). Use its starter prompt if history is selected. P5 completes the selected persistence sequence in D-076.
+- **Last confirmed session merge at handoff:** P3 via [PR #27](https://github.com/Kakumrkr/WhyNot/pull/27) at `7f8a853`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **External validation:** Clinical usefulness and developer adoption are pending. See the [first-release evidence](reviews/session-5.2-release.md).
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
@@ -34,8 +34,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 | [5.1](sessions/session-5.1.md) | Developer adoption and package validation      | done        | done        | done   | [#24](https://github.com/Kakumrkr/WhyNot/pull/24) |
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff            | done        | —           | done   | [#25](https://github.com/Kakumrkr/WhyNot/pull/25) |
 | [P1](sessions/session-P1.md)   | Database foundation, seed and snapshot loader  | done        | done        | done   | [#26](https://github.com/Kakumrkr/WhyNot/pull/26) |
-| [P3](sessions/session-P3.md)   | API, input capture and transactional booking   | done        | —           | —      | [#27](https://github.com/Kakumrkr/WhyNot/pull/27) |
-| [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | —           | —           | —      | —                                                 |
+| [P3](sessions/session-P3.md)   | API, input capture and transactional booking   | done        | done        | done   | [#27](https://github.com/Kakumrkr/WhyNot/pull/27) |
+| [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | done        | —           | —      | [#28](https://github.com/Kakumrkr/WhyNot/pull/28) |
 | [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | —           | —           | —      | —                                                 |
 | [H2](sessions/session-H2.md)   | Descriptive insight aggregates                 | —           | —           | —      | —                                                 |
 | [H3](sessions/session-H3.md)   | Independent historical policy replay           | —           | —           | —      | —                                                 |
@@ -55,7 +55,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Preview 3.3      | local passed | 5000-run properties, built-app browser checks and the S benchmark passed locally. PR #19 tracks CI and deployment.                                 |
 | Policy/range 4.3 | local passed | 5,000-run properties, built-app Playwright and the Windows baseline benchmark passed. Evidence in PR #23.                                          |
 | Release 5.2      | local passed | 236 standard and deep tests, 68 Chromium checks, Windows S/M/L bench, clean clone and packed consumer. [Evidence](reviews/session-5.2-release.md). |
-| Persistence      | selected     | D-076. P1, P3 and P5 remain subject to their card gates.                                                                                           |
+| Persistence      | in review    | D-076. P1 and P3 merged. P5 closes the sequence once its review and CI pass.                                                                       |
 | History and AI   | not selected | Human selection after first release.                                                                                                               |
 
 ## Carry-forward notes
@@ -70,8 +70,8 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**P3 — API, input capture and transactional booking.** Includes the former P4 scope under D-076. Fastify exposes the clinic and availability, projected slot/range explanations, booking and cancellation, policy list/activation, and an opt-in fixture reset. Successful bookings return a public cancellation ID distinct from internal evidence. Reset preserves immutable policy and evaluation history.
+**P5 — HTTP adapter and full local application.** The local UI uses shared wire schemas and TanStack Query for clinic reads, projected explanations, and real booking confirmation and cancellation. Booking conflicts replace stale results with the server's current explanation. The Pages bundle continues to run independently.
 
-The 19 new portable tests cover H1–H11 parity/capture, privacy, and mutation behavior. Five new real PostgreSQL tests cover the ten-request sole-assignment race, disjoint-slot buffer and cap races, and bounded retry exhaustion.
+D-081 defines independently persisted curated scopes, separate demo and coverage bounds, read-only staff policy comparison, and requester-scoped receipt checks. The base `/api` serves Riverside. The [runbook](runbook.md#run-the-full-local-application) covers a clean setup and both browser modes. The booking panel keeps cancellation handles until the page reloads or closes.
 
-P5 should mount `createApp` with the exact browser origin, use `apiResults` from `@whynot/contracts/api` to parse decisions back to engine minutes, and use the returned cancellation ID for `DELETE /api/bookings/:id`. Use `demoWindow` for initial date choices; availability covers dates within known database coverage so verified openings can be followed. See the [API threat model](security/threat-model.md) for headers and reset configuration.
+Local verification covered 277 standard tests, 74 static Chromium checks, 28 full-mode Chromium checks on a newly seeded database, and 9 real PostgreSQL checks. Both viewports covered H1, H3, H7, H9, and H10. Static assets loaded at the Pages repository path.

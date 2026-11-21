@@ -1,6 +1,6 @@
-import type { Selection } from "./adapter/staticAdapter.js";
+import type { renderRange } from "./adapter/calendarRange.js";
 
-export type CalendarCheck = ReturnType<Selection["range"]>;
+export type CalendarCheck = ReturnType<typeof renderRange>;
 type NextOpening = NonNullable<CalendarCheck["next"]>;
 type Sentences = CalendarCheck["narration"]["context"];
 

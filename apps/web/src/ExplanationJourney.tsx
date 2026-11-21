@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import type { SlotCheck } from "./adapter/staticAdapter.js";
+import type { SlotCheck } from "./adapter/renderSlot.js";
 import { StaffInspector } from "./StaffInspector.js";
 
 type Blocked = Extract<SlotCheck, { status: "blocked" }>;
@@ -127,9 +127,11 @@ function Alternatives({
 /** Render the projected, templated result and the engine's ordered alternatives. */
 export function ExplanationJourney({
   result,
+  persistent,
   onAlternative,
 }: {
   result: Exclude<SlotCheck, { status: "invalid_request" }>;
+  persistent?: boolean | undefined;
   onAlternative: (alternative: Alternative) => void;
 }) {
   if (result.status === "bookable")
@@ -138,8 +140,8 @@ export function ExplanationJourney({
         <section className="card" aria-labelledby="bookable-title">
           <h2 id="bookable-title">Bookable in this demo</h2>
           <p className="supporting">
-            {result.practitioner} can take this appointment. The playground only checks
-            availability.
+            {result.practitioner} can take this appointment.
+            {!persistent && " The playground only checks availability."}
           </p>
         </section>
         {result.inspector && <StaffInspector inspection={result.inspector} />}

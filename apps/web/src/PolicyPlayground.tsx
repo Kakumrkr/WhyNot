@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { PolicyChange, PolicyPatch } from "@whynot/contracts";
-import type { Selection } from "./adapter/staticAdapter.js";
+import type { PolicyControls, PolicyResult } from "./adapter/policyPreview.js";
+import type { SelectionView } from "./adapter/requestSelection.js";
 
-type Policy = NonNullable<Selection["policy"]>;
-type Preview = Extract<ReturnType<Policy["preview"]>, { ok: true }>["value"];
+type Preview = Extract<PolicyResult, { ok: true }>["value"];
 
 function Outcome({ title, result }: { title: string; result: Preview["baseline"] }) {
   return (
@@ -35,20 +35,31 @@ export function PolicyPlayground({
   suggested,
   request,
 }: {
-  policy: Policy;
+  policy: PolicyControls;
   suggested?: PolicyPatch | undefined;
-  request: Pick<Selection, "service" | "date" | "practitioner"> & { time: string };
+  request: Pick<SelectionView, "service" | "date" | "practitioner"> & { time: string };
 }) {
   const [setting, setSetting] = useState("");
   const [value, setValue] = useState("");
-  const [result, setResult] = useState<ReturnType<Policy["preview"]> | "failed" | null>(null);
+  const [result, setResult] = useState<PolicyResult | "pending" | "failed" | null>(null);
   const selected = setting === "" ? undefined : policy.settings[Number(setting)]?.change;
   const useSuggestion = setting === "suggested";
   const needsValue = selected !== undefined && selected.field !== "eligibility";
 
-  function manualChange(change: Policy["settings"][number]["change"]): PolicyChange {
+  function manualChange(change: PolicyControls["settings"][number]["change"]): PolicyChange {
     if (change.field === "eligibility") return change;
     return { ...change, value: /^\d+$/.test(value.trim()) ? Number(value) : Number.NaN };
+  }
+
+  async function preview() {
+    setResult("pending");
+    try {
+      setResult(
+        await policy.preview(useSuggestion ? suggested : selected ? [manualChange(selected)] : []),
+      );
+    } catch {
+      setResult("failed");
+    }
   }
 
   return (
@@ -69,21 +80,14 @@ export function PolicyPlayground({
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            try {
-              setResult(
-                policy.preview(
-                  useSuggestion ? suggested : selected ? [manualChange(selected)] : [],
-                ),
-              );
-            } catch {
-              setResult("failed");
-            }
+            void preview();
           }}
         >
           <label htmlFor="policy-setting">Setting to preview</label>
           <select
             id="policy-setting"
             value={setting}
+            disabled={result === "pending"}
             onChange={(event) => {
               setSetting(event.target.value);
               const change = policy.settings[Number(event.target.value)]?.change;
@@ -106,7 +110,8 @@ export function PolicyPlayground({
                 id="policy-value"
                 inputMode="numeric"
                 value={value}
-                aria-invalid={result !== null && result !== "failed" && !result.ok}
+                disabled={result === "pending"}
+                aria-invalid={typeof result === "object" && result !== null && !result.ok}
                 onChange={(event) => {
                   setValue(event.target.value);
                   setResult(null);
@@ -116,10 +121,13 @@ export function PolicyPlayground({
           )}
           {selected?.field === "eligibility" && <p>Preview eligibility for any patient.</p>}
           <div className="policy-actions">
-            <button type="submit">Preview change</button>
+            <button type="submit" disabled={result === "pending"}>
+              Preview change
+            </button>
             <button
               type="button"
               className="secondary"
+              disabled={result === "pending"}
               onClick={() => {
                 setSetting("");
                 setValue("");
@@ -131,13 +139,15 @@ export function PolicyPlayground({
           </div>
         </form>
         <p role="status">
-          {result === "failed"
-            ? "Could not check the policy preview."
-            : result?.ok
-              ? "Policy preview ready."
-              : result?.issues.map(({ message }) => message).join(" ")}
+          {result === "pending"
+            ? "Checking policy preview…"
+            : result === "failed"
+              ? "Could not check the policy preview."
+              : result?.ok
+                ? "Policy preview ready."
+                : result?.issues.map(({ message }) => message).join(" ")}
         </p>
-        {result !== "failed" && result?.ok && (
+        {typeof result === "object" && result?.ok && (
           <div className="policy-comparison">
             <p>
               <strong>Original request</strong> · {request.service} · {request.date} at{" "}

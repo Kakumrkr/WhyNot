@@ -16,10 +16,12 @@
     "test": "pnpm -r --filter \"./packages/**\" build && vitest run",
     "test:quick": "vitest run",
     "test:e2e": "pnpm build && pnpm --filter @whynot/web test:e2e",
+    "test:e2e:full": "pnpm db:seed && pnpm --filter @whynot/narrator build && pnpm --filter @whynot/web build:full && pnpm --filter @whynot/web test:e2e:full",
     "test:deep": "pnpm -r --filter \"./packages/**\" build && vitest run --config vitest.deep.config.ts",
     "build": "pnpm -r build",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "dev": "pnpm --filter @whynot/web dev",
+    "dev:full": "pnpm --filter @whynot/web dev:full",
     "db:seed": "pnpm --filter @whynot/api... build && pnpm --filter @whynot/api db:seed",
     "test:db:pg": "vitest run --config vitest.pg.config.ts",
     "bench": "pnpm -r --filter \"./packages/**\" build && node --max-semi-space-size=64 packages/engine/bench/run.mjs"

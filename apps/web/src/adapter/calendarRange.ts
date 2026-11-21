@@ -1,4 +1,9 @@
-import type { ClinicSnapshot, RangeRequest } from "@whynot/contracts";
+import type {
+  ClinicSnapshot,
+  PatientRangeExplanation,
+  RangeExplanation,
+  RangeRequest,
+} from "@whynot/contracts";
 import { explainRange, formatOffsetInstant, projectForAudience } from "@whynot/engine";
 import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
 
@@ -10,15 +15,32 @@ export function calendarRange(
   audience: "patient" | "staff",
   display: TemplateDisplay,
 ) {
-  const evaluated = explainRange(snapshot, request, now);
-  const patient =
+  const result = explainRange(snapshot, request, now);
+  return renderRange(
     audience === "patient"
-      ? projectForAudience(evaluated, "patient", { requesterPatientId: request.patientId })
-      : null;
-  const result = patient ?? evaluated;
-  const narration = patient
-    ? TemplateNarrator.renderPatientRange(patient, display)
-    : TemplateNarrator.renderStaffRange(evaluated, display);
+      ? {
+          audience,
+          result: projectForAudience(result, audience, { requesterPatientId: request.patientId }),
+        }
+      : { audience, result },
+    request,
+    display,
+  );
+}
+
+/** Render the calendar and next-opening navigation from an audience-specific result. */
+export function renderRange(
+  evaluation:
+    | { audience: "patient"; result: PatientRangeExplanation }
+    | { audience: "staff"; result: RangeExplanation },
+  request: Pick<RangeRequest, "practitionerId">,
+  display: TemplateDisplay,
+) {
+  const { result } = evaluation;
+  const narration =
+    evaluation.audience === "patient"
+      ? TemplateNarrator.renderPatientRange(evaluation.result, display)
+      : TemplateNarrator.renderStaffRange(evaluation.result, display);
   const opening = result.status === "fully_blocked" ? result.nextAvailable : null;
   if (opening === null) return { narration, next: null };
 
