@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RuleIdSchema } from "./catalog.js";
 import { StaffEvaluationSchema } from "./evaluation.js";
 import { PatientEvaluationSchema, RangeRequestSchema } from "./patient.js";
 import { PolicyPatchSchema } from "./policy.js";
@@ -32,6 +33,15 @@ export const ApiBookingRequestSchema = RequestIdentitySchema.extend({ start: Off
 export const BookingParamsSchema = z.strictObject({ id: ApiIdSchema });
 export const EvaluationTraceParamsSchema = z.strictObject({ id: ApiIdSchema });
 export const EvaluationSourceSchema = z.enum(["live_demo", "synthetic_history"]);
+export const insightsEvaluationLimit = 2000;
+/** Half-open bounds on the evaluation's recorded clock, at minute precision. */
+const InsightsWindowSchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
+const InsightsCursorSchema = z.strictObject({ afterAt: OffsetIsoSchema, afterId: ApiIdSchema });
+/** Continue a bounded scan with both cursor fields from the previous page. */
+export const InsightsQuerySchema = z.union([
+  InsightsWindowSchema,
+  InsightsWindowSchema.extend(InsightsCursorSchema.shape),
+]);
 export const AvailabilityQuerySchema = RequestIdentitySchema.extend({ date: DateSchema });
 const ApiEvaluateOptionsSchema = EvaluateOptionsSchema.omit({ now: true }).extend({
   alternatives: z
@@ -106,6 +116,53 @@ export const PolicyListResponseSchema = z.strictObject({
   activeVersionId: IdSchema,
   versions: z.array(z.strictObject({ id: IdSchema, content: PolicyVersionContentSchema })),
 });
+
+const InsightsSourceSchema = z.strictObject({
+  source: EvaluationSourceSchema,
+  rangeEvaluations: NonnegativeSchema,
+  slots: z.strictObject({
+    total: NonnegativeSchema,
+    bookable: NonnegativeSchema,
+    blocked: NonnegativeSchema,
+    invalid: NonnegativeSchema,
+    unreadable: NonnegativeSchema,
+    // The denominator includes only recorded bookable and blocked outcomes.
+    blockedShare: z.strictObject({
+      denominator: NonnegativeSchema,
+      fraction: z.number().min(0).max(1).nullable(),
+    }),
+  }),
+  // One count per rule per blocked slot. Explanation weights influence which facts are selected.
+  reportedPrimaryRules: z.strictObject({
+    denominator: NonnegativeSchema,
+    counts: z.array(z.strictObject({ ruleId: RuleIdSchema, count: NonnegativeSchema })),
+  }),
+  // Counts original requests with an engine-verified patch, among blocked slots assessed for a fix.
+  verifiedFixFeasibility: z.strictObject({
+    denominator: NonnegativeSchema,
+    feasible: NonnegativeSchema,
+  }),
+});
+
+const InsightsPageSchema = z.strictObject({
+  window: InsightsWindowSchema,
+  sources: z.tuple([
+    InsightsSourceSchema.extend({ source: z.literal("live_demo") }),
+    InsightsSourceSchema.extend({ source: z.literal("synthetic_history") }),
+  ]),
+});
+/** Each page counts evaluation records, so repeated requests count separately within their source. */
+export const InsightsResponseSchema = z.discriminatedUnion("status", [
+  InsightsPageSchema.extend({
+    status: z.enum(["ok", "empty"]),
+    nextCursor: z.null(),
+  }),
+  InsightsPageSchema.extend({
+    status: z.literal("partial"),
+    nextCursor: InsightsCursorSchema,
+  }),
+]);
+export type InsightsResponse = z.infer<typeof InsightsResponseSchema>;
 
 const ApiErrorCodeSchema = z.enum([
   "invalid_request",
