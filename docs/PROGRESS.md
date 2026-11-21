@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next eligible history card after this PR merges:** [H1 — Historical replay inputs and trace access](sessions/session-H1.md). Use its starter prompt if history is selected. P5 completes the selected persistence sequence in D-076.
-- **Last confirmed session merge at handoff:** P3 via [PR #27](https://github.com/Kakumrkr/WhyNot/pull/27) at `7f8a853`.
+- **Next history card after this PR merges:** [H2 — Descriptive insight aggregates](sessions/session-H2.md). Use its starter prompt.
+- **Last confirmed session merge at handoff:** P5 via [PR #28](https://github.com/Kakumrkr/WhyNot/pull/28) at `bd28136`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **External validation:** Clinical usefulness and developer adoption are pending. See the [first-release evidence](reviews/session-5.2-release.md).
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
@@ -35,8 +35,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff            | done        | —           | done   | [#25](https://github.com/Kakumrkr/WhyNot/pull/25) |
 | [P1](sessions/session-P1.md)   | Database foundation, seed and snapshot loader  | done        | done        | done   | [#26](https://github.com/Kakumrkr/WhyNot/pull/26) |
 | [P3](sessions/session-P3.md)   | API, input capture and transactional booking   | done        | done        | done   | [#27](https://github.com/Kakumrkr/WhyNot/pull/27) |
-| [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | done        | —           | —      | [#28](https://github.com/Kakumrkr/WhyNot/pull/28) |
-| [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | —           | —           | —      | —                                                 |
+| [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | done        | done        | done   | [#28](https://github.com/Kakumrkr/WhyNot/pull/28) |
+| [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | done        | —           | —      | [#29](https://github.com/Kakumrkr/WhyNot/pull/29) |
 | [H2](sessions/session-H2.md)   | Descriptive insight aggregates                 | —           | —           | —      | —                                                 |
 | [H3](sessions/session-H3.md)   | Independent historical policy replay           | —           | —           | —      | —                                                 |
 | [H4](sessions/session-H4.md)   | Insights dashboard and historical simulator UI | —           | —           | —      | —                                                 |
@@ -55,8 +55,9 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Preview 3.3      | local passed | 5000-run properties, built-app browser checks and the S benchmark passed locally. PR #19 tracks CI and deployment.                                 |
 | Policy/range 4.3 | local passed | 5,000-run properties, built-app Playwright and the Windows baseline benchmark passed. Evidence in PR #23.                                          |
 | Release 5.2      | local passed | 236 standard and deep tests, 68 Chromium checks, Windows S/M/L bench, clean clone and packed consumer. [Evidence](reviews/session-5.2-release.md). |
-| Persistence      | in review    | D-076. P1 and P3 merged. P5 closes the sequence once its review and CI pass.                                                                       |
-| History and AI   | not selected | Human selection after first release.                                                                                                               |
+| Persistence      | passed       | D-076. P1, P3 and P5 merged.                                                                                                                       |
+| History          | in progress  | H1 adds replay and synthetic samples. Aggregates begin in H2.                                                                                      |
+| Optional AI      | not selected | Human selection after first release.                                                                                                               |
 
 ## Carry-forward notes
 
@@ -70,8 +71,8 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**P5 — HTTP adapter and full local application.** The local UI uses shared wire schemas and TanStack Query for clinic reads, projected explanations, and real booking confirmation and cancellation. Booking conflicts replace stale results with the server's current explanation. The Pages bundle continues to run independently.
+**H1 — Historical replay inputs and trace access.** Staff explanation responses include evaluation IDs for the same-scope replay route. Replay verifies the result against the original immutable inputs and returns slot candidate traces or range evidence. It reports unavailable versions and incomplete evidence explicitly.
 
-D-081 defines independently persisted curated scopes, separate demo and coverage bounds, read-only staff policy comparison, and requester-scoped receipt checks. The base `/api` serves Riverside. The [runbook](runbook.md#run-the-full-local-application) covers a clean setup and both browser modes. The booking panel keeps cancellation handles until the page reloads or closes.
+The base Riverside seed adds 12 labeled synthetic records across two prior weeks, including on existing demo databases. Seeded IDs start with `synthetic-history-`. These rows have no observed duration. The [runbook](runbook.md#replay-a-staff-evaluation) shows how to find and replay a record.
 
-Local verification covered 277 standard tests, 74 static Chromium checks, 28 full-mode Chromium checks on a newly seeded database, and 9 real PostgreSQL checks. Both viewports covered H1, H3, H7, H9, and H10. Static assets loaded at the Pages repository path.
+Local verification passed 281 standard tests, 10 real PostgreSQL checks, 74 static Chromium checks, and 28 full-mode Chromium checks.

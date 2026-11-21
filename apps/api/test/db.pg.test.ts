@@ -1,9 +1,12 @@
 import { inArray, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
 import { connectPostgres } from "../src/db/database.js";
-import { bookings } from "../src/db/schema.js";
+import { bookings, evaluationInputs } from "../src/db/schema.js";
+import { results } from "../src/http.js";
 import { seedRiverside } from "../src/seed/seed.js";
 import { loadSnapshot } from "../src/snapshotLoader/loadSnapshot.js";
+import { staff } from "./helpers/api.js";
 import { baseBooking, checkBookingExclusions } from "./helpers/bookingConstraints.js";
 import { openPortableDatabase } from "./helpers/portableDatabase.js";
 import { openPostgresTestDatabase } from "./helpers/postgresDatabase.js";
@@ -69,6 +72,32 @@ describe("real PostgreSQL persistence", () => {
   it("enforces the confirmed exclusion constraints on PostgreSQL", async () => {
     await seedRiverside(connection.db);
     await checkBookingExclusions(connection.db);
+  });
+
+  it("seeds immutable replay inputs once across competing PostgreSQL transactions", async () => {
+    const db = connection.db;
+    const outcomes = await Promise.all([seedRiverside(db), seedRiverside(db)]);
+    expect(outcomes.sort()).toEqual(["already_seeded", "seeded"]);
+    const rows = await db.select().from(evaluationInputs);
+    expect(rows).toHaveLength(12);
+    const app = createApp({ db });
+    try {
+      for (const kind of ["slot", "range"] as const) {
+        const row = rows.find((entry) => entry.kind === kind)!;
+        const response = await app.inject({
+          url: `/api/admin/evaluations/${row.id}/trace`,
+          headers: staff,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(results.evaluationTrace.parse(response.json<unknown>())).toMatchObject({
+          kind,
+          source: "synthetic_history",
+          evaluation: row.result,
+        });
+      }
+    } finally {
+      await app.close();
+    }
   });
 
   it("allows only one overlapping insert across separate PostgreSQL connections", async () => {

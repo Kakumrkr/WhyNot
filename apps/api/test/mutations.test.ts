@@ -185,6 +185,8 @@ describe("portable API mutations", () => {
     const db = connection.db;
     await seedRiverside(db);
     const baseline = await db.transaction((tx) => loadSnapshot(tx));
+    const readHistory = () => db.select().from(evaluationInputs).orderBy(evaluationInputs.id);
+    const seededHistory = await readHistory();
     const url = "/api/demo/reset";
     app = createApp({ db, resetEnabled: false });
     expect((await app.inject({ method: "POST", url, headers: staff })).statusCode).toBe(404);
@@ -211,8 +213,9 @@ describe("portable API mutations", () => {
       },
     });
     expect(policy.statusCode).toBe(201);
-    const history = await db.select().from(evaluationInputs);
-    expect(history).toHaveLength(2);
+    const history = await readHistory();
+    expect(history).toHaveLength(seededHistory.length + 2);
+    expect(history).toEqual(expect.arrayContaining(seededHistory));
     const reset = (headers: Record<string, string> = staff, remoteAddress = "127.0.0.1") =>
       app.inject({ method: "POST", url, headers, remoteAddress });
     expect((await reset(patient(), "127.0.0.2")).statusCode).toBe(403);
@@ -223,7 +226,7 @@ describe("portable API mutations", () => {
       expect(await db.transaction((tx) => loadSnapshot(tx))).toEqual(baseline);
     }
     expect((await reset()).statusCode).toBe(429);
-    expect(await db.select().from(evaluationInputs)).toEqual(history);
+    expect(await readHistory()).toEqual(history);
     const policies = PolicyListResponseSchema.parse(
       (await app.inject({ url: "/api/admin/policies", headers: staff })).json<unknown>(),
     );

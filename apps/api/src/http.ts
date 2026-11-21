@@ -15,6 +15,8 @@ const errors = {
   rate_limited: [429, "Too many requests. Try again shortly."],
   booking_conflict: [409, "The engine could not book the requested appointment."],
   contended: [409, "The operation encountered concurrent changes. Try again."],
+  unsupported_version: [409, "The version required to replay this evaluation is unavailable."],
+  incomplete_evidence: [409, "The stored evidence is insufficient to replay this evaluation."],
   internal_error: [500, "An internal error occurred."],
 } as const satisfies Record<ApiErrorCode, readonly [number, string]>;
 

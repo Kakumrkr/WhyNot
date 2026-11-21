@@ -72,13 +72,13 @@ export function registerPolicies(app: FastifyInstance, db: Database): void {
           includeAdminFix: false,
         },
       } as const;
-      const baseline = await captureEvaluation(tx, snapshot, input);
+      const { result: baseline } = await captureEvaluation(tx, snapshot, input);
       if (baseline.status === "invalid_request") throw new ApiError("invalid_request");
       applied.value.policy.versionId = activeVersionId;
       await tx.insert(policyVersions).values(policyVersion(applied.value));
       await tx.update(clinics).set({ activePolicyVersionId: activeVersionId });
       const updated = await loadSnapshot(tx);
-      const modified = await captureEvaluation(tx, updated.snapshot, input);
+      const { result: modified } = await captureEvaluation(tx, updated.snapshot, input);
       if (modified.status === "invalid_request") throw new ApiError("invalid_request");
       return { activeVersionId, changes: body.changes, baseline, modified };
     });
