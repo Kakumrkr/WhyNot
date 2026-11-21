@@ -36,8 +36,15 @@ export function App() {
       setCalendar(null);
       setScreen(openSelection());
     };
+    const restoreCachedPage = (event: PageTransitionEvent) => {
+      if (event.persisted) restore();
+    };
     window.addEventListener("popstate", restore);
-    return () => window.removeEventListener("popstate", restore);
+    window.addEventListener("pageshow", restoreCachedPage);
+    return () => {
+      window.removeEventListener("popstate", restore);
+      window.removeEventListener("pageshow", restoreCachedPage);
+    };
   }, []);
 
   useEffect(() => {

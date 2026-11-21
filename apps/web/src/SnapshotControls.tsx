@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SyntheticSnapshotEnvelope } from "@whynot/contracts";
 import { readSnapshot, snapshotFile } from "./adapter/snapshotFiles.js";
 
@@ -18,6 +18,21 @@ export function SnapshotControls({
   const latestRead = useRef(0);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    function discardRead() {
+      // An unfinished file read must not reopen an import after history navigation.
+      latestRead.current++;
+      setPending(false);
+      setError("");
+    }
+    window.addEventListener("popstate", discardRead);
+    window.addEventListener("pagehide", discardRead);
+    return () => {
+      window.removeEventListener("popstate", discardRead);
+      window.removeEventListener("pagehide", discardRead);
+    };
+  }, []);
 
   async function load(file: File) {
     const read = ++latestRead.current;

@@ -4,17 +4,11 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next card after this PR merges:** [5.2 — First release, evidence and handoff](sessions/session-5.2.md).
-- **Last confirmed session merge at handoff:** 4.3 via [PR #23](https://github.com/Kakumrkr/WhyNot/pull/23) at `50d92bf`.
+- **Next card after this PR merges:** Human selection of a follow-on milestone. No persistence, history or AI card has been selected.
+- **Last confirmed session merge at handoff:** 5.1 via [PR #24](https://github.com/Kakumrkr/WhyNot/pull/24) at `11e9b93`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
+- **External validation:** Clinical usefulness and developer adoption are pending. See the [first-release evidence](reviews/session-5.2-release.md).
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
-
-Next prompt:
-
-```text
-$whynot-session
-Session 5.2 — First release, evidence and handoff. Card: docs/sessions/session-5.2.md
-```
 
 ## Status
 
@@ -37,7 +31,7 @@ Session 5.2 — First release, evidence and handoff. Card: docs/sessions/session
 | [4.1](sessions/session-4.1.md) | Verified policy patch engine                     | done        | done         | done   | [#21](https://github.com/Kakumrkr/WhyNot/pull/21) |
 | [4.2](sessions/session-4.2.md) | Range explanations and next-available search     | done        | done         | done   | [#22](https://github.com/Kakumrkr/WhyNot/pull/22) |
 | [4.3](sessions/session-4.3.md) | Policy playground and empty-calendar journey     | done        | done         | done   | [#23](https://github.com/Kakumrkr/WhyNot/pull/23) |
-| [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | done        | —            | —      | [#24](https://github.com/Kakumrkr/WhyNot/pull/24) |
+| [5.1](sessions/session-5.1.md) | Developer adoption and package validation        | done        | done         | done   | [#24](https://github.com/Kakumrkr/WhyNot/pull/24) |
 | [5.2](sessions/session-5.2.md) | First release, evidence and handoff              | —           | —            | —      | —                                                 |
 | [P1](sessions/session-P1.md)   | Persistence schema and database verification     | —           | —            | —      | —                                                 |
 | [P2](sessions/session-P2.md)   | Seed, frozen clock and snapshot loader           | —           | —            | —      | —                                                 |
@@ -77,6 +71,6 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**5.1 — Developer adoption and package validation.** Built ESM roots, schema/template subpaths and an independent Harbor clinic example with isolated tarball installation and declaration checks. The playground imports and exports versioned synthetic snapshots with a frozen clock, validates ingestion limits and references, and keeps imported selections in memory. The integration guide documents record mapping, rule extension and supported limits.
+**5.2 — First release, evidence and handoff.** Audited the static and package release boundaries, fixed a pending import surviving browser Back, and prepared release notes, a clean-clone runbook, an algorithm write-up and demo media. See the [release evidence](reviews/session-5.2-release.md).
 
-`pnpm verify` passed all 236 tests. Playwright passed all 64 desktop and mobile checks, including axe, import limits, text rendering, reset, export, privacy and DST. The clean package consumer passed. The affirmative qualification wording for H1 and H11 remains open.
+External usefulness and adoption validation remain pending. The tag follows the reviewed merge. Stop for human selection of a follow-on.
