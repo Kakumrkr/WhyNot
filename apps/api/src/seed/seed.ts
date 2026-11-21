@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   ClinicSnapshotSchema,
   DateSchema,
@@ -19,6 +20,25 @@ type SeedResult = "seeded" | "already_seeded";
 export function seedRiverside(db: Database, clock = demoClock()): Promise<SeedResult> {
   const snapshot = buildRiverside(clock.date);
   return seedSnapshot(db, snapshot, clock, riversideSearchCoverage(snapshot, clock.now));
+}
+
+/** Restore Riverside bookings and base policy inside a caller-owned reset transaction. */
+export async function resetRiverside(tx: Database): Promise<void> {
+  const [clinic] = await tx.select().from(tables.clinics).for("update");
+  if (clinic === undefined) throw new Error("Demo clinic has not been seeded");
+  const clock = demoClock(clinic.demoDate);
+  const snapshot = buildRiverside(clock.date);
+  if (
+    clinic.id !== snapshot.clinic.id ||
+    clinic.demoNow !== clock.now ||
+    clinic.demoWindowFrom !== snapshot.coverage.from ||
+    clinic.demoWindowTo !== snapshot.coverage.to
+  )
+    throw new Error("Reset requires the initialized Riverside demo");
+  // Historical inputs and policy versions are immutable. Only live state is restored.
+  await tx.delete(tables.bookings);
+  await insertActivity(tx, snapshot, clock.now);
+  await tx.update(tables.clinics).set({ activePolicyVersionId: snapshot.policy.versionId });
 }
 
 /** Initialize an empty demo database from exactly one validated fixture snapshot. */
@@ -107,6 +127,9 @@ async function insertActivity(tx: Database, snapshot: ClinicSnapshot, now: numbe
   await tx.insert(tables.bookings).values(
     snapshot.bookings.map((booking) => ({
       ...booking,
+      cancellationId: createHash("sha256")
+        .update(`riverside-cancellation:${booking.id}`)
+        .digest("hex"),
       createdAt: now,
       cancelledAt: booking.status === "cancelled" ? now : null,
     })),

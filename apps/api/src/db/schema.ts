@@ -1,4 +1,5 @@
-import type { Clinic, ClinicSnapshot, Service } from "@whynot/contracts";
+import type { Clinic, ClinicSnapshot } from "@whynot/contracts";
+import type { PolicyVersionContent } from "@whynot/contracts/api";
 import {
   bigint,
   boolean,
@@ -10,17 +11,9 @@ import {
   primaryKey,
   text,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 const minute = (name: string) => bigint(name, { mode: "number" });
-
-type ServiceSettings = Pick<Service, "bufferAfterMin" | "roomTurnoverMin" | "eligibility">;
-
-/** Policy-owned values are replaced together when a new version is activated. */
-export type PolicyVersionContent = {
-  policy: Omit<ClinicSnapshot["policy"], "versionId">;
-  serviceSettings: Record<string, ServiceSettings>;
-  practitionerCaps: Record<string, number>;
-};
 
 export const policyVersions = pgTable("policy_versions", {
   id: text().primaryKey(),
@@ -139,6 +132,10 @@ export const bookingStatus = pgEnum("booking_status", ["confirmed", "cancelled"]
 
 export const bookings = pgTable("bookings", {
   id: text().primaryKey(),
+  cancellationId: text("cancellation_id")
+    .notNull()
+    .default(sql`gen_random_uuid()::text`)
+    .unique("bookings_cancellation_id_unique"),
   patientId: text("patient_id")
     .notNull()
     .references(() => patients.id),

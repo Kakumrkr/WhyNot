@@ -17,6 +17,11 @@
       "types": "./dist/index.d.ts",
       "development": "./src/index.ts",
       "import": "./dist/index.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "development": "./src/api.ts",
+      "import": "./dist/api.js"
     }
   },
   "scripts": {
@@ -35,6 +40,10 @@
       "./schemas": {
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
+      },
+      "./api": {
+        "types": "./dist/api.d.ts",
+        "import": "./dist/api.js"
       }
     }
   }
