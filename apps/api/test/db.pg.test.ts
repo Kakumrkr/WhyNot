@@ -1,9 +1,11 @@
+import { InsightsResponseSchema } from "@whynot/contracts/api";
 import { inArray, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
+import { demoClock } from "../src/clock/demoClock.js";
 import { connectPostgres } from "../src/db/database.js";
 import { bookings, evaluationInputs } from "../src/db/schema.js";
-import { results } from "../src/http.js";
+import { isoInstant, results } from "../src/http.js";
 import { seedRiverside } from "../src/seed/seed.js";
 import { loadSnapshot } from "../src/snapshotLoader/loadSnapshot.js";
 import { staff } from "./helpers/api.js";
@@ -95,6 +97,35 @@ describe("real PostgreSQL persistence", () => {
           evaluation: row.result,
         });
       }
+      const { now } = demoClock();
+      const query = new URLSearchParams({ from: isoInstant(now - 14 * 1440), to: isoInstant(now) });
+      const response = await app.inject({ url: `/api/admin/insights?${query}`, headers: staff });
+      expect(response.statusCode).toBe(200);
+      expect(InsightsResponseSchema.parse(response.json<unknown>())).toMatchObject({
+        status: "ok",
+        sources: [
+          { source: "live_demo", rangeEvaluations: 0, slots: { total: 0 } },
+          { source: "synthetic_history", rangeEvaluations: 4, slots: { total: 8 } },
+        ],
+      });
+      const firstWeek = now - 14 * 1440;
+      const lastId = rows
+        .filter((row) => row.now === firstWeek)
+        .map((row) => row.id)
+        .sort()
+        .at(-1)!;
+      query.set("afterAt", isoInstant(firstWeek));
+      query.set("afterId", lastId);
+      const next = await app.inject({ url: `/api/admin/insights?${query}`, headers: staff });
+      expect(next.statusCode).toBe(200);
+      expect(InsightsResponseSchema.parse(next.json<unknown>())).toMatchObject({
+        status: "ok",
+        sources: [
+          { source: "live_demo", rangeEvaluations: 0, slots: { total: 0 } },
+          { source: "synthetic_history", rangeEvaluations: 2, slots: { total: 4 } },
+        ],
+        nextCursor: null,
+      });
     } finally {
       await app.close();
     }

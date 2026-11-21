@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next history card after this PR merges:** [H2 — Descriptive insight aggregates](sessions/session-H2.md). Use its starter prompt.
-- **Last confirmed session merge at handoff:** P5 via [PR #28](https://github.com/Kakumrkr/WhyNot/pull/28) at `bd28136`.
+- **Next history card after this PR merges:** [H3 — Independent historical policy replay](sessions/session-H3.md). Use its starter prompt.
+- **Last confirmed session merge at handoff:** H1 via [PR #29](https://github.com/Kakumrkr/WhyNot/pull/29) at `99e2188`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **External validation:** Clinical usefulness and developer adoption are pending. See the [first-release evidence](reviews/session-5.2-release.md).
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
@@ -36,8 +36,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 | [P1](sessions/session-P1.md)   | Database foundation, seed and snapshot loader  | done        | done        | done   | [#26](https://github.com/Kakumrkr/WhyNot/pull/26) |
 | [P3](sessions/session-P3.md)   | API, input capture and transactional booking   | done        | done        | done   | [#27](https://github.com/Kakumrkr/WhyNot/pull/27) |
 | [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | done        | done        | done   | [#28](https://github.com/Kakumrkr/WhyNot/pull/28) |
-| [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | done        | —           | —      | [#29](https://github.com/Kakumrkr/WhyNot/pull/29) |
-| [H2](sessions/session-H2.md)   | Descriptive insight aggregates                 | —           | —           | —      | —                                                 |
+| [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | done        | done        | done   | [#29](https://github.com/Kakumrkr/WhyNot/pull/29) |
+| [H2](sessions/session-H2.md)   | Descriptive insight aggregates                 | done        | —           | —      | [#30](https://github.com/Kakumrkr/WhyNot/pull/30) |
 | [H3](sessions/session-H3.md)   | Independent historical policy replay           | —           | —           | —      | —                                                 |
 | [H4](sessions/session-H4.md)   | Insights dashboard and historical simulator UI | —           | —           | —      | —                                                 |
 | [A1](sessions/session-A1.md)   | Optional AI wording experiment design          | —           | —           | —      | —                                                 |
@@ -56,7 +56,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Policy/range 4.3 | local passed | 5,000-run properties, built-app Playwright and the Windows baseline benchmark passed. Evidence in PR #23.                                          |
 | Release 5.2      | local passed | 236 standard and deep tests, 68 Chromium checks, Windows S/M/L bench, clean clone and packed consumer. [Evidence](reviews/session-5.2-release.md). |
 | Persistence      | passed       | D-076. P1, P3 and P5 merged.                                                                                                                       |
-| History          | in progress  | H1 adds replay and synthetic samples. Aggregates begin in H2.                                                                                      |
+| History          | in progress  | Staff trace and descriptive aggregates use stored evaluation records. Independent policy replay begins in H3.                                      |
 | Optional AI      | not selected | Human selection after first release.                                                                                                               |
 
 ## Carry-forward notes
@@ -68,11 +68,12 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 - Benchmark baselines: `baseline-win32.json` (owner's machine, authoritative for the S gate) and `baseline-linux.json` (one CI runner, informational).
 - engine `time.ts` is ~329 lines by design (all Luxon/timezone code stays there); see packages/engine/README.md.
 - Native ESM smoke tests spawn `node` subprocesses; sandboxed runs can fail with EPERM. Rerun them outside the sandbox instead of changing them.
+- H1 seeds 12 fictional prior-week records in base Riverside. IDs with `synthetic-history-` separate that source in the [trace](runbook.md#replay-a-staff-evaluation) and insights endpoints.
 
 ## Last handoff
 
-**H1 — Historical replay inputs and trace access.** Staff explanation responses include evaluation IDs for the same-scope replay route. Replay verifies the result against the original immutable inputs and returns slot candidate traces or range evidence. It reports unavailable versions and incomplete evidence explicitly.
+**H2 — Descriptive insight aggregates.** Staff `GET /api/admin/insights` accepts explicit-offset `from` and `to` on the recorded demo evaluation clock, including `from` and excluding `to`. It reports empty windows explicitly. Partial responses summarize up to 2,000 records and return `nextCursor` fields to pass with the same window. Sum counts and denominators per source across pages and calculate blocked share from those sums.
 
-The base Riverside seed adds 12 labeled synthetic records across two prior weeks, including on existing demo databases. Seeded IDs start with `synthetic-history-`. These rows have no observed duration. The [runbook](runbook.md#replay-a-staff-evaluation) shows how to find and replay a record.
+Counts separate live demo records, seeded synthetic records, and range requests. Repeated records count separately. Blocked share uses decided slots. Reported primary rules count once per blocked slot per selected rule. Explanation weights influence attribution. Verified fixes use blocked slots assessed for a fix and their saved engine results.
 
-Local verification passed 281 standard tests, 10 real PostgreSQL checks, 74 static Chromium checks, and 28 full-mode Chromium checks.
+Local `pnpm verify` passed 285 tests. The real PostgreSQL suite passed 10 tests, including seeded slot and range counts through the insights endpoint.

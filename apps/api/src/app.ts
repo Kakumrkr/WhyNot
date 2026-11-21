@@ -13,6 +13,7 @@ import { registerBookings } from "./routes/bookings.js";
 import { registerClinic } from "./routes/clinic.js";
 import { registerEvaluationTrace } from "./routes/evaluationTrace.js";
 import { registerExplanations } from "./routes/explanations.js";
+import { registerInsights } from "./routes/insights.js";
 import { registerPolicies } from "./routes/policies.js";
 import { registerReset } from "./routes/reset.js";
 
@@ -101,6 +102,7 @@ export function createApp({
         registerClinic(routes, database);
         registerExplanations(routes, database);
         registerEvaluationTrace(routes, database);
+        registerInsights(routes, database);
         registerBookings(routes, database);
         registerPolicies(routes, database);
         if (resetEnabled) registerReset(routes, database, scenarioId);
