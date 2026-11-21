@@ -4,7 +4,7 @@ import { anyPractitioner, staticAdapter, type SlotCheck } from "./adapter/static
 import { CalendarJourney, type CalendarCheck } from "./CalendarJourney.js";
 import { ExplanationJourney } from "./ExplanationJourney.js";
 import { PolicyPlayground } from "./PolicyPlayground.js";
-import { SnapshotControls } from "./SnapshotControls.js";
+import { SnapshotControls, type SnapshotControlsHandle } from "./SnapshotControls.js";
 import "./styles.css";
 
 function openSelection() {
@@ -28,9 +28,12 @@ export function App() {
   const scenarioPicker = useRef<HTMLSelectElement>(null);
   const requestTitle = useRef<HTMLHeadingElement>(null);
   const focusAfterReset = useRef(false);
+  const snapshotControls = useRef<SnapshotControlsHandle>(null);
 
   useEffect(() => {
+    const resetRead = () => snapshotControls.current?.resetRead();
     const restore = () => {
+      resetRead();
       setImported(undefined);
       setChecked(null);
       setCalendar(null);
@@ -40,9 +43,11 @@ export function App() {
       if (event.persisted) restore();
     };
     window.addEventListener("popstate", restore);
+    window.addEventListener("pagehide", resetRead);
     window.addEventListener("pageshow", restoreCachedPage);
     return () => {
       window.removeEventListener("popstate", restore);
+      window.removeEventListener("pagehide", resetRead);
       window.removeEventListener("pageshow", restoreCachedPage);
     };
   }, []);
@@ -73,6 +78,7 @@ export function App() {
   }, [selection]);
 
   function update(query: URLSearchParams, start?: number, reset = false, days?: number) {
+    snapshotControls.current?.resetRead();
     const url = new URL(window.location.href);
     url.search = query.toString();
     if (reset) {
@@ -402,6 +408,7 @@ export function App() {
           </section>
         )}
         <SnapshotControls
+          ref={snapshotControls}
           envelope={imported ?? selection?.envelope}
           imported={imported !== undefined}
           onImport={openImported}
