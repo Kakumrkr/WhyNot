@@ -108,7 +108,7 @@ Q-1–Q-5 with current owners (the original table with obsolete session numbers 
 | ID  | Decision to resolve                                                               | Owner                              |
 | --- | --------------------------------------------------------------------------------- | ---------------------------------- |
 | Q-1 | Resolved by D-043: pinned supported Node/pnpm and compatible stable libraries     | 0.1                                |
-| Q-2 | PGlite btree_gist/concurrency support; record evidence and real-Postgres fallback | P1                                 |
+| Q-2 | PGlite btree_gist/concurrency support; record evidence and real-Postgres fallback | Resolved by D-078                  |
 | Q-3 | Accessible calm clinic design tokens and typography                               | Resolved by D-073                  |
 | Q-4 | Whether AI adds value, output constraints, provider/model if justified            | A1/A2                              |
 | Q-5 | Full-stack hosting optional; static Pages is fixed                                | P5, only if human requests hosting |
@@ -286,3 +286,44 @@ segments separate by local date. End a start window at the next actual grid
 instant on that date, or the end of the local date for its last grid start.
 On a regular grid this advances by one grid step where another grid start
 exists. Around offset changes it keeps adjacent windows disjoint.
+
+**D-076 · Select persistence and consolidate it into three session cards.**
+The owner selected persistence after 5.2. P1 absorbs P2 (seed, frozen clock and
+snapshot loader), and P3 absorbs P4 (transactional booking, policy versions and
+reset). P5 retains its scope. The merge order is 5.2 → P1 → P3 → P5. Each active
+card has one branch, one PR, one independent review and the verification required
+by all of its work. Keep the portable database checks, real PostgreSQL constraints
+and booking races, audience projection and capture checks, and full/static
+browser coverage. P5 remains the prerequisite for H1 and A2. The product scope
+and first-release requirements are unchanged.
+
+**D-077 · Keep Drizzle dependency declaration compatibility local to the API.**
+Drizzle 0.45.4's declarations include optional Gel/MySQL/SQLite adapters and
+declaration errors under the workspace's exact optional property checking.
+Enable `skipLibCheck` only for the private API's TypeScript projects. API code
+and tests retain strict source checking, concrete inferred Drizzle types and
+native module resolution. Public packages and their consumers retain full
+declaration checking. Do not add unrelated database drivers to satisfy
+Drizzle's declaration imports.
+
+**D-078 · Use one exclusion migration on PGlite and PostgreSQL.**
+PGlite 0.5.17 with its packaged `btree_gist` extension ran the same migration
+and rejected each confirmed practitioner, room and equipment overlap. The
+portable probe ran two `SERIALIZABLE` transactions on one connection and
+observed that the second entered only after the first finished. Keep the real
+PostgreSQL 16 CI job for cross-connection constraints and the P3 booking races.
+This resolves Q-2.
+
+**D-079 · Remove H8's overlapping generated booking.** The authored Tuesday
+08:00 booking and one generated booking held the same practitioner and room
+at the same time. Remove only generated bookings that physically conflict with
+the authored booking. The H8 patient daily-limit setup and expected explanation
+are preserved. P1's PostgreSQL overlap constraints apply to scenario data too.
+
+**D-080 · Cover complete default searches at the Riverside demo boundaries.**
+Keep the authored demo request window and complete database coverage as separate
+bounds. Seed Riverside with known coverage through the default alternative
+lookback and the longer of the default forward search horizons, plus the
+longest appointment at the end. Extend by local calendar days before adding the
+appointment duration. The seed defines the fictional occupancy for that
+coverage. Isolated snapshot fixtures retain their authored bounds.

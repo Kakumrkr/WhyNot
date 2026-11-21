@@ -3,7 +3,7 @@
 **Goal:** HTTP adapter and full local application; deliver the behavior below without implementing later cards.
 **Branch:** session/P5-full-mode
 **Milestone:** Optional persistence follow-on
-**Depends on:** [P4](session-P4.md) — merged.
+**Depends on:** [P3](session-P3.md) — merged.
 **Read first:** AGENTS.md, PROGRESS.md and QUESTIONS.md; [01-architecture](../01-architecture.md), [04-explanation-and-ai](../04-explanation-and-ai.md), [05-api-and-data](../05-api-and-data.md), [06-testing-and-accuracy](../06-testing-and-accuracy.md).
 **Required skills:** $whynot-session, $whynot-ui, $whynot-testing. API/DB guardrails: doc 05 §Implementation guardrails.
 **Helpful external skills (optional, never blocking):** $ui-ux-pro-max, $playwright.

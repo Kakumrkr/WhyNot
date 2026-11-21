@@ -10,7 +10,7 @@ Approved 2026-11-16. [Active session index](sessions/README.md) is authoritative
 | First interactive preview | 3.1–3.3 | Patient/staff journey, inspector, built browser/axe checks, Pages deployment evidence |
 | Policy and empty-calendar capability | 4.1–4.3 | Actual verified patches P11/P15, range P13/P14, isolated H9–H11, browser journeys |
 | Developer adoption and first release | 5.1–5.2 | Packed consumer example, synthetic imports, security/accessibility/performance and published limitations |
-| Optional persistence | P1–P5 | Portable DB + real-Postgres races, API/static parity and reproducible full local mode |
+| Optional persistence | P1, P3, P5 | Portable DB + real-Postgres races, API/static parity and reproducible full local mode |
 | Optional history | H1–H4 | Immutable replay inputs, truthful aggregates, manually checked estimates and accessible dashboard |
 | Optional AI | A1–A3 | Explicit benefit/contract decision, adversarial eval and optional fallback integration; may be declined |
 

@@ -48,6 +48,7 @@ export const boundaries = {
     const test = /(?:^|\/)(?:test|tests)\//u.test(relative);
     const owner = relative.match(/^packages\/([^/]+)\/src\//u)?.[1];
     const adapter = relative === "apps/web/src/adapter/staticAdapter.ts";
+    const seed = relative.startsWith("apps/api/src/seed/");
 
     function check(node, source) {
       if (!production && !test) return;
@@ -61,7 +62,7 @@ export const boundaries = {
         const fixtures =
           local.startsWith("@whynot/fixtures") || local.startsWith("packages/fixtures/");
         if (production && isTest) forbidden = true;
-        if (fixtures && !test && !adapter && owner !== "fixtures") forbidden = true;
+        if (fixtures && !test && !adapter && !seed && owner !== "fixtures") forbidden = true;
         if (engine) {
           const internal = local.startsWith("packages/engine/src/");
           forbidden ||= !(
