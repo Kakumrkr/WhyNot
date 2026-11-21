@@ -2,9 +2,11 @@ import type {
   BookingRequest,
   ClinicSnapshot,
   PolicyChange,
+  PolicyPreview,
   StaffEvaluation,
 } from "@whynot/contracts";
-import { previewPolicyChanges } from "@whynot/engine";
+import type { PolicyVersionContent } from "@whynot/contracts/api";
+import { previewPolicyChanges, type TimeResult } from "@whynot/engine";
 import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator";
 
 type DailyCapChange = Extract<PolicyChange, { entity: "practitioner" }>;
@@ -27,15 +29,11 @@ function settingLabel(change: EditableSetting, display: TemplateDisplay) {
   return `${entries?.get(change.id) ?? change.id} · ${field}`;
 }
 
-function settingValue(snapshot: ClinicSnapshot, change: PolicyChange) {
-  if (change.entity === "policy") return snapshot.policy[change.field];
+function settingValue(content: PolicyVersionContent, change: PolicyChange) {
+  if (change.entity === "policy") return content.policy[change.field];
   if (change.entity === "practitioner")
-    return (
-      snapshot.practitioners.find(({ id }) => id === change.id)!.dailyCap ??
-      snapshot.policy.defaultDailyCap
-    );
-  const service = snapshot.services.find(({ id }) => id === change.id)!;
-  return service[change.field];
+    return content.practitionerCaps[change.id] ?? content.policy.defaultDailyCap;
+  return content.serviceSettings[change.id]?.[change.field];
 }
 
 function displayValue(value: number | string | undefined) {
@@ -45,35 +43,40 @@ function displayValue(value: number | string | undefined) {
   return String(value);
 }
 
-/** Supply editable settings and compare engine evaluations of the same staff request. */
-export function policyPreview(
-  snapshot: ClinicSnapshot,
-  request: BookingRequest,
-  now: number,
-  display: TemplateDisplay,
-) {
+/** Describe the policy settings made available by either adapter. */
+export function editableSettings(content: PolicyVersionContent, display: TemplateDisplay) {
   const settings: EditableSetting[] = [
-    { entity: "policy", field: "minNoticeMin", value: snapshot.policy.minNoticeMin },
-    { entity: "policy", field: "maxAdvanceDays", value: snapshot.policy.maxAdvanceDays },
+    { entity: "policy", field: "minNoticeMin", value: content.policy.minNoticeMin },
+    { entity: "policy", field: "maxAdvanceDays", value: content.policy.maxAdvanceDays },
     {
       entity: "policy",
       field: "patientMaxBookingsPerDay",
-      value: snapshot.policy.patientMaxBookingsPerDay,
+      value: content.policy.patientMaxBookingsPerDay,
     },
-    ...snapshot.practitioners.map(({ id, dailyCap }) => ({
+    ...[...(display.practitioners?.keys() ?? [])].map((id) => ({
       entity: "practitioner" as const,
       id,
       field: "dailyCap" as const,
-      value: dailyCap ?? snapshot.policy.defaultDailyCap,
+      value: content.practitionerCaps[id] ?? content.policy.defaultDailyCap,
     })),
   ];
-  for (const service of snapshot.services) {
+  for (const id of display.services?.keys() ?? []) {
+    const service = content.serviceSettings[id];
+    if (!service) continue;
     for (const field of ["bufferAfterMin", "roomTurnoverMin"] as const)
-      settings.push({ entity: "service", id: service.id, field, value: service[field] });
+      settings.push({ entity: "service", id, field, value: service[field] });
     if (service.eligibility === "returning_only")
-      settings.push({ entity: "service", id: service.id, field: "eligibility", value: "any" });
+      settings.push({ entity: "service", id, field: "eligibility", value: "any" });
   }
+  return settings.map((change) => ({ change, label: settingLabel(change, display) }));
+}
 
+/** Render a hypothetical comparison from the engine's before/after evaluations. */
+export function renderPolicy(
+  result: PolicyPreview,
+  content: PolicyVersionContent,
+  display: TemplateDisplay,
+) {
   function summarize(evaluation: StaffEvaluation) {
     const { headline, primary } = TemplateNarrator.renderStaff(evaluation, display);
     const assignment = evaluation.status === "bookable" ? evaluation.assignment : null;
@@ -82,30 +85,51 @@ export function policyPreview(
       reasons: primary.sentences.map(({ text }) => text),
       assignment: assignment && {
         practitioner: display.practitioners?.get(assignment.practitionerId),
-        room: display.rooms?.get(assignment.roomId),
-        equipment: assignment.equipmentId ? display.equipment?.get(assignment.equipmentId) : null,
+        room: display.rooms?.get(assignment.roomId) ?? assignment.roomId,
+        equipment: assignment.equipmentId
+          ? (display.equipment?.get(assignment.equipmentId) ?? assignment.equipmentId)
+          : null,
       },
     };
   }
 
   return {
-    settings: settings.map((change) => ({ change, label: settingLabel(change, display) })),
-    preview(changes: unknown) {
+    settings: result.changes.map((change) => ({
+      label: settingLabel(change, display),
+      from: displayValue(settingValue(content, change)),
+      to: displayValue(change.value),
+    })),
+    baseline: summarize(result.baseline),
+    modified: summarize(result.modified),
+  };
+}
+
+export type PolicyResult = TimeResult<ReturnType<typeof renderPolicy>>;
+export type PolicyControls = {
+  settings: ReturnType<typeof editableSettings>;
+  preview: (changes: unknown) => PolicyResult | Promise<PolicyResult>;
+};
+
+/** Supply editable settings and compare the selected staff request in memory. */
+export function policyPreview(
+  snapshot: ClinicSnapshot,
+  request: BookingRequest,
+  now: number,
+  display: TemplateDisplay,
+): PolicyControls {
+  const { policy, services, practitioners } = snapshot;
+  const content: PolicyVersionContent = {
+    policy,
+    serviceSettings: Object.fromEntries(services.map((service) => [service.id, service])),
+    practitionerCaps: Object.fromEntries(
+      practitioners.flatMap(({ id, dailyCap }) => (dailyCap === undefined ? [] : [[id, dailyCap]])),
+    ),
+  };
+  return {
+    settings: editableSettings(content, display),
+    preview(changes) {
       const result = previewPolicyChanges(snapshot, request, changes, { now, alternatives: false });
-      if (!result.ok) return result;
-      const { baseline, modified } = result.value;
-      return {
-        ok: true as const,
-        value: {
-          settings: result.value.changes.map((change) => ({
-            label: settingLabel(change, display),
-            from: displayValue(settingValue(snapshot, change)),
-            to: displayValue(change.value),
-          })),
-          baseline: summarize(baseline),
-          modified: summarize(modified),
-        },
-      };
+      return result.ok ? { ok: true, value: renderPolicy(result.value, content, display) } : result;
     },
   };
 }

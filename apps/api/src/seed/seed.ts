@@ -7,7 +7,7 @@ import {
   type ClinicSnapshot,
 } from "@whynot/contracts";
 import { intervalContains } from "@whynot/engine";
-import { buildRiverside } from "@whynot/fixtures";
+import { buildRiverside, buildScenario, riversideMinute } from "@whynot/fixtures";
 import { demoClock, type DemoClock } from "../clock/demoClock.js";
 import type { Database } from "../db/database.js";
 import { policyVersion } from "../db/policyVersion.js";
@@ -22,12 +22,26 @@ export function seedRiverside(db: Database, clock = demoClock()): Promise<SeedRe
   return seedSnapshot(db, snapshot, clock, riversideSearchCoverage(snapshot, clock.now));
 }
 
+function scenarioClock(id: string, date: string): DemoClock {
+  if (id === "H9") return { date, now: riversideMinute(0, "06:00", date) };
+  if (id === "H10") return { date, now: riversideMinute(3, "09:00", date) };
+  if (id === "H11") return { date, now: riversideMinute(1, "08:30", date) };
+  return demoClock(date);
+}
+
+/** Seed one isolated scenario with its authored window and frozen clock. */
+export function seedScenario(db: Database, id: string, date: string): Promise<SeedResult> {
+  return seedSnapshot(db, buildScenario(id, date), scenarioClock(id, date));
+}
+
 /** Restore Riverside bookings and base policy inside a caller-owned reset transaction. */
-export async function resetRiverside(tx: Database): Promise<void> {
+export async function resetRiverside(tx: Database, scenarioId?: string): Promise<void> {
   const [clinic] = await tx.select().from(tables.clinics).for("update");
   if (clinic === undefined) throw new Error("Demo clinic has not been seeded");
-  const clock = demoClock(clinic.demoDate);
-  const snapshot = buildRiverside(clock.date);
+  const clock = scenarioId
+    ? scenarioClock(scenarioId, clinic.demoDate)
+    : demoClock(clinic.demoDate);
+  const snapshot = scenarioId ? buildScenario(scenarioId, clock.date) : buildRiverside(clock.date);
   if (
     clinic.id !== snapshot.clinic.id ||
     clinic.demoNow !== clock.now ||

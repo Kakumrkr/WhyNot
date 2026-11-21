@@ -60,8 +60,8 @@ export function registerClinic(app: FastifyInstance, db: Database): void {
       isolationLevel: "repeatable read",
       accessMode: "read only",
     });
-  app.get("/api/health", () => HealthResponseSchema.parse({ status: "ok" }));
-  app.get("/api/clinic", async () => {
+  app.get("/health", () => HealthResponseSchema.parse({ status: "ok" }));
+  app.get("/clinic", async () => {
     const { snapshot, clock, demoWindow } = await read();
     return ClinicResponseSchema.parse({
       clinic: snapshot.clinic,
@@ -78,9 +78,10 @@ export function registerClinic(app: FastifyInstance, db: Database): void {
       demoDate: clock.date,
       now: isoInstant(clock.now),
       demoWindow: { from: isoInstant(demoWindow.from), to: isoInstant(demoWindow.to) },
+      coverage: { from: isoInstant(snapshot.coverage.from), to: isoInstant(snapshot.coverage.to) },
     });
   });
-  app.get("/api/availability", async (http) => {
+  app.get("/availability", async (http) => {
     const query = parseBody(AvailabilityQuerySchema, http.query);
     requireRequester(http, query.patientId);
     const { snapshot, clock } = await read();

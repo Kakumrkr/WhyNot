@@ -17,9 +17,19 @@ import { ApiError, isoInstant, parseBody, slotRequest } from "../http.js";
 import { loadSnapshot } from "../snapshotLoader/loadSnapshot.js";
 import { sendSlot } from "./evaluationResponse.js";
 
-async function book(tx: Database, request: BookingRequest, id: string, cancellationId: string) {
+async function book(
+  tx: Database,
+  request: BookingRequest,
+  id: string,
+  cancellationId: string,
+  staff: boolean,
+) {
   const { snapshot, clock } = await loadSnapshot(tx);
-  const result = evaluate(snapshot, request, { now: clock.now });
+  const result = evaluate(snapshot, request, {
+    now: clock.now,
+    trace: staff,
+    includeAdminFix: staff,
+  });
   if (result.status !== "bookable") return result;
   const { equipmentId, ...assignment } = result.assignment;
   // Speculative insertion lets the exclusion indexes arbitrate concurrent writes without
@@ -44,17 +54,26 @@ async function book(tx: Database, request: BookingRequest, id: string, cancellat
 
 /** Register transactional booking and fictional-owner/staff cancellation. */
 export function registerBookings(app: FastifyInstance, db: Database): void {
-  app.post("/api/bookings", async (http, reply) => {
+  app.post("/bookings", async (http, reply) => {
     const request = slotRequest(parseBody(ApiBookingRequestSchema, http.body));
     const role = requireRequester(http, request.patientId);
+    const staff = role.audience === "staff";
     const id = randomUUID();
     const cancellationId = randomUUID();
-    const attempted = await serializable(db, (tx) => book(tx, request, id, cancellationId), true);
+    const attempted = await serializable(
+      db,
+      (tx) => book(tx, request, id, cancellationId, staff),
+      true,
+    );
     if (!attempted.ok) {
       const fresh = await db.transaction(
         async (tx) => {
           const { snapshot, clock } = await loadSnapshot(tx);
-          return evaluate(snapshot, request, { now: clock.now });
+          return evaluate(snapshot, request, {
+            now: clock.now,
+            trace: staff,
+            includeAdminFix: staff,
+          });
         },
         { isolationLevel: "repeatable read", accessMode: "read only" },
       );
@@ -74,7 +93,7 @@ export function registerBookings(app: FastifyInstance, db: Database): void {
     );
   });
 
-  app.delete("/api/bookings/:id", async (http) => {
+  app.delete("/bookings/:id", async (http) => {
     const role = demoRole(http);
     const { id } = parseBody(BookingParamsSchema, http.params);
     const publicId = eq(bookings.cancellationId, id);

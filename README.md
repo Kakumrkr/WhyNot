@@ -14,11 +14,15 @@ The Riverside playground checks appointments against a fictional clinic with a f
 
 [Desktop staff inspector](docs/reviews/media/staff-inspector-desktop.png) · [Mobile patient explanation](docs/reviews/media/patient-mobile.png) · [Two-minute walkthrough script](docs/video-script.md)
 
-To run the playground locally, install dependencies with `pnpm install --frozen-lockfile`, then run `pnpm dev`. The [static runbook](docs/runbook.md) covers clean installs, production builds, checks and GitHub Pages deployment.
+To run the static playground locally, install dependencies with `pnpm install --frozen-lockfile`, then run `pnpm build` and `pnpm dev`. The [runbook](docs/runbook.md) covers clean installs, production builds, checks and GitHub Pages deployment.
 
 Curated links retain the scenario, audience, date, service and practitioner preference. For example, append `?scenarioId=H1&audience=staff` to the playground address to open the minor-procedure inspector.
 
 Open **Synthetic snapshot files** in the playground to import a fictional clinic or download the current snapshot and frozen clock. Use **Reset imported snapshot** to restore the curated view.
+
+## Run the full local application
+
+The optional full mode uses PostgreSQL and the same engine and explanations as the static playground. Confirm and cancel fictional appointments from the booking panel. Each curated scenario has isolated bookings and its authored frozen clock. Follow the [full local setup](docs/runbook.md#run-the-full-local-application) to seed the database and start the API and web app.
 
 ## Use the engine in Node
 
@@ -28,7 +32,7 @@ Build and validate the local packages with the [independent Node example](exampl
 
 Browser/Node engine, documented schemas, independent integration example, patient/staff views, empty-calendar explanations, alternatives, policy playground and inspector. Free static demo; no server, account, DB or model key.
 
-The model covers one appointment at one clinic and uses the supplied settings and snapshot. Search is bounded, and staff policy previews are hypothetical. Persistence, historical insights and optional AI are later milestones. Use fictional data. Clinical usefulness and developer adoption are pending external review.
+The model covers one appointment at one clinic and uses the supplied settings and snapshot. Search is bounded, and staff policy previews are hypothetical. Historical insights and optional AI are later milestones. Use fictional data. Clinical usefulness and developer adoption are pending external review.
 
 [Release notes](docs/reviews/release-notes-v1.0.0.md) · [Release evidence](docs/reviews/session-5.2-release.md) · [Security review](docs/security/first-release.md) · [Algorithm write-up](docs/writeup.md)
 
@@ -52,7 +56,7 @@ Select current work from [progress](docs/PROGRESS.md) and [active cards](docs/se
 | [Domain](docs/02-domain-and-rules.md)      | Rules and hero scenarios                           |
 | [Algorithms](docs/03-engine-algorithms.md) | Explanations, search, patches, ranges, performance |
 | [Wording](docs/04-explanation-and-ai.md)   | Contracts, projection and templates                |
-| [Data](docs/05-api-and-data.md)            | Static import/export and later persistence         |
+| [Data](docs/05-api-and-data.md)            | Static import/export and local persistence         |
 | [Testing](docs/06-testing-and-accuracy.md) | Gates, properties and goldens                      |
 | [Roadmap](docs/07-roadmap.md)              | Milestones and release                             |
 | [Decisions](docs/08-decisions.md)          | Accepted and superseded decisions                  |

@@ -12,6 +12,7 @@ import { registerReset } from "./routes/reset.js";
 
 type AppOptions = {
   db: Database;
+  scenarios?: ReadonlyMap<string, Database>;
   allowedOrigins?: readonly string[];
   resetEnabled?: boolean;
   logger?: FastifyServerOptions["logger"];
@@ -27,6 +28,7 @@ const frameworkCodes: ReadonlyMap<number, ApiErrorCode> = new Map([
 /** Create the synthetic appointment API with an injected database and no listening socket. */
 export function createApp({
   db,
+  scenarios = new Map<string, Database>(),
   allowedOrigins = [],
   resetEnabled = process.env.DEMO_RESET_ENABLED === "true",
   logger = false,
@@ -86,13 +88,20 @@ export function createApp({
     timeWindow: "1 minute",
     errorResponseBuilder: () => new ApiError("rate_limited"),
   });
-  app.register((routes, _options, done) => {
-    registerClinic(routes, db);
-    registerExplanations(routes, db);
-    registerBookings(routes, db);
-    registerPolicies(routes, db);
-    if (resetEnabled) registerReset(routes, db);
-    done();
-  });
+  function registerScope(prefix: string, database: Database, scenarioId?: string) {
+    app.register(
+      (routes, _options, done) => {
+        registerClinic(routes, database);
+        registerExplanations(routes, database);
+        registerBookings(routes, database);
+        registerPolicies(routes, database);
+        if (resetEnabled) registerReset(routes, database, scenarioId);
+        done();
+      },
+      { prefix },
+    );
+  }
+  registerScope("/api", db);
+  for (const [id, database] of scenarios) registerScope(`/api/demo/${id}`, database, id);
   return app;
 }

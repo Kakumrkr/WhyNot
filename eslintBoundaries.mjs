@@ -83,6 +83,7 @@ export const boundaries = {
           const allowed = [
             "react",
             "react-dom",
+            "@tanstack/react-query",
             "@whynot/contracts",
             "@whynot/engine",
             "@whynot/narrator",
@@ -90,12 +91,18 @@ export const boundaries = {
           const browserLocal =
             local.startsWith("apps/web/src/") &&
             !/(?:^|\/)(?:server|api)(?:\/|\.)|\.server\./u.test(local);
+          const appEntry = relative === "apps/web/src/main.tsx" && source === "#playground";
           const safePackage = allowed.some(
             (name) => source === name || source.startsWith(`${name}/`),
           );
           forbidden ||=
             builtins.has(source) ||
-            !(browserLocal || safePackage || (adapter && source === "@whynot/fixtures"));
+            !(
+              browserLocal ||
+              appEntry ||
+              safePackage ||
+              (adapter && source === "@whynot/fixtures")
+            );
         }
       }
       if (forbidden)

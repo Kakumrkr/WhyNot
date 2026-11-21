@@ -22,6 +22,7 @@ Pin supported Postgres and Drizzle versions at P1. Fastify routes and all wire s
 | POST /api/explain, /api/explain-range | Projected engine decisions | P3 |
 | POST /api/bookings, DELETE /api/bookings/:id | Create / soft cancel with demo ownership guards | P3 |
 | GET/POST /api/admin/policies | Immutable policy versions and atomic activation | P3 |
+| POST /api/admin/policies/preview | Staff-only hypothetical policy comparison | P5 |
 | POST /api/demo/reset | Environment-gated, rate-limited reset | P3 |
 | GET /api/admin/evaluations/:id/trace | Stored-input replay, not current-snapshot reconstruction | H1 |
 | GET /api/admin/insights | Descriptive aggregates | H2 |
@@ -50,7 +51,11 @@ PGlite runs portable integration tests without Docker. P1 probes btree_gist supp
 
 Default DEMO_DATE Monday and DEMO_NOW Monday 09:00 Europe/London, fixed for all scenarios except explicit scenario overrides. No real-time offset. Seed/reset deterministic and idempotent, with fixture dependency isolated to seed.
 
+The local full app can select isolated curated fixtures at `/api/demo/H1` through `/api/demo/H11` (D-081). A booking or reset affects only the selected scope. Unscoped endpoints use base Riverside.
+
 Riverside persists its original demo request window separately from known search coverage. The full snapshot includes the default alternative lookback, the forward alternative and range horizons, and the maximum appointment tail (D-080). A narrow loader window is useful for fixture parity and cannot assert coverage beyond the database bounds.
+
+`GET /api/clinic` returns both `demoWindow` and `coverage`. The full date picker starts with the demo window and can follow verified openings within coverage (D-081).
 
 ## Insights and replay H1–H4
 
