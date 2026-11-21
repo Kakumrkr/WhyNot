@@ -17,6 +17,7 @@ export {
 } from "./time.js";
 export type { TimeResult } from "./time.js";
 export { catalog, catalogVersion } from "./catalog.js";
+export { engineVersion } from "./version.js";
 export { isBookable } from "./feasibility.js";
 export { evaluate, previewPolicyChanges } from "./evaluate.js";
 export { applyPolicyChanges } from "./policy.js";

@@ -6,6 +6,7 @@ import {
   ServiceSchema,
   type ClinicSnapshot,
 } from "@whynot/contracts";
+import type { PolicyVersionContent } from "@whynot/contracts/api";
 import { intervalContains } from "@whynot/engine";
 import { eq, sql } from "drizzle-orm";
 import type { DemoClock } from "../clock/demoClock.js";
@@ -59,7 +60,7 @@ export async function loadSnapshot(
   return { snapshot, clock, demoWindow };
 }
 
-async function loadResources(tx: Database, content: tables.PolicyVersionContent) {
+async function loadResources(tx: Database, content: PolicyVersionContent) {
   const practitioners = await tx
     .select()
     .from(tables.practitioners)
