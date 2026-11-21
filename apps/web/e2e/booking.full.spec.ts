@@ -165,6 +165,42 @@ test("rechecks a receipt after another client resets its scope", async ({ page }
   }
 });
 
+test("reconciles the receipt when a saved cancellation returns an invalid response", async ({
+  page,
+}) => {
+  const book = await selectOpening(page);
+  const confirmed = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`${scope}/bookings`) && response.request().method() === "POST",
+  );
+  await book.click();
+  await page.getByRole("button", { name: "Confirm booking" }).click();
+  const stored = await confirmed;
+  expect(stored.status()).toBe(201);
+  const { id } = BookingResponseSchema.parse(await stored.json());
+  try {
+    await page.route(`**${scope}/bookings/${id}`, async (route) => {
+      if (route.request().method() !== "DELETE") return route.continue();
+      const response = await route.fetch();
+      expect(response.status()).toBe(200);
+      await route.fulfill({ response, json: { status: "invalid-cancellation-response" } });
+    });
+    const panel = bookingPanel(page);
+    await panel.getByRole("button", { name: "Cancel appointment" }).click();
+    await page.getByRole("button", { name: "Confirm cancellation" }).click();
+    await expect(panel.getByRole("status")).toHaveText(
+      "The clinic did not confirm the cancellation.",
+    );
+    await expect(panel.getByText("Appointment confirmed")).toHaveCount(0);
+    await expect(book).toBeEnabled();
+    await expect(page.getByRole("button", { name: "11:00 Available", exact: true })).toBeVisible();
+  } finally {
+    expect((await page.request.delete(`${scope}/bookings/${id}`, { headers: patient })).ok()).toBe(
+      true,
+    );
+  }
+});
+
 test("rejects an invalid success response without displaying a booking receipt", async ({
   page,
 }) => {

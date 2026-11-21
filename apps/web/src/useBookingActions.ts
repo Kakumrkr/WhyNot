@@ -55,7 +55,7 @@ export function useBookingActions(api: HttpAdapter, selection: FullSelection | n
     if (!scope || missing.length === 0) return;
     const ids = new Set(missing.map(({ booking }) => booking.id));
     setReceipts((current) => current.filter(({ booking }) => !ids.has(booking.id)));
-    void client.invalidateQueries({ queryKey: [scope, "schedule"] });
+    void client.invalidateQueries({ queryKey: [scope, "schedule"] }, { cancelRefetch: false });
   }, [client, missing, scope]);
   const mutation = useMutation({
     async mutationFn(action: Action) {
@@ -124,7 +124,13 @@ export function useBookingActions(api: HttpAdapter, selection: FullSelection | n
     },
     async onError(error, action) {
       // A lost or malformed response can follow a committed change.
-      await client.invalidateQueries({ queryKey: [action.selection.view.scenarioId, "schedule"] });
+      await client.invalidateQueries({
+        queryKey: [action.selection.view.scenarioId],
+        predicate: ({ queryKey: [, kind] }) =>
+          kind === "schedule" ||
+          (action.kind !== "book" && kind === "receipt") ||
+          (action.kind === "reset" && kind === "policies"),
+      });
       if (action.kind === "cancel" && error instanceof HttpError && error.code === "not_found")
         setReceipts((current) =>
           current.filter(({ booking }) => booking.id !== action.receipt.booking.id),
@@ -159,10 +165,10 @@ export function useBookingActions(api: HttpAdapter, selection: FullSelection | n
         : currentAction === "cancel"
           ? mutation.error instanceof HttpError && mutation.error.code === "not_found"
             ? "This booking is no longer on the clinic schedule."
-            : "The clinic could not cancel this appointment."
+            : "The clinic did not confirm the cancellation."
           : mutation.error instanceof HttpError && mutation.error.code === "not_found"
             ? "Demo reset is disabled on this server."
-            : "The clinic could not reset this demo.";
+            : "The clinic did not confirm the reset.";
   } else if (currentAction && mutation.data?.kind === "cancel") {
     message = "Appointment cancelled.";
   } else if (currentAction && mutation.data?.kind === "reset") {

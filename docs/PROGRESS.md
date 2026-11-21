@@ -74,4 +74,4 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 D-081 defines independently persisted curated scopes, separate demo and coverage bounds, read-only staff policy comparison, and requester-scoped receipt checks. The base `/api` serves Riverside. The [runbook](runbook.md#run-the-full-local-application) covers a clean setup and both browser modes. The booking panel keeps cancellation handles until the page reloads or closes.
 
-Local verification covered 277 standard tests, 74 static Chromium checks, 26 full-mode Chromium checks on a newly seeded database, and 9 real PostgreSQL checks. Both viewports covered H1, H3, H7, H9, and H10. Static assets loaded at the Pages repository path.
+Local verification covered 277 standard tests, 74 static Chromium checks, 28 full-mode Chromium checks on a newly seeded database, and 9 real PostgreSQL checks. Both viewports covered H1, H3, H7, H9, and H10. Static assets loaded at the Pages repository path.
