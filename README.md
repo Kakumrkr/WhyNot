@@ -10,7 +10,11 @@ The Riverside playground checks appointments against a fictional clinic with a f
 
 [Open the Riverside playground](https://kakumrkr.github.io/WhyNot/)
 
-To run the preview locally, install dependencies with `pnpm install`, then run `pnpm dev` and open the address it prints. For a production build, run `pnpm build` followed by `pnpm --filter @whynot/web exec vite preview`.
+![Riverside walkthrough showing the H1 blockers, reviewing an alternative, and checking the 14:45 appointment](docs/reviews/media/check-alternative.gif)
+
+[Desktop staff inspector](docs/reviews/media/staff-inspector-desktop.png) · [Mobile patient explanation](docs/reviews/media/patient-mobile.png) · [Two-minute walkthrough script](docs/video-script.md)
+
+To run the playground locally, install dependencies with `pnpm install --frozen-lockfile`, then run `pnpm dev`. The [static runbook](docs/runbook.md) covers clean installs, production builds, checks and GitHub Pages deployment.
 
 Curated links retain the scenario, audience, date, service and practitioner preference. For example, append `?scenarioId=H1&audience=staff` to the playground address to open the minor-procedure inspector.
 
@@ -24,7 +28,9 @@ Build and validate the local packages with the [independent Node example](exampl
 
 Browser/Node engine, documented schemas, independent integration example, patient/staff views, empty-calendar explanations, alternatives, policy playground and inspector. Free static demo; no server, account, DB or model key.
 
-Persistence, historical insights and optional AI are later milestones. Synthetic data only. Adoption and clinical usefulness are not yet validated. Constraint explanations exist elsewhere; WhyNot aims to make this combination accessible and useful.
+The model covers one appointment at one clinic and uses the supplied settings and snapshot. Search is bounded, and staff policy previews are hypothetical. Persistence, historical insights and optional AI are later milestones. Use fictional data. Clinical usefulness and developer adoption are pending external review.
+
+[Release notes](docs/reviews/release-notes-v1.0.0.md) · [Release evidence](docs/reviews/session-5.2-release.md) · [Security review](docs/security/first-release.md) · [Algorithm write-up](docs/writeup.md)
 
 ## Start a development session
 

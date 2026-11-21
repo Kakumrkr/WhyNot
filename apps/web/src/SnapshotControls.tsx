@@ -1,14 +1,18 @@
-import { useRef, useState } from "react";
+import { useImperativeHandle, useRef, useState, type Ref } from "react";
 import type { SyntheticSnapshotEnvelope } from "@whynot/contracts";
 import { readSnapshot, snapshotFile } from "./adapter/snapshotFiles.js";
 
+export type SnapshotControlsHandle = { resetRead(): void };
+
 /** Import synthetic data from disk and export the current snapshot without network access. */
 export function SnapshotControls({
+  ref,
   envelope,
   imported,
   onImport,
   onReset,
 }: {
+  ref: Ref<SnapshotControlsHandle>;
   envelope: SyntheticSnapshotEnvelope | undefined;
   imported: boolean;
   onImport: (envelope: SyntheticSnapshotEnvelope) => void;
@@ -18,6 +22,19 @@ export function SnapshotControls({
   const latestRead = useRef(0);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      resetRead() {
+        // Invalidate synchronously before a navigation or reset chooses another scenario.
+        latestRead.current++;
+        setPending(false);
+        setError("");
+      },
+    }),
+    [],
+  );
 
   async function load(file: File) {
     const read = ++latestRead.current;
