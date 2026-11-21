@@ -25,11 +25,9 @@ This is the only active session index. Superseded phase cards are retained under
 | [4.3](session-4.3.md) | Policy playground and empty-calendar journey | 4.2 |
 | [5.1](session-5.1.md) | Developer adoption and package validation | 4.3 |
 | [5.2](session-5.2.md) | First release, evidence and handoff | 5.1 |
-| [P1](session-P1.md) | Persistence schema and database verification | 5.2 |
-| [P2](session-P2.md) | Seed, frozen clock and snapshot loader | P1 |
-| [P3](session-P3.md) | Projected read API and immutable input capture | P2 |
-| [P4](session-P4.md) | Transactional booking, policy versions and reset | P3 |
-| [P5](session-P5.md) | HTTP adapter and full local application | P4 |
+| [P1](session-P1.md) | Database foundation, seed and snapshot loader | 5.2 |
+| [P3](session-P3.md) | API, input capture and transactional booking | P1 |
+| [P5](session-P5.md) | HTTP adapter and full local application | P3 |
 | [H1](session-H1.md) | Historical replay inputs and trace access | P5 |
 | [H2](session-H2.md) | Descriptive insight aggregates | H1 |
 | [H3](session-H3.md) | Independent historical policy replay | H2 |
@@ -38,9 +36,9 @@ This is the only active session index. Superseded phase cards are retained under
 | [A2](session-A2.md) | Provider prototype and adversarial evaluation | A1, P5 |
 | [A3](session-A3.md) | Optional narration integration and fallback | A2 |
 
-First release has 19 cards including documentation bootstrap 0.0 (18 implementation sessions); D-072 merged the former 4.2 and 4.4 UI cards into 4.3 and moved range engine work to 4.2. Follow-ons have 12 cards.
+First release has 19 cards including documentation bootstrap 0.0 (18 implementation sessions); D-072 merged the former 4.2 and 4.4 UI cards into 4.3 and moved range engine work to 4.2. Follow-ons have 10 cards. D-076 consolidated persistence into P1, P3 and P5.
 
-After 5.2, stop for human selection of a follow-on milestone; do not automatically start P1 or AI. A1 may be considered after 5.2; A2 also needs P5. A2/A3 can be explicitly declined without a false completion mark.
+After 5.2, stop for human selection of a follow-on milestone. D-076 records the selection of persistence. A1 may be considered after 5.2; A2 also needs P5. A2/A3 can be explicitly declined without a false completion mark.
 
 ## Card contract
 

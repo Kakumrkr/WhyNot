@@ -286,3 +286,13 @@ segments separate by local date. End a start window at the next actual grid
 instant on that date, or the end of the local date for its last grid start.
 On a regular grid this advances by one grid step where another grid start
 exists. Around offset changes it keeps adjacent windows disjoint.
+
+**D-076 · Select persistence and consolidate it into three session cards.**
+The owner selected persistence after 5.2. P1 absorbs P2 (seed, frozen clock and
+snapshot loader), and P3 absorbs P4 (transactional booking, policy versions and
+reset). P5 retains its scope. The merge order is 5.2 → P1 → P3 → P5. Each active
+card has one branch, one PR, one independent review and the verification required
+by all of its work. Keep the portable database checks, real PostgreSQL constraints
+and booking races, audience projection and capture checks, and full/static
+browser coverage. P5 remains the prerequisite for H1 and A2. The product scope
+and first-release requirements are unchanged.
