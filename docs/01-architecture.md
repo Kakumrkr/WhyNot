@@ -48,7 +48,7 @@ Public runtime functions become exported in their owning sessions: isBookable, e
 
 First release: strict TypeScript ESM, pnpm workspaces, Zod, Luxon, React, Vite, React Router, Tailwind, Vitest, fast-check, Playwright and axe. TanStack Query is the only allowed server-state library when asynchronous adapters need one; synchronous in-memory UI does not require it. Pin compatible supported stable versions in 0.1 (D-043), including a supported Node LTS with a minimum of 22. Do not copy obsolete versions from superseded cards.
 
-Static GitHub Pages is the first release. Full local mode begins in P1–P5: Fastify, Drizzle, supported PostgreSQL, PGlite portable tests, real Postgres concurrency/unsupported-feature checks and Docker Compose. Recharts begins with H4 insights. Hosting and AI model choices are deferred.
+Static GitHub Pages is the first release. Full local mode begins in P1, P3 and P5: Fastify, Drizzle, supported PostgreSQL, PGlite portable tests, real Postgres concurrency/unsupported-feature checks and Docker Compose. Recharts begins with H4 insights. Hosting and AI model choices are deferred.
 
 No API/DB/provider scaffolds, chart dependencies, placeholder success checks or empty future routes in 0.1.
 

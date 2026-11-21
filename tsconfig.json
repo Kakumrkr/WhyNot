@@ -5,6 +5,7 @@
     "packages/*/test/**/*.ts",
     "test/**/*.ts",
     "vitest.config.ts",
-    "vitest.deep.config.ts"
+    "vitest.deep.config.ts",
+    "vitest.pg.config.ts"
   ]
 }
