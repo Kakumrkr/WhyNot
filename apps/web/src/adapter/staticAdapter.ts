@@ -1,12 +1,9 @@
 import {
   BookingRequestSchema,
   ClinicSnapshotSchema,
-  DateSchema,
   schemaVersion,
-  type Alternative,
   type BookingRequest,
   type ClinicSnapshot,
-  type StaffEvaluation,
   type SyntheticSnapshotEnvelope,
 } from "@whynot/contracts";
 import {
@@ -22,49 +19,21 @@ import {
   resolveRecurringBoundary,
 } from "@whynot/engine";
 import { buildScenario, demoNow } from "@whynot/fixtures";
-import { TemplateNarrator, type TemplateDisplay } from "@whynot/narrator/templates";
+import type { TemplateDisplay } from "@whynot/narrator/templates";
 import { calendarRange } from "./calendarRange.js";
 import { policyPreview } from "./policyPreview.js";
 import { scenarios } from "./scenarios.js";
-import { staffInspector } from "./staffInspector.js";
-
-const parameters = new Set(["scenarioId", "audience", "date", "serviceId", "practitionerId"]);
-const calendarPeriods = [
-  { days: 1, label: "One day" },
-  { days: 5, label: "Five days" },
-  { days: 7, label: "Seven days" },
-];
-export const anyPractitioner = "any";
-
-function timeValue<T>(result: { ok: true; value: T } | { ok: false }): T {
-  if (!result.ok) throw new Error("Invalid curated scenario time");
-  return result.value;
-}
-
-function options(entries: readonly { id: string; displayName: string }[]) {
-  return entries.map(({ id, displayName }) => ({ id, label: displayName }));
-}
-
-function labels(entries: readonly { id: string; displayName: string }[]) {
-  return new Map(entries.map(({ id, displayName }) => [id, displayName]));
-}
-
-function staffCandidates(
-  result: Extract<StaffEvaluation, { status: "blocked" }>,
-  sentences: ReadonlyMap<string, string>,
-  display: TemplateDisplay,
-) {
-  return result.explanation.perCandidateSummary.map(({ practitionerId, candidate, factIds }) => ({
-    practitioner: display.practitioners?.get(practitionerId),
-    room: display.rooms?.get(candidate.roomId),
-    equipment: candidate.equipmentId ? display.equipment?.get(candidate.equipmentId) : undefined,
-    blockers: factIds.map((id) => {
-      const sentence = sentences.get(id);
-      if (sentence === undefined) throw new Error("Missing candidate blocker template");
-      return sentence;
-    }),
-  }));
-}
+import { renderSlot } from "./renderSlot.js";
+import {
+  calendarWindow,
+  labels,
+  options,
+  parseSelection,
+  practitionerPreference,
+  preferredCalendarDays,
+  timeValue,
+  type SelectionView,
+} from "./requestSelection.js";
 
 function check(
   snapshot: ClinicSnapshot,
@@ -73,85 +42,21 @@ function check(
   audience: "patient" | "staff",
   display: TemplateDisplay,
 ) {
-  const evaluated = evaluate(snapshot, request, {
+  const result = evaluate(snapshot, request, {
     now,
     trace: audience === "staff",
     includeAdminFix: audience === "staff",
   });
-  const context = { requesterPatientId: request.patientId };
-  const patient = audience === "patient" ? projectForAudience(evaluated, "patient", context) : null;
-  const result = patient ?? evaluated;
-  const narration = patient
-    ? TemplateNarrator.renderPatient(patient, display)
-    : TemplateNarrator.renderStaff(evaluated, display);
-
-  if (result.status === "invalid_request") return { status: result.status, narration };
-  const practitionerName = (id: string | null) =>
-    id === null ? "Any practitioner" : (display.practitioners?.get(id) ?? "Practitioner");
-  const sentences = new Map(
-    narration.details.groups.flatMap(({ sentences }) =>
-      sentences.flatMap(({ text, factIds }) => factIds.map((id) => [id, text] as const)),
-    ),
-  );
-  const inspector =
-    patient || evaluated.status === "invalid_request"
-      ? null
-      : staffInspector(evaluated, sentences, display);
-  if (result.status === "bookable")
-    return {
-      status: result.status,
-      practitioner: practitionerName(result.assignment.practitionerId),
-      inspector,
-    };
-
-  const instant = (start: number) => timeValue(formatOffsetInstant(start, display.timeZone));
-  const readable = (start: number) => {
-    const iso = instant(start);
-    return `${iso.slice(0, 10)} at ${iso.slice(11, 16)}`;
-  };
-  const changeText = (change: Alternative["changes"][number]) =>
-    change.field === "start"
+  return renderSlot(
+    audience === "patient"
       ? {
-          label: "Start",
-          from: readable(change.from),
-          to: readable(change.to),
+          audience,
+          result: projectForAudience(result, audience, { requesterPatientId: request.patientId }),
         }
-      : {
-          label: "Practitioner",
-          from: practitionerName(change.from),
-          to: practitionerName(change.to),
-        };
-  return {
-    status: result.status,
-    narration,
-    inspector,
-    candidates: "adminFix" in result ? staffCandidates(result, sentences, display) : [],
-    suggestedChanges: "adminFix" in result ? result.adminFix?.changes : undefined,
-    alternatives: result.alternatives.map((alternative, index) => {
-      const { assignment, changes, category, cost } = alternative;
-      const preference = changes.find((change) => change.field === "practitionerId");
-      return {
-        title: narration.alternatives[index] ?? readable(assignment.start),
-        changes: changes.map(changeText),
-        category,
-        cost,
-        start: assignment.start,
-        date: instant(assignment.start).slice(0, 10),
-        practitionerId: preference ? preference.to : request.practitionerId,
-      };
-    }),
-    search: {
-      note: narration.searchNote ?? "The search completed for this window.",
-      coverage:
-        result.search.status === "disabled"
-          ? null
-          : {
-              from: readable(result.search.from),
-              to: readable(result.search.to),
-              evaluated: result.search.evaluated,
-            },
-    },
-  };
+      : { audience, result },
+    request,
+    display,
+  );
 }
 
 function availability(
@@ -198,10 +103,6 @@ type ImportedSelections = {
   practitionerId?: string | undefined;
 };
 
-function practitionerPreference(id: string | undefined) {
-  return id === anyPractitioner ? undefined : id;
-}
-
 function openSnapshot(
   envelope: SyntheticSnapshotEnvelope,
   {
@@ -228,13 +129,12 @@ function openSnapshot(
   const lastDate = timeValue(localDate(snapshot.coverage.to - 1, timezone));
   const date = preferredDate ?? firstDate;
   if (date < firstDate || date > lastDate) return null;
-  const periods = calendarPeriods.flatMap((period) => {
-    const end = addLocalDays(date, period.days - 1);
-    return end.ok && end.value <= lastDate ? [{ ...period, endDate: end.value }] : [];
-  });
-  const period = periods.find(({ days }) => days === (preferredDays ?? 1)) ?? periods.at(-1);
-  if (!period) throw new Error("No calendar period for a covered date");
-  const { days, endDate } = period;
+  const { periods, days, endDate, dates } = calendarWindow(
+    firstDate,
+    lastDate,
+    date,
+    preferredDays,
+  );
   const service = snapshot.services.find(({ id }) => id === serviceId);
   const practitioner = snapshot.practitioners.find(({ id }) => id === practitionerId);
   if (!service || (practitionerId !== undefined && !practitioner)) return null;
@@ -285,15 +185,9 @@ function openSnapshot(
     rooms: labels(snapshot.rooms),
     equipment: labels(snapshot.equipment),
   };
-  const dates: string[] = [];
-  for (let day = firstDate; ; day = timeValue(addLocalDays(day, 1))) {
-    dates.push(day);
-    if (day === lastDate) break;
-  }
 
-  return {
+  const view = {
     scenarioId,
-    envelope,
     audience,
     timezone,
     date,
@@ -311,6 +205,10 @@ function openSnapshot(
     dates,
     services,
     practitioners,
+  } satisfies SelectionView;
+  return {
+    ...view,
+    envelope,
     starts,
     check: () => (request ? check(snapshot, request, now, audience, display) : null),
     range: () =>
@@ -336,17 +234,10 @@ export const staticAdapter = {
   scenarios: scenarios.map(({ id, label }) => ({ id, label })),
 
   open(query: string, selectedStart?: unknown, selectedDays?: unknown) {
-    const params = new URLSearchParams(query);
-    for (const key of params.keys()) {
-      if (!parameters.has(key) || params.getAll(key).length > 1) return null;
-    }
-
-    const scenario = scenarios.find(({ id }) => id === (params.get("scenarioId") ?? "H1"));
-    const audience = params.get("audience") ?? "patient";
-    if (!scenario || (audience !== "patient" && audience !== "staff")) return null;
-    if (params.has("date") && !DateSchema.safeParse(params.get("date")).success) return null;
-    const preferredDays =
-      calendarPeriods.find((entry) => entry.days === selectedDays)?.days ?? scenario.days ?? 1;
+    const selection = parseSelection(query);
+    if (!selection) return null;
+    const { scenario, audience, params } = selection;
+    const preferredDays = preferredCalendarDays(selectedDays, scenario.days);
 
     const snapshot = ClinicSnapshotSchema.parse(buildScenario(scenario.id));
     const { timezone } = snapshot.clinic;
@@ -393,6 +284,3 @@ export const staticAdapter = {
     });
   },
 };
-
-export type Selection = NonNullable<ReturnType<typeof staticAdapter.open>>;
-export type SlotCheck = NonNullable<ReturnType<Selection["check"]>>;

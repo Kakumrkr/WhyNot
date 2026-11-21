@@ -1,11 +1,28 @@
 import { inArray, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { connectPostgres } from "../src/db/database.js";
 import { bookings } from "../src/db/schema.js";
 import { seedRiverside } from "../src/seed/seed.js";
 import { loadSnapshot } from "../src/snapshotLoader/loadSnapshot.js";
 import { baseBooking, checkBookingExclusions } from "./helpers/bookingConstraints.js";
 import { openPortableDatabase } from "./helpers/portableDatabase.js";
 import { openPostgresTestDatabase } from "./helpers/postgresDatabase.js";
+
+it("preserves configured connection options and enforces the scoped search path", async () => {
+  const connectionString = process.env.WHYNOT_TEST_DATABASE_URL;
+  if (!connectionString) throw new Error("Set WHYNOT_TEST_DATABASE_URL for real PostgreSQL tests");
+  const configured = new URL(connectionString);
+  configured.searchParams.set("options", "-c statement_timeout=5000 -c search_path=public");
+  const connection = connectPostgres(configured.href, "-c search_path=pg_catalog");
+  try {
+    const { rows } = await connection.db.execute(sql`
+      select current_setting('statement_timeout') as timeout, current_schema() as schema
+    `);
+    expect(rows).toEqual([{ timeout: "5s", schema: "pg_catalog" }]);
+  } finally {
+    await connection.close();
+  }
+});
 
 describe("real PostgreSQL persistence", () => {
   let connection: Awaited<ReturnType<typeof openPostgresTestDatabase>>;

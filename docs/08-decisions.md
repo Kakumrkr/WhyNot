@@ -327,3 +327,19 @@ lookback and the longer of the default forward search horizons, plus the
 longest appointment at the end. Extend by local calendar days before adding the
 appointment duration. The seed defines the fictional occupancy for that
 coverage. Isolated snapshot fixtures retain their authored bounds.
+
+**D-081 · Keep full-mode scenarios isolated and policy previews read-only.**
+The local API serves the base Riverside database under `/api` and the curated
+fixtures under `/api/demo/H1` through `/api/demo/H11`. Each fixture has its own
+schema in the same PostgreSQL database, with its authored coverage and clock.
+Switching scenarios selects a scope without modifying other scopes. Both
+audiences can follow verified starts outside the base demo window within
+known database coverage. The clinic response exposes both bounds so the
+initial date picker uses the authored window. Staff policy previews use
+`POST /api/admin/policies/preview` (or the corresponding
+scoped route) and the existing policy body and result codec. Previewing
+evaluates a copy without activating a version or writing evaluation history.
+The browser can recheck an individual booking receipt with
+`GET /api/bookings/:id`. This uses the cancellation handle and the same
+demo ownership guard. It returns the existing public receipt for a confirmed
+booking and 404 for an unknown, cancelled, or inaccessible booking.

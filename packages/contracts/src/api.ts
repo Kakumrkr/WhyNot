@@ -58,13 +58,15 @@ export const PolicyBodySchema = z.strictObject({
 });
 
 export const HealthResponseSchema = z.strictObject({ status: z.literal("ok") });
+const ApiCoverageSchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
 export const ClinicResponseSchema = z.strictObject({
   clinic: ClinicSchema,
   services: z.array(ServiceSchema.pick({ id: true, displayName: true, durationMin: true })),
   practitioners: z.array(PractitionerSchema.pick({ id: true, displayName: true, role: true })),
   demoDate: DateSchema,
   now: OffsetIsoSchema,
-  demoWindow: z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema }),
+  demoWindow: ApiCoverageSchema,
+  coverage: ApiCoverageSchema,
 });
 export const AvailabilityResponseSchema = z.strictObject({
   date: DateSchema,

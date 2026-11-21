@@ -594,6 +594,30 @@ dialog p {
   margin-top: 1.25rem;
 }
 
+.booking-status:not(:empty),
+.booking-receipts,
+.booking-reset {
+  margin-top: 0.75rem;
+}
+
+.booking-receipts {
+  list-style: none;
+  padding: 0;
+}
+
+.booking-receipts li {
+  border-top: 1px solid var(--line);
+  padding-block: 0.75rem;
+}
+
+.booking-receipts button {
+  margin-top: 0.5rem;
+}
+
+button:disabled {
+  cursor: wait;
+}
+
 @media (max-width: 46rem) {
   .workspace {
     grid-template-columns: minmax(0, 1fr);

@@ -11,7 +11,7 @@ import { sendRange, sendSlot } from "./evaluationResponse.js";
 
 /** Register slot and range explanation routes with separate immutable capture kinds. */
 export function registerExplanations(app: FastifyInstance, db: Database): void {
-  app.post("/api/explain", async (http, reply) => {
+  app.post("/explain", async (http, reply) => {
     const body = parseBody(ExplainBodySchema, http.body);
     const request = slotRequest(body.request);
     const role = requireRequester(http, request.patientId);
@@ -26,7 +26,7 @@ export function registerExplanations(app: FastifyInstance, db: Database): void {
     return sendSlot(reply, saved.value, role);
   });
 
-  app.post("/api/explain-range", async (http, reply) => {
+  app.post("/explain-range", async (http, reply) => {
     const { request, options: suppliedOptions } = parseBody(ExplainRangeBodySchema, http.body);
     const role = requireRequester(http, request.patientId);
     const saved = await serializable(db, async (tx) => {

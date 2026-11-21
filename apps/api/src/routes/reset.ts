@@ -7,11 +7,11 @@ import { ApiError } from "../http.js";
 import { resetRiverside } from "../seed/seed.js";
 
 /** Register the demo reset only when the server configuration enables it. */
-export function registerReset(app: FastifyInstance, db: Database): void {
-  app.post("/api/demo/reset", { config: { rateLimit: { max: 2 } } }, async (http) => {
+export function registerReset(app: FastifyInstance, db: Database, scenarioId?: string): void {
+  app.post("/demo/reset", { config: { rateLimit: { max: 2 } } }, async (http) => {
     requireStaff(http);
     if (http.body !== undefined) throw new ApiError("invalid_request");
-    const reset = await serializable(db, resetRiverside);
+    const reset = await serializable(db, (tx) => resetRiverside(tx, scenarioId));
     if (!reset.ok) throw new ApiError("contended");
     return ResetResponseSchema.parse({ status: "reset" });
   });

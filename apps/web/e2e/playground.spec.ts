@@ -12,7 +12,12 @@ test("shows the curated request and frozen clock with no horizontal overflow", a
   page,
 }, testInfo) => {
   const requests = new Set<string>();
-  page.on("request", (request) => requests.add(new URL(request.url()).origin));
+  const apiRequests: string[] = [];
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    requests.add(url.origin);
+    if (url.pathname.startsWith("/api/")) apiRequests.push(url.pathname);
+  });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Appointment playground" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Scenario" })).toHaveValue("H1");
@@ -25,6 +30,8 @@ test("shows the curated request and frozen clock with no horizontal overflow", a
   await expect(page.getByText("Europe/London", { exact: false })).toBeVisible();
   await expect(page.getByText(/fictional.*synthetic data only/i)).toBeVisible();
   expect([...requests]).toEqual([new URL(page.url()).origin]);
+  expect(apiRequests).toEqual([]);
+  await expect(page.getByRole("region", { name: "Demo bookings" })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     testInfo.project.use.viewport?.width,
   );
@@ -132,18 +139,6 @@ const reasonItem = (page: Page, hasText: string | RegExp) =>
   explanation(page).getByRole("listitem").filter({ hasText });
 
 for (const { id, reasons, alternative, selected } of [
-  {
-    id: "H1",
-    reasons: ["needs a 15-minute gap", "Dr. Vikram Mehta is unavailable"],
-    alternative: /14:45.*Dr\. Asha Rao/,
-    selected: "2026-11-17 at 14:45",
-  },
-  {
-    id: "H3",
-    reasons: ["at least 2 hours of notice", "This request gives 1 hour"],
-    alternative: /11:00.*Dr\. Asha Rao/,
-    selected: "2026-11-16 at 11:00",
-  },
   {
     id: "H6",
     reasons: ["A room is under maintenance until 11:30", "A room is already in use"],

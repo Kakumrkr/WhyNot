@@ -36,7 +36,7 @@ jobs:
           if-no-files-found: ignore
   postgres:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16.16
@@ -53,6 +53,7 @@ jobs:
           --health-retries 10
     env:
       WHYNOT_TEST_DATABASE_URL: postgresql://whynot:whynot@127.0.0.1:5432/whynot_test
+      DATABASE_URL: postgresql://whynot:whynot@127.0.0.1:5432/whynot_test?options=-c%20statement_timeout%3D5000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -62,3 +63,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:db:pg
+      - run: pnpm --filter @whynot/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e:full
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-local-browser-evidence
+          path: |
+            .tools/playwright-full/**/*.png
+            .tools/playwright-full/**/*.zip
+          include-hidden-files: true
+          if-no-files-found: ignore

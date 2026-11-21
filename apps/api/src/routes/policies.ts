@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { PolicyBodySchema, PolicyListResponseSchema } from "@whynot/contracts/api";
-import { applyPolicyChanges } from "@whynot/engine";
+import { applyPolicyChanges, previewPolicyChanges } from "@whynot/engine";
 import { sql } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import type { Database } from "../db/database.js";
@@ -14,7 +14,28 @@ import { loadSnapshot } from "../snapshotLoader/loadSnapshot.js";
 
 /** Register immutable policy history and atomic activation of engine-validated patches. */
 export function registerPolicies(app: FastifyInstance, db: Database): void {
-  app.get("/api/admin/policies", async (http) => {
+  app.post("/admin/policies/preview", async (http) => {
+    requireStaff(http);
+    const body = parseBody(PolicyBodySchema, http.body);
+    const request = slotRequest(body.request);
+    return db.transaction(
+      async (tx) => {
+        const { snapshot, clock } = await loadSnapshot(tx);
+        const preview = previewPolicyChanges(snapshot, request, body.changes, {
+          now: clock.now,
+          alternatives: false,
+        });
+        if (!preview.ok || preview.value.baseline.status === "invalid_request")
+          throw new ApiError("invalid_request");
+        return results.policy.encode({
+          ...preview.value,
+          activeVersionId: snapshot.policy.versionId,
+        });
+      },
+      { isolationLevel: "repeatable read", accessMode: "read only" },
+    );
+  });
+  app.get("/admin/policies", async (http) => {
     requireStaff(http);
     return db.transaction(
       async (tx) => {
@@ -32,7 +53,7 @@ export function registerPolicies(app: FastifyInstance, db: Database): void {
     );
   });
 
-  app.post("/api/admin/policies", async (http, reply) => {
+  app.post("/admin/policies", async (http, reply) => {
     requireStaff(http);
     const body = parseBody(PolicyBodySchema, http.body);
     const request = slotRequest(body.request);

@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:full": "vite --mode full --host 127.0.0.1 --port 5173 --strictPort",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "test:e2e": "playwright test"
+    "build:full": "vite build --mode full",
+    "test:e2e": "playwright test",
+    "test:e2e:full": "node e2e/runFullBrowser.mjs"
   },
   "dependencies": {
+    "@tanstack/react-query": "5.108.2",
     "@whynot/contracts": "workspace:*",
     "@whynot/engine": "workspace:*",
     "@whynot/fixtures": "workspace:*",
