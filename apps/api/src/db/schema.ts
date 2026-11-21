@@ -39,6 +39,8 @@ export const clinics = pgTable("clinics", {
   demoNow: minute("demo_now").notNull(),
   coverageFrom: minute("coverage_from").notNull(),
   coverageTo: minute("coverage_to").notNull(),
+  demoWindowFrom: minute("demo_window_from").notNull(),
+  demoWindowTo: minute("demo_window_to").notNull(),
   activePolicyVersionId: text("active_policy_version_id")
     .notNull()
     .references(() => policyVersions.id),

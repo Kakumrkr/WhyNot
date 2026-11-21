@@ -50,6 +50,8 @@ PGlite runs portable integration tests without Docker. P1 probes btree_gist supp
 
 Default DEMO_DATE Monday and DEMO_NOW Monday 09:00 Europe/London, fixed for all scenarios except explicit scenario overrides. No real-time offset. Seed/reset deterministic and idempotent, with fixture dependency isolated to seed.
 
+Riverside persists its original demo request window separately from known search coverage. The full snapshot includes the default alternative lookback, the forward alternative and range horizons, and the maximum appointment tail (D-080). A narrow loader window is useful for fixture parity and cannot assert coverage beyond the database bounds.
+
 ## Insights and replay H1–H4
 
 Reported blocking rules count chosen explanations, not every causal blocker or lost bookings. Explanation weights affect attribution. Show total slot evaluations, blocked share and supported-patch feasibility counts with denominators; distinguish ranges, repeated synthetic requests and unique customers.

@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { bookings } from "../src/db/schema.js";
 import { seedRiverside } from "../src/seed/seed.js";
@@ -57,13 +57,14 @@ describe("real PostgreSQL persistence", () => {
   it("allows only one overlapping insert across separate PostgreSQL connections", async () => {
     await seedRiverside(connection.db);
     const start = baseBooking.start + 1440;
+    const raceIds = ["race-one", "race-two"];
     const pids = new Set<number>();
     let release: () => void = () => {};
     const ready = new Promise<void>((resolve) => {
       release = resolve;
     });
     const results = await Promise.allSettled(
-      ["race-one", "race-two"].map((id) =>
+      raceIds.map((id) =>
         connection.db.transaction(async (tx) => {
           const { rows } = await tx.execute<{ pid: number }>(sql`select pg_backend_pid() as pid`);
           pids.add(rows[0]!.pid);
@@ -76,7 +77,14 @@ describe("real PostgreSQL persistence", () => {
     expect(pids.size).toBe(2);
     expect(results.map(({ status }) => status).sort()).toEqual(["fulfilled", "rejected"]);
     expect(results.find(({ status }) => status === "rejected")).toMatchObject({
-      reason: { cause: { code: "23P01" } },
+      // GiST can report an exclusion violation or abort a deadlocked contender.
+      reason: { cause: { code: expect.stringMatching(/^(23P01|40P01)$/) } },
     });
+    expect(
+      await connection.db
+        .select({ id: bookings.id })
+        .from(bookings)
+        .where(inArray(bookings.id, raceIds)),
+    ).toHaveLength(1);
   });
 });

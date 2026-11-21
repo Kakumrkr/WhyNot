@@ -1,4 +1,5 @@
 import type { Booking, ClinicSnapshot } from "@whynot/contracts";
+import { evaluate, explainRange } from "@whynot/engine";
 import {
   buildMinimalSnapshot,
   buildRiverside,
@@ -49,14 +50,44 @@ describe("Riverside seed and snapshot loader", () => {
 
   it("seeds the base clinic once and round-trips all engine inputs", async () => {
     expect(await seedRiverside(connection.db)).toBe("seeded");
+    const fixture = canonical(buildRiverside());
+    expect(await read(fixture.coverage)).toEqual({
+      snapshot: fixture,
+      clock: demoClock(),
+      demoWindow: fixture.coverage,
+    });
     const first = await read();
-    expect(first).toEqual({ snapshot: canonical(buildRiverside()), clock: demoClock() });
     expect(await seedRiverside(connection.db)).toBe("already_seeded");
     expect(await read()).toEqual(first);
     await expect(seedRiverside(connection.db, demoClock("2026-11-23"))).rejects.toThrow(
       "different demo clinic or clock",
     );
     expect(await read()).toEqual(first);
+  });
+
+  it("loads enough coverage for default slot and range searches at the demo window edges", async () => {
+    await seedRiverside(connection.db);
+    const { snapshot, clock } = await read();
+    const from = riversideMinute(-14, "00:00");
+    const to = riversideMinute(45, "00:00");
+    expect(snapshot.coverage).toEqual({ from, to: to + 45 });
+
+    const request = { patientId: "patient-1", serviceId: "ultrasound" };
+    const options = { now: clock.now };
+    expect(
+      evaluate(snapshot, { ...request, start: riversideMinute(0, "11:00") }, options),
+    ).toMatchObject({ status: "blocked", search: { status: "complete", from } });
+    expect(
+      evaluate(snapshot, { ...request, start: riversideMinute(30, "11:00") }, options),
+    ).toMatchObject({ status: "blocked", search: { status: "complete", to } });
+
+    const range = explainRange(snapshot, { ...request, fromDate: "2026-12-16", days: 1 }, options);
+    expect(range).toMatchObject({
+      status: "fully_blocked",
+      nextAvailable: null,
+      nextSearch: { status: "complete", from: riversideMinute(31, "00:00"), to },
+    });
+    if (range.status === "fully_blocked") expect(range.nextSearch.evaluated).toBeGreaterThan(0);
   });
 
   it.each(["H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "H11"])(
@@ -134,14 +165,17 @@ describe("Riverside seed and snapshot loader", () => {
   it("uses the injected Monday at 09:00 London time, even during summer time", async () => {
     expect(demoClock()).toEqual({ date: DEMO_DATE, now: demoNow });
     expect(DEMO_NOW).toBe(demoNow);
-    const summer = demoClock("2026-07-06");
-    expect(summer.now).toBe(Date.UTC(2026, 6, 6, 8) / 60_000);
+    const summer = demoClock("2026-04-06");
+    expect(summer.now).toBe(Date.UTC(2026, 3, 6, 8) / 60_000);
     expect(() => demoClock("2026-07-07")).toThrow("valid Monday");
     expect(() => demoClock("2026-02-30")).toThrow("valid Monday");
     await seedRiverside(connection.db, summer);
-    expect(await read()).toEqual({
-      snapshot: canonical(buildRiverside(summer.date)),
+    const fixture = canonical(buildRiverside(summer.date));
+    expect(await read(fixture.coverage)).toEqual({
+      snapshot: fixture,
       clock: summer,
+      demoWindow: fixture.coverage,
     });
+    expect((await read()).snapshot.coverage.from).toBe(Date.UTC(2026, 2, 23) / 60_000);
   });
 });

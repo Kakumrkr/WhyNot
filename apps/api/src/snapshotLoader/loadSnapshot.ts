@@ -13,7 +13,11 @@ import type { Database } from "../db/database.js";
 import * as tables from "../db/schema.js";
 import { loadBookings } from "./loadBookings.js";
 
-type LoadedSnapshot = { snapshot: ClinicSnapshot; clock: DemoClock };
+type LoadedSnapshot = {
+  snapshot: ClinicSnapshot;
+  clock: DemoClock;
+  demoWindow: ClinicSnapshot["coverage"];
+};
 
 /** Load current inputs from one caller-owned transaction, including the active policy. */
 export async function loadSnapshot(
@@ -37,6 +41,10 @@ export async function loadSnapshot(
   const coverage = window === undefined ? available : IntervalSchema.parse(window);
   if (!intervalContains(available, coverage))
     throw new Error("Snapshot window exceeds stored coverage");
+  const demoWindow = IntervalSchema.parse({
+    from: row.clinic.demoWindowFrom,
+    to: row.clinic.demoWindowTo,
+  });
   const clock = { date: DateSchema.parse(demoDate), now: MinuteSchema.parse(demoNow) };
   const resources = await loadResources(tx, row.version.content);
   const bookings = await loadBookings(tx, coverage, timezone, resources.services);
@@ -48,7 +56,7 @@ export async function loadSnapshot(
     bookings,
     policy: { ...row.version.content.policy, versionId: row.version.id },
   });
-  return { snapshot, clock };
+  return { snapshot, clock, demoWindow };
 }
 
 async function loadResources(tx: Database, content: tables.PolicyVersionContent) {

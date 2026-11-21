@@ -17,6 +17,8 @@ CREATE TABLE clinics (
   demo_now bigint NOT NULL,
   coverage_from bigint NOT NULL,
   coverage_to bigint NOT NULL CHECK (coverage_from < coverage_to),
+  demo_window_from bigint NOT NULL CHECK (coverage_from <= demo_window_from),
+  demo_window_to bigint NOT NULL CHECK (demo_window_from < demo_window_to AND demo_window_to <= coverage_to),
   active_policy_version_id text NOT NULL REFERENCES policy_versions(id) DEFERRABLE INITIALLY DEFERRED
 );
 --> statement-breakpoint

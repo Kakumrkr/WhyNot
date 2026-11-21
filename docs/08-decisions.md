@@ -319,3 +319,11 @@ This resolves Q-2.
 at the same time. Remove only generated bookings that physically conflict with
 the authored booking. The H8 patient daily-limit setup and expected explanation
 are preserved. P1's PostgreSQL overlap constraints apply to scenario data too.
+
+**D-080 · Cover complete default searches at the Riverside demo boundaries.**
+Keep the authored demo request window and complete database coverage as separate
+bounds. Seed Riverside with known coverage through the default alternative
+lookback and the longer of the default forward search horizons, plus the
+longest appointment at the end. Extend by local calendar days before adding the
+appointment duration. The seed defines the fictional occupancy for that
+coverage. Isolated snapshot fixtures retain their authored bounds.

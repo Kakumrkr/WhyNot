@@ -72,6 +72,6 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 **P1 — Database foundation, seed and snapshot loader.** D-076 combined P1/P2 and P3/P4. This card adds the shared migration, immutable policy and evaluation rows, physical overlap backstops, frozen seed, and bounded snapshot loader.
 
-PGlite and PostgreSQL apply one schema migration (D-078). The separate PostgreSQL job runs three checks, including concurrent inserts on two connections. The portable suites cover 21 checks, including all eleven isolated fixtures and adjacent coverage. D-079 fixes H8's generated overlap with the original expectations intact.
+PGlite and PostgreSQL apply one schema migration (D-078). The separate PostgreSQL job checks concurrent inserts on two connections; an exclusion violation or deadlock can reject the losing insert. The portable suites cover all eleven isolated fixtures, adjacent bookings, and search coverage at the edge of the demo request window (D-080). D-079 fixes H8's generated overlap with the original expectations intact.
 
-P3 should load current data in the same transaction as the read or booking decision, store the actual input bundle, and run its booking races on real PostgreSQL. The CLI seed preserves local activity. See the [runbook](runbook.md#seed-the-optional-local-database).
+P3 should load current data in the same transaction as the read or booking decision and store the actual input bundle. Use `demoWindow` for the demo request dates and full stored coverage for the engine's search. Run booking races on real PostgreSQL. See the [runbook](runbook.md#seed-the-optional-local-database).
