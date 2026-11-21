@@ -2,6 +2,17 @@
 
 This record covers the WhyNot release candidate on November 21, 2026. Clinical usefulness and developer adoption are **pending external review**. No scheduling practitioner ratings or outside developer integration observations have been recorded. The following checks establish technical readiness for the modeled fictional scenarios. [Helpfulness criteria](session-2.2-helpfulness.md)
 
+## Verification results
+
+| Check                                      | Result                                                                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm verify`                              | Passed format, lint, types, 236 tests in 35 files, and production build                                                                          |
+| `pnpm test:deep`                           | 236 tests passed with 5,000 cases per property                                                                                                   |
+| Built Playwright suite                     | 66 passed across desktop 1280 px and mobile 390 px, with no serious or critical axe findings on checked surfaces                                 |
+| Clean clone                                | Frozen lockfile install, `pnpm dev` before any library build, production build and preview passed. Both servers rendered H1 in Chromium          |
+| Packed consumer                            | Three tarballs installed outside the checkout. Allowlisted entries and files, TypeScript declarations, ESM loading and the Harbor example passed |
+| `pnpm audit --prod --audit-level moderate` | No known vulnerabilities reported                                                                                                                |
+
 ## Scope and coverage
 
 - **Correctness.** Hero goldens H1–H11, edge goldens E01–E16, and properties P1–P16 cover modeled feasibility, explanation coverage, order, rechecks, privacy and reference integrity. Regression tests cover empty resources, search and trace limits, actual policy patches, and local dates and DST transitions. Narrator coverage checks the rule catalog and audience-specific templates. [Testing specification](../06-testing-and-accuracy.md)
