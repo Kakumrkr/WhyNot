@@ -10,14 +10,19 @@ import {
   ClinicResponseSchema,
   ExplainBodySchema,
   ExplainRangeBodySchema,
+  InsightsQuerySchema,
+  InsightsResponseSchema,
   PolicyBodySchema,
   PolicyListResponseSchema,
   ResetResponseSchema,
+  SimulationBodySchema,
+  SimulationResponseSchema,
   apiResults,
   demoPatientHeader,
   demoRoleHeader,
   type ApiErrorCode,
-  type DemoRole,
+  type InsightsResponse,
+  type SimulationBody,
 } from "@whynot/contracts/api";
 import { formatOffsetInstant, parseOffsetInstant } from "@whynot/engine";
 import type { TemplateDisplay } from "@whynot/narrator";
@@ -26,7 +31,10 @@ import { renderSlot } from "./renderSlot.js";
 import { baseScenario, timeValue } from "./requestSelection.js";
 
 type Parser<T> = { parse: (input: unknown) => T };
-type Requester = { audience: DemoRole; patientId: string };
+type Requester =
+  { audience: "staff"; patientId?: string } | { audience: "patient"; patientId: string };
+type InsightsQuery = InsightsResponse["window"] &
+  Partial<NonNullable<InsightsResponse["nextCursor"]>>;
 type EvaluationError<T> = {
   error: { code: ApiErrorCode; details?: { evaluation: T } | undefined };
 };
@@ -177,6 +185,25 @@ export function httpAdapter(scope: string) {
             },
         request,
         display,
+      );
+    },
+    async insights(query: InsightsQuery, signal: AbortSignal) {
+      const params = new URLSearchParams(InsightsQuerySchema.parse(query));
+      return decode(
+        await send(`/admin/insights?${params}`, { audience: "staff" }, "GET", undefined, signal),
+        InsightsResponseSchema,
+      );
+    },
+    async simulate(input: SimulationBody, signal: AbortSignal) {
+      return decode(
+        await send(
+          "/admin/simulate",
+          { audience: "staff" },
+          "POST",
+          SimulationBodySchema.parse(input),
+          signal,
+        ),
+        SimulationResponseSchema,
       );
     },
     async policyVersions(requester: Requester, signal?: AbortSignal) {

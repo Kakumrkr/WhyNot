@@ -2,6 +2,7 @@ import type {
   BookingRequest,
   ClinicSnapshot,
   PolicyChange,
+  PolicyPatch,
   PolicyPreview,
   StaffEvaluation,
 } from "@whynot/contracts";
@@ -41,6 +42,14 @@ function displayValue(value: number | string | undefined) {
   if (value === "returning_only") return "Returning patients only";
   if (value === "any") return "Any patient";
   return String(value);
+}
+
+/** Label the proposed setting values without assuming the recorded policy was the same. */
+export function describePolicyChanges(changes: PolicyPatch, display: TemplateDisplay) {
+  return changes.map((change) => ({
+    label: settingLabel(change, display),
+    value: displayValue(change.value),
+  }));
 }
 
 /** Describe the policy settings made available by either adapter. */
