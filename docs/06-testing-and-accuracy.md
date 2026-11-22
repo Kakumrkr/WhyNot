@@ -2,15 +2,15 @@
 
 ## Gates
 
-From 0.1, pnpm verify runs format:check, lint, typecheck, test and build, failing fast. No separate baseline run is needed: main was green when the previous card merged. If an unrelated test fails, record it rather than silently fixing it. No success-returning test:e2e/bench placeholders; introduce commands with real suites.
+`pnpm verify` runs formatting checks, linting, type checks, tests and builds, stopping at the first failure.
 
-Default 500 runs locally and in PR CI; 5000 runs (`pnpm test:deep`) locally at milestone gate cards, optionally also in the manual Deep verification workflow (D-071/D-072). Print failure seeds and save shrunk counterexamples as normal tests. No skip/only/todo, lowered counts, disabled lint or weakened assertions.
+Property tests default to 500 runs locally and in PR CI. Use `pnpm test:deep` or the manual Deep verification workflow for 5,000 runs. Print failure seeds and save shrunk counterexamples as regression tests. Keep run counts and assertions intact.
 
-Browser checks start at 3.1 against built static app, full mode at P5, real-Postgres job at P1. Report unavailable required environments; do not silently omit checks.
+PR CI checks the built static and full apps in Chromium and runs the real PostgreSQL suite. The [runbook](runbook.md#run-the-release-checks) lists the commands to reproduce these checks locally.
 
 ## Test layers and generators
 
-Unit rules/time/projection/templates; differential independent reference; goldens written from doc 02 before implementation; properties over valid clinics and separate malformed input cases; real-engine browser journeys; axe plus keyboard/focus/contrast/responsive checks; external benchmark wrappers. Provider mocks/evals begin A2.
+Use unit tests for rules, time handling, projection and wording. Compare engine output with the independent reference, and derive golden cases from the domain rules. Properties cover valid clinics and malformed inputs separately. Browser journeys use the real engine and check axe results, keyboard focus, contrast and responsive layouts. Benchmarks measure runtime outside the engine.
 
 Generators are fixture test-only exports. Exercise all implemented rules, 0–8 practitioners, 0–6 rooms, 0–3 equipment, bookings, hours and policies. Keep brute-force optimality instances bounded to <=12 facts without lowering run counts. Generate empty pools explicitly.
 

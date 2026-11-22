@@ -1,6 +1,6 @@
 # Adapters, data and local API
 
-## First release
+## Static playground
 
 No API server or DB. Browser adapter owns a validated synthetic snapshot in memory and delegates decisions to engine. Import limit: 256 KiB UTF-8 JSON, 100 practitioners, 100 rooms, 100 equipment units, 5000 bookings, 20000 candidate combinations per request, 31 covered local dates. Oversized inputs are rejected before evaluation with actionable errors. These are playground ingestion limits, not claims that every maximal input meets demo performance targets.
 
@@ -10,33 +10,30 @@ Curated links encode scenarioId, audience and validated date/service/practitione
 
 ## Adapter boundary
 
-Expose engine-shaped evaluate, availability, explainRange, policy preview and scenario/reset operations. Static adapter is synchronous internally; UI may wrap it for pending/error handling. Avoid artificial network infrastructure. Later HTTP adapter implements the same semantic operations; components do not branch business rules by mode.
+Expose engine-shaped evaluate, availability, explainRange, policy preview and scenario/reset operations. The static adapter is synchronous internally. The HTTP adapter implements the same scheduling operations for full mode. Components render engine decisions in either mode.
 
 ## Local persistence
 
-Pin supported Postgres and Drizzle versions at P1. Fastify routes and all wire schemas belong to contracts; instants use explicit-offset ISO. Error envelope is { error: { code, message, details? } }. Validate responses in tests/development. Demo role headers are not authentication and never justify real data use.
+Fastify routes use shared wire schemas from `@whynot/contracts/api`. Instants use explicit-offset ISO. The error envelope is `{ error: { code, message, details? } }`. Validate responses in tests. Demo role headers select fictional roles and provide no authentication.
 
-| Endpoint | Capability | Session |
-| --- | --- | --- |
-| GET /api/health, /api/clinic, /api/availability | Health/public configuration/grid | P3 |
-| POST /api/explain, /api/explain-range | Projected engine decisions | P3 |
-| POST /api/bookings, DELETE /api/bookings/:id | Create / soft cancel with demo ownership guards | P3 |
-| GET /api/bookings/:id | Recheck a confirmed booking through its cancellation handle | P5 |
-| GET/POST /api/admin/policies | Immutable policy versions and atomic activation | P3 |
-| POST /api/admin/policies/preview | Staff-only hypothetical policy comparison | P5 |
-| POST /api/demo/reset | Environment-gated, rate-limited reset | P3 |
-| GET /api/admin/evaluations/:id/trace | Stored-input replay, not current-snapshot reconstruction | H1 |
-| GET /api/admin/insights | Descriptive aggregates | H2 |
-| POST /api/admin/simulate | Independent historical policy replay | H3 |
-| POST /api/narrate | Optional experiment, contract decided in A1 | A3 |
-
-No availability cache initially. Introduce only when measurements justify it and include policy, bookings, patient eligibility, service, date, requested practitioner and injected now in any invalidation design.
+| Endpoint | Capability |
+| --- | --- |
+| GET /api/health, /api/clinic, /api/availability | Health, public configuration and start grid |
+| POST /api/explain, /api/explain-range | Projected engine decisions |
+| POST /api/bookings, DELETE /api/bookings/:id | Create and soft-cancel with demo ownership guards |
+| GET /api/bookings/:id | Recheck a confirmed booking through its cancellation handle |
+| GET/POST /api/admin/policies | Immutable policy versions and atomic activation |
+| POST /api/admin/policies/preview | Staff-only hypothetical policy comparison |
+| POST /api/demo/reset | Environment-gated, rate-limited reset |
+| GET /api/admin/evaluations/:id/trace | Replay an evaluation from its stored inputs |
+| GET /api/admin/insights | Descriptive aggregates |
+| POST /api/admin/simulate | Independent historical policy replay |
 
 ## Persistence data
 
 Normalized clinic, services, practitioners, rooms, equipment, patients, bookings, time-off, maintenance, immutable policy_versions. Preserve service settings/practitioner caps as versioned policy content when changed by editor; do not overwrite historical inputs.
 
-Evaluations store immutable full input bundles: snapshot, request, now, options, input/schema/engine versions and original result. Include all resources, hours, eligibility, leave, maintenance, existing-booking service settings and search coverage needed for replay. A policyVersion ID or created_at/cancelled_at filters alone are insufficient. P3 captures bundles for its explain calls; H1 extends/query-tests this storage and exposes trace replay.
+Explain routes store immutable bundles with the snapshot, request, clock, options, input/schema/engine versions and original result. The snapshot includes the resources, hours, eligibility, leave, maintenance, existing-booking service settings and search coverage needed for replay. Trace and simulation routes use these captured inputs.
 
 Store request kind slot/range explicitly. Count range evaluations separately from single-slot attempts. Measure duration in API wrappers, not engine results.
 
@@ -46,7 +43,7 @@ SERIALIZABLE transaction loads snapshot inside transaction, re-evaluates origina
 
 Postgres btree_gist exclusion constraints on confirmed practitioner/room/equipment overlap are a backstop. Buffers remain engine-owned. Real-Postgres test: ten concurrent attempts for the same sole assignment produce one success/nine conflicts. Cancellation is soft status change. Patients may cancel own fictional bookings, staff any; roles remain demo-only.
 
-PGlite runs portable integration tests without Docker. P1 probes btree_gist support; unsupported feature/concurrency tests run on real Postgres in CI. Never silently skip tests. Use separate scripts for real-Postgres tests; do not assume Vitest supports another runner's grep flags.
+PGlite runs portable integration tests without Docker. CI runs cases that require concurrent connections or `btree_gist` against real PostgreSQL. See the [runbook](runbook.md#verify-full-mode) for the local command.
 
 ## Frozen clock and reset
 

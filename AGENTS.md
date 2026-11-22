@@ -6,7 +6,7 @@ Follow the architecture, domain, engine, wording, API and testing specifications
 
 ## Commands
 
-Node 24.22.3, pnpm 12.21.0. `pnpm install [--frozen-lockfile]`, `pnpm format`, `pnpm verify` (format:check → lint → typecheck → test → build), `pnpm test:quick <files>` (affected tests), `pnpm test:deep` (5000 runs), `pnpm bench` (S/M/L benchmark vs local baseline), `pnpm dev` (static app at http://127.0.0.1:5173). Browser, DB and narration commands arrive with their owning cards; no passing placeholders.
+Node 24.22.3, pnpm 12.21.0. `pnpm install --frozen-lockfile`, `pnpm format`, `pnpm verify` (format:check → lint → typecheck → test → build), `pnpm test:quick <files>`, `pnpm test:deep` (5000 runs), `pnpm bench` (S/M/L benchmark vs local baseline), `pnpm dev` (static app at http://127.0.0.1:5173). See the [runbook](docs/runbook.md) for browser and database checks.
 
 ## Architecture invariants
 

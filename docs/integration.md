@@ -5,6 +5,7 @@ The [independent Node example](../examples/node/README.md) uses local ESM tarbal
 | ESM entry point | Use |
 | --- | --- |
 | `@whynot/contracts` or `@whynot/contracts/schemas` | Validate data with shared Zod schemas and import their inferred TypeScript types. |
+| `@whynot/contracts/api` | Validate HTTP request and response payloads for the full local API. |
 | `@whynot/engine` | Call `evaluate`, `isBookable`, `explainRange`, `projectForAudience`, `applyPolicyChanges` and `previewPolicyChanges`. Import time helpers, `catalog` and `catalogVersion` from the same entry. |
 | `@whynot/narrator` or `@whynot/narrator/templates` | Render deterministic patient and staff wording using `TemplateNarrator`. |
 
