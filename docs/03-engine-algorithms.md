@@ -105,4 +105,4 @@ Measure wrappers externally; record runtime, hardware, dataset and warm-up.
 | Day availability | <= 100 ms |
 | Range one day / seven days | <= 300 ms / 1500 ms |
 
-S = Riverside, M = 3x resources/2x bookings, L = 10x resources. S targets are gates; M/L report scaling. Baseline introduced in 1.6, extended as operations land. `pnpm bench` on the machine owning the committed baseline enforces the S gates and flags >50% S regression; shared CI runners report only (D-071); baseline updates require explicit card authorization and measured justification. No weakened targets to pass.
+S is Riverside, M has three times the resources and twice the bookings, and L has ten times the resources. S targets are gates. M and L report scaling. `pnpm bench` flags regressions greater than 50% on a matching committed baseline. Shared CI measurements report timings without enforcing that comparison. Include measured justification for any baseline change.

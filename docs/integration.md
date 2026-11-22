@@ -5,6 +5,7 @@ The [independent Node example](../examples/node/README.md) uses local ESM tarbal
 | ESM entry point | Use |
 | --- | --- |
 | `@whynot/contracts` or `@whynot/contracts/schemas` | Validate data with shared Zod schemas and import their inferred TypeScript types. |
+| `@whynot/contracts/api` | Validate HTTP request and response payloads for the full local API. |
 | `@whynot/engine` | Call `evaluate`, `isBookable`, `explainRange`, `projectForAudience`, `applyPolicyChanges` and `previewPolicyChanges`. Import time helpers, `catalog` and `catalogVersion` from the same entry. |
 | `@whynot/narrator` or `@whynot/narrator/templates` | Render deterministic patient and staff wording using `TemplateNarrator`. |
 
@@ -37,4 +38,4 @@ Playground limits are 256 KiB, 100 practitioners, 100 rooms, 100 equipment units
 
 ## Extend the rules in source
 
-Update the shared schemas and rule catalog first, then add the rule to the relevant engine family and update the independent reference checker. Add patient projection and both audiences’ templates where the rule creates new facts. Cover boundary cases with unit and differential or property checks, and follow the decision log when a change affects the documented model or golden expectations. See the [rule catalog specification](02-domain-and-rules.md), [projection and wording](04-explanation-and-ai.md) and [accuracy checks](06-testing-and-accuracy.md).
+Update the shared schemas and rule catalog first, then add the rule to the relevant engine family and update the independent reference checker. Add patient projection and both audiences’ templates where the rule creates new facts. Cover boundary cases with unit and differential or property checks. Explain changes to the documented model or golden expectations in the pull request. See the [rule catalog specification](02-domain-and-rules.md), [projection and wording](04-explanation-and-ai.md) and [accuracy checks](06-testing-and-accuracy.md).

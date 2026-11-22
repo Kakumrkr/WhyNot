@@ -1,4 +1,5 @@
 import * as contracts from "@whynot/contracts";
+import { HealthResponseSchema } from "@whynot/contracts/api";
 import * as schemas from "@whynot/contracts/schemas";
 import type { ClinicSnapshot, SyntheticSnapshotEnvelope } from "@whynot/contracts/schemas";
 import * as engine from "@whynot/engine";
@@ -8,9 +9,17 @@ import type { TemplateDisplay } from "@whynot/narrator/templates";
 
 const { schemaVersion, ClinicSnapshotSchema, SyntheticSnapshotEnvelopeSchema } = schemas;
 const { TemplateNarrator } = templates;
-const { catalog, catalogVersion, ...actions } = engine;
+const { catalog, catalogVersion, engineVersion, ...actions } = engine;
+const apiStatus: "ok" = HealthResponseSchema.parse({ status: "ok" }).status;
 
-if (contracts !== schemas || narrator !== templates || schemaVersion !== 1 || catalogVersion < 1) {
+if (
+  contracts !== schemas ||
+  narrator !== templates ||
+  schemaVersion !== 1 ||
+  catalogVersion < 1 ||
+  !engineVersion ||
+  apiStatus !== "ok"
+) {
   throw new Error("Public runtime entry points disagree");
 }
 if (
@@ -40,6 +49,7 @@ const expectedActions = [
   "previewPolicyChanges",
   "projectForAudience",
   "resolveRecurringBoundary",
+  "simulatePolicyChanges",
   "splitOvernightHours",
 ];
 if (Object.keys(actions).sort().join() !== expectedActions.join()) {

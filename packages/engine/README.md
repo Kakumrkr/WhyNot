@@ -13,7 +13,7 @@ have a separate structural basis and one true missing-resource cause. All eviden
 is retained. Trace is optional and caps real candidate rows at 500, reporting
 truncation without changing the decision.
 
-Since 2.3, blocked evaluations search for up to three verified alternatives by
+Blocked evaluations search for up to three verified alternatives by
 default, within 14 local dates either side and at most 3000 changed-request
 evaluations. Set `alternatives: false` to disable search or supply
 `{ max, searchDays, budgetEvals }` to adjust the limits. A completed or
@@ -23,7 +23,7 @@ including starts near the end of the last requested date. A budget-exhausted rep
 bounds the evaluated appointments, and its
 optional trace identifies individual attempts, capped at 3000 entries. Ordering
 prefers the cheapest verified result followed by still-unrepresented categories.
-Since 4.1, blocked evaluations can include the least-cost verified policy fix among
+Blocked evaluations can include the least-cost verified policy fix among
 supported candidate patches. Set `includeAdminFix: false` to disable fix generation.
 `applyPolicyChanges(snapshot, changes)` returns a patched copy or validation issues.
 `previewPolicyChanges(snapshot, request, changes, options)` returns the patch and two

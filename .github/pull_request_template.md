@@ -1,13 +1,7 @@
-## Session
+## What changed
 
-Session ID and card:
-
-What changed (behavior, not file list):
+Describe the user-facing change and link the related issue, if any.
 
 ## Verification
 
-Commands run and results (pnpm verify; 5000-run/benchmark/Deep run if the card requires it). Screenshots for UI.
-
-## Open questions / review
-
-Open questions, review verdict and how findings were addressed:
+List the checks you ran and add screenshots or reproduction steps for UI changes.

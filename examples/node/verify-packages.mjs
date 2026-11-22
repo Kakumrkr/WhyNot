@@ -27,7 +27,7 @@ const location = relative(root, consumer);
 assert(isAbsolute(location) || location.startsWith(`..${sep}`), "Use a temp folder outside WhyNot");
 
 const libraries = {
-  contracts: { entries: [".", "./schemas"], dependencies: ["zod"] },
+  contracts: { entries: [".", "./schemas", "./api"], dependencies: ["zod"] },
   engine: { entries: ["."], dependencies: ["@whynot/contracts", "luxon"] },
   narrator: { entries: [".", "./templates"], dependencies: ["@whynot/contracts"] },
 };
