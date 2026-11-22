@@ -88,6 +88,7 @@ function HistorySimulation({
   const result = query.isError || query.isFetching ? undefined : query.data;
 
   function start() {
+    title.current?.focus();
     if (page?.number === 1) void query.refetch();
     else setPage(firstPage);
   }
@@ -103,8 +104,9 @@ function HistorySimulation({
         Independent replay estimate
       </h3>
       <p className="supporting">
-        Each slot is replayed with its recorded occupancy, clock and settings. The result estimates
-        feasibility. Demand, clinical suitability and actual conversion are outside the estimate.
+        Each slot is replayed independently using its recorded occupancy, clock and settings. This
+        feasibility estimate omits occupancy from hypothetical bookings, demand, clinical
+        suitability and actual conversion.
       </p>
       <p className="supporting">{sources[source]} · Uses the applied date filters.</p>
       {changes ? (
@@ -136,7 +138,14 @@ function HistorySimulation({
       {query.isError && (
         <div className="history-pages">
           <p role="alert">Could not replay the stored slots.</p>
-          <button className="secondary" type="button" onClick={() => void query.refetch()}>
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => {
+              title.current?.focus();
+              void query.refetch();
+            }}
+          >
             Retry replay
           </button>
         </div>
@@ -265,8 +274,8 @@ export function HistoryDashboard({
         </h3>
         <p className="supporting">
           Recorded evaluation dates from <time dateTime={window.from}>{filters.from}</time> until{" "}
-          <time dateTime={window.to}>{filters.to}</time> (exclusive, UTC). Each stored evaluation
-          counts once.
+          <time dateTime={window.to}>{filters.to}</time> (exclusive, UTC). Counts use evaluation
+          records and can include repeat requests from one patient.
         </p>
         <p role="status">
           {query.isFetching
@@ -279,7 +288,14 @@ export function HistoryDashboard({
         {query.isError && (
           <div className="history-pages">
             <p role="alert">Could not load history insights.</p>
-            <button className="secondary" type="button" onClick={() => void query.refetch()}>
+            <button
+              className="secondary"
+              type="button"
+              onClick={() => {
+                outcomesTitle.current?.focus();
+                void query.refetch();
+              }}
+            >
               Retry history
             </button>
           </div>

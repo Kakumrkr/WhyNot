@@ -1,9 +1,10 @@
 import type { InsightsResponse, SimulationResponse } from "@whynot/contracts/api";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
+import type { HistoryRuleChartProps } from "./HistoryRuleChart.js";
 
 type SourceInsights = InsightsResponse["sources"][number];
 
-const HistoryRuleChart = lazy(() =>
+const HistoryRuleChart = lazy<ComponentType<HistoryRuleChartProps>>(() =>
   import("./HistoryRuleChart.js").then(
     ({ HistoryRuleChart }) => ({ default: HistoryRuleChart }),
     () => ({ default: () => null }),

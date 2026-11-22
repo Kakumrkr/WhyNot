@@ -43,10 +43,13 @@ test("shows seeded outcomes and replays a verified fix against the selected hist
     },
     { times: 1 },
   );
-  await run.click();
+  await run.focus();
+  await page.keyboard.press("Enter");
+  await expect(replay.getByRole("heading", { name: "Independent replay estimate" })).toBeFocused();
   await expect(replay.getByRole("alert")).toHaveText("Could not replay the stored slots.");
   await expect(replay.getByRole("heading", { name: "Independent replay estimate" })).toBeVisible();
   await replay.getByRole("button", { name: "Retry replay" }).click();
+  await expect(replay.getByRole("heading", { name: "Independent replay estimate" })).toBeFocused();
   const counts = replay.getByRole("table", { name: "Historical replay counts" });
   await expect(counts.getByRole("row", { name: "Eligible slots 8" })).toBeVisible();
   await expect(counts.getByRole("row", { name: "Newly feasible 2" })).toBeVisible();
@@ -154,6 +157,7 @@ test("retries a failed history read and applies a date filter that has no data",
   const history = await openHistory(page);
   await expect(history.getByRole("alert")).toHaveText("Could not load history insights.");
   await history.getByRole("button", { name: "Retry history" }).click();
+  await expect(history.getByRole("heading", { name: "Recorded outcomes" })).toBeFocused();
   await expect(history.getByText("Seeded synthetic history loaded.")).toBeVisible();
   await history.getByLabel("From date (UTC)").fill("2020-01-01");
   await history.getByLabel("Before date (UTC)").fill("2020-01-01");

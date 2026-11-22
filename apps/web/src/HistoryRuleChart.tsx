@@ -1,7 +1,9 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
+export type HistoryRuleChartProps = { rows: { label: string; count: number }[] };
+
 /** Show the same reported rule counts available in the adjacent HTML table. */
-export function HistoryRuleChart({ rows }: { rows: { label: string; count: number }[] }) {
+export function HistoryRuleChart({ rows }: HistoryRuleChartProps) {
   return (
     <div className="history-chart" aria-hidden="true">
       <ResponsiveContainer width="100%" height={Math.max(128, rows.length * 32 + 28)}>
