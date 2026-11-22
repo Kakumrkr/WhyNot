@@ -24,6 +24,8 @@ Open **Synthetic snapshot files** in the playground to import a fictional clinic
 
 The optional full mode uses PostgreSQL and the same engine and explanations as the static playground. Confirm and cancel fictional appointments from the booking panel. Each curated scenario has isolated bookings and its authored frozen clock. Follow the [full local setup](docs/runbook.md#run-the-full-local-application) to seed the database and start the API and web app.
 
+In Staff view, open **History insights** to filter recorded outcomes or replay the selected appointment’s verified policy fix against historical slots. Base Riverside includes two weeks of seeded synthetic history. The replay estimates feasibility for each slot at its recorded clock and occupancy.
+
 ## Use the engine in Node
 
 Build and validate the local packages with the [independent Node example](examples/node/README.md). The [integration guide](docs/integration.md) covers ESM imports, mapping clinic records, using patient projection, and the model and search limits.
@@ -32,7 +34,7 @@ Build and validate the local packages with the [independent Node example](exampl
 
 Browser/Node engine, documented schemas, independent integration example, patient/staff views, empty-calendar explanations, alternatives, policy playground and inspector. Free static demo; no server, account, DB or model key.
 
-The model covers one appointment at one clinic and uses the supplied settings and snapshot. Search is bounded, and staff policy previews are hypothetical. Historical insights and optional AI are later milestones. Use fictional data. Clinical usefulness and developer adoption are pending external review.
+The model covers one appointment at one clinic and uses the supplied settings and snapshot. Search is bounded, and staff policy previews are hypothetical. Optional AI is a later milestone. Use fictional data. Clinical usefulness and developer adoption are pending external review.
 
 [Release notes](docs/reviews/release-notes-v1.0.0.md) · [Release evidence](docs/reviews/session-5.2-release.md) · [Security review](docs/security/first-release.md) · [Algorithm write-up](docs/writeup.md)
 

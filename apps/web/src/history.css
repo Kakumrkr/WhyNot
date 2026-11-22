@@ -1,0 +1,148 @@
+.history-dashboard {
+  margin-block: 1.25rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.history-filters,
+.history-metrics,
+.history-comparison {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.history-filters {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  align-items: end;
+  margin-block: 0.85rem;
+}
+
+.history-filters > div {
+  min-width: 0;
+}
+
+.history-filters label {
+  display: block;
+  font-weight: 650;
+}
+
+.history-filters select,
+.history-filters input[type="date"] {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--control-line);
+  border-radius: 0.45rem;
+  background: var(--surface);
+  color: var(--ink);
+  padding-inline: 0.6rem;
+}
+
+.history-section {
+  border-top: 1px solid var(--line);
+  margin-block-start: 1rem;
+  padding-block-start: 0.85rem;
+}
+
+.history-section h3,
+.history-section h4 {
+  margin: 0 0 0.25rem;
+}
+
+.history-section h4 {
+  margin-block-start: 1rem;
+}
+
+.history-section > p + p,
+.history-section > p + button,
+.history-section > button + p:not(:empty) {
+  margin-block-start: 0.45rem;
+}
+
+.history-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  margin-block: 0.75rem;
+}
+
+.history-metrics > div {
+  min-width: 0;
+  border-top: 2px solid var(--accent);
+  border-radius: 0.25rem;
+  background: var(--tint);
+  padding: 0.55rem 0.7rem;
+}
+
+.history-metrics dt {
+  font-weight: 650;
+}
+
+.history-metrics dd:first-of-type {
+  font-family: var(--heading-font);
+  font-size: 1.55rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-comparison {
+  margin-block-start: 0.7rem;
+  align-items: start;
+}
+
+.history-chart {
+  min-width: 0;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.history-table caption {
+  text-align: left;
+  font-weight: 700;
+  padding-block-end: 0.25rem;
+}
+
+.history-table th,
+.history-table td {
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 0.35rem 0.45rem;
+  overflow-wrap: anywhere;
+}
+
+.history-table thead {
+  background: var(--tint);
+}
+
+.history-table tbody th {
+  font-weight: 500;
+}
+
+.history-table:not(.history-examples) td,
+.history-table:not(.history-examples) thead th:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-patch,
+.history-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-block: 0.7rem;
+}
+
+.history-patch > div {
+  border-left: 2px solid var(--accent);
+  padding-inline-start: 0.5rem;
+}
+
+.history-patch dt {
+  font-weight: 650;
+}
+
+@media (min-width: 48rem) {
+  .history-comparison {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

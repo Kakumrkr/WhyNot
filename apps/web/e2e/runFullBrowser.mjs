@@ -8,6 +8,7 @@ for (const project of ["desktop-1280", "mobile-390"]) {
   for (const [group, suite] of [
     ["booking", "booking.full.spec.ts"],
     ["parity", "parity.spec.ts"],
+    ["history", "history.full.spec.ts"],
   ]) {
     const result = spawnSync(
       process.execPath,

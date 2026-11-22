@@ -13,3 +13,8 @@ minimumReleaseAgeExclude:
   - "@typescript-eslint/utils@8.73.0"
   - "@typescript-eslint/visitor-keys@8.73.0"
   - typescript-eslint@8.73.0
+# Recharts imports Lodash types from its published declarations.
+packageExtensions:
+  recharts@2.15.4:
+    dependencies:
+      "@types/lodash": 4.17.27

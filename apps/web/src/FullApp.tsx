@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider, skipToken, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { BookingPanel } from "./BookingPanel.js";
+import { HistoryDashboard } from "./HistoryDashboard.js";
 import { Playground, type SelectionChanges } from "./Playground.js";
 import { fullSelection } from "./adapter/fullSelection.js";
 import { httpAdapter } from "./adapter/httpAdapter.js";
@@ -22,6 +23,7 @@ function readLink() {
 
 function FullPlayground() {
   const [navigation, setNavigation] = useState(readLink);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const scenarioPicker = useRef<HTMLSelectElement>(null);
   const requestTitle = useRef<HTMLHeadingElement>(null);
   const focusAfterReset = useRef(false);
@@ -34,6 +36,7 @@ function FullPlayground() {
     staleTime: Infinity,
     select: (config) => ({
       name: config.clinic.name,
+      demoDate: config.demoDate,
       selection: link ? fullSelection(config, link, navigation.start, navigation.days) : null,
     }),
   });
@@ -111,7 +114,44 @@ function FullPlayground() {
 
   return (
     <Playground
-      intro={<p className="supporting">Local mode · Demo bookings are saved to PostgreSQL.</p>}
+      intro={
+        <>
+          <p className="supporting">Local mode · Demo bookings are saved to PostgreSQL.</p>
+          {view?.audience === "staff" && (
+            <button
+              type="button"
+              className="secondary"
+              aria-expanded={historyOpen}
+              aria-controls={historyOpen ? "history-insights" : undefined}
+              onClick={() => setHistoryOpen(!historyOpen)}
+            >
+              {historyOpen ? "Hide history insights" : "Show history insights"}
+            </button>
+          )}
+        </>
+      }
+      history={
+        historyOpen &&
+        selection?.view.audience === "staff" &&
+        clinic.data && (
+          <HistoryDashboard
+            key={scope}
+            api={api}
+            scope={scope}
+            demoDate={clinic.data.demoDate}
+            display={selection.display}
+            changes={
+              !checking &&
+              !actions.confirmed &&
+              checked &&
+              checked !== "failed" &&
+              checked.status === "blocked"
+                ? checked.suggestedChanges
+                : undefined
+            }
+          />
+        )
+      }
       persistent
       confirmed={actions.confirmed}
       clinicName={clinic.data?.name}

@@ -92,6 +92,8 @@ export const boundaries = {
             local.startsWith("apps/web/src/") &&
             !/(?:^|\/)(?:server|api)(?:\/|\.)|\.server\./u.test(local);
           const appEntry = relative === "apps/web/src/main.tsx" && source === "#playground";
+          const historyChart =
+            relative === "apps/web/src/HistoryRuleChart.tsx" && source === "recharts";
           const safePackage = allowed.some(
             (name) => source === name || source.startsWith(`${name}/`),
           );
@@ -100,6 +102,7 @@ export const boundaries = {
             !(
               browserLocal ||
               appEntry ||
+              historyChart ||
               safePackage ||
               (adapter && source === "@whynot/fixtures")
             );

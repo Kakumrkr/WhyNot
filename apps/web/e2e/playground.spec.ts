@@ -298,3 +298,17 @@ test("shows actionable guidance when the search finds no verified alternative", 
   await expect(alternatives.getByText("No verified alternatives to show.")).toBeVisible();
   await expect(alternatives.getByRole("button")).toHaveCount(0);
 });
+
+test("labels static history availability without requesting a history API", async ({ page }) => {
+  const historyRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/\/admin\/(insights|simulate)(\?|$)/.test(request.url()))
+      historyRequests.push(request.url());
+  });
+  await page.goto("/?scenarioId=H1&audience=staff");
+  await expect(
+    page.getByText("Static mode · History insights are available in the full local app."),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Show history insights" })).toHaveCount(0);
+  expect(historyRequests).toEqual([]);
+});
