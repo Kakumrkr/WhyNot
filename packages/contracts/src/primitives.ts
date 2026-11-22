@@ -78,6 +78,12 @@ export const EvaluateOptionsSchema = z.strictObject({
   trace: z.boolean().default(false),
   includeAdminFix: z.boolean().default(true),
 });
+/** Historical captures must contain the resolved options used at evaluation time. */
+export const CapturedSlotOptionsSchema = EvaluateOptionsSchema.extend({
+  alternatives: EvaluateOptionsSchema.shape.alternatives.removeDefault(),
+  includeAdminFix: EvaluateOptionsSchema.shape.includeAdminFix.removeDefault(),
+  trace: EvaluateOptionsSchema.shape.trace.removeDefault(),
+});
 export const SearchReportSchema = z.discriminatedUnion("status", [
   z.strictObject({
     status: z.literal("disabled"),

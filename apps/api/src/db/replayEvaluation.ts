@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from "node:util";
 import {
   BookingRequestSchema,
   ClinicSnapshotSchema,
-  EvaluateOptionsSchema,
+  CapturedSlotOptionsSchema,
   RangeExplanationSchema,
   RangeOptionsSchema,
   RangeRequestSchema,
@@ -16,11 +16,6 @@ import { evaluationInputVersion, syntheticHistoryPrefix } from "./evaluations.js
 import { evaluationInputs } from "./schema.js";
 
 // Capture stores resolved defaults. A replay must never fill in options a legacy row omitted.
-const capturedSlotOptions = EvaluateOptionsSchema.extend({
-  alternatives: EvaluateOptionsSchema.shape.alternatives.removeDefault(),
-  includeAdminFix: EvaluateOptionsSchema.shape.includeAdminFix.removeDefault(),
-  trace: EvaluateOptionsSchema.shape.trace.removeDefault(),
-});
 const capturedRangeOptions = RangeOptionsSchema.extend({
   searchDays: RangeOptionsSchema.shape.searchDays.removeDefault(),
   budgetEvals: RangeOptionsSchema.shape.budgetEvals.removeDefault(),
@@ -51,7 +46,7 @@ export async function replayEvaluation(db: Database, id: string) {
 
   if (row.kind === "slot") {
     const request = BookingRequestSchema.safeParse(row.request);
-    const options = capturedSlotOptions.safeParse(row.options);
+    const options = CapturedSlotOptionsSchema.safeParse(row.options);
     const original = StaffEvaluationSchema.safeParse(row.result);
     if (!request.success || !options.success || !original.success || options.data.now !== row.now)
       return incomplete;

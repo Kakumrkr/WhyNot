@@ -15,6 +15,7 @@ import { registerEvaluationTrace } from "./routes/evaluationTrace.js";
 import { registerExplanations } from "./routes/explanations.js";
 import { registerInsights } from "./routes/insights.js";
 import { registerPolicies } from "./routes/policies.js";
+import { registerSimulation } from "./routes/simulation.js";
 import { registerReset } from "./routes/reset.js";
 
 type AppOptions = {
@@ -103,6 +104,7 @@ export function createApp({
         registerExplanations(routes, database);
         registerEvaluationTrace(routes, database);
         registerInsights(routes, database);
+        registerSimulation(routes, database);
         registerBookings(routes, database);
         registerPolicies(routes, database);
         if (resetEnabled) registerReset(routes, database, scenarioId);
