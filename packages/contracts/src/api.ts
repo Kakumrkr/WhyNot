@@ -35,12 +35,12 @@ export const EvaluationTraceParamsSchema = z.strictObject({ id: ApiIdSchema });
 export const EvaluationSourceSchema = z.enum(["live_demo", "synthetic_history"]);
 export const insightsEvaluationLimit = 2000;
 /** Half-open bounds on the evaluation's recorded clock, at minute precision. */
-const InsightsWindowSchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
-const InsightsCursorSchema = z.strictObject({ afterAt: OffsetIsoSchema, afterId: ApiIdSchema });
+const EvaluationWindowSchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
+const EvaluationCursorSchema = z.strictObject({ afterAt: OffsetIsoSchema, afterId: ApiIdSchema });
 /** Continue a bounded scan with both cursor fields from the previous page. */
 export const InsightsQuerySchema = z.union([
-  InsightsWindowSchema,
-  InsightsWindowSchema.extend(InsightsCursorSchema.shape),
+  EvaluationWindowSchema,
+  EvaluationWindowSchema.extend(EvaluationCursorSchema.shape),
 ]);
 export const AvailabilityQuerySchema = RequestIdentitySchema.extend({ date: DateSchema });
 const ApiEvaluateOptionsSchema = EvaluateOptionsSchema.omit({ now: true }).extend({
@@ -69,6 +69,43 @@ export const PolicyBodySchema = z.strictObject({
   request: ApiBookingRequestSchema,
   changes: PolicyPatchSchema,
 });
+
+export const simulationEvaluationLimit = 2000;
+const SimulationSelectionSchema = EvaluationWindowSchema.extend({
+  source: EvaluationSourceSchema,
+  changes: PolicyPatchSchema,
+});
+export const SimulationBodySchema = SimulationSelectionSchema.extend({
+  cursor: EvaluationCursorSchema.optional(),
+});
+const SimulationOutcomeSchema = z.enum(["bookable", "blocked"]);
+export const SimulationResponseSchema = z.strictObject({
+  method: z.literal("independent_replay_estimate"),
+  window: EvaluationWindowSchema,
+  source: EvaluationSourceSchema,
+  total: NonnegativeSchema,
+  eligible: NonnegativeSchema,
+  newlyFeasible: NonnegativeSchema,
+  stillBlocked: NonnegativeSchema,
+  stillFeasible: NonnegativeSchema,
+  noLongerFeasible: NonnegativeSchema,
+  unsupported: NonnegativeSchema,
+  incomplete: NonnegativeSchema,
+  invalid: NonnegativeSchema,
+  inapplicable: NonnegativeSchema,
+  nextCursor: EvaluationCursorSchema.nullable(),
+  examples: z
+    .array(
+      z.strictObject({
+        start: OffsetIsoSchema,
+        before: SimulationOutcomeSchema,
+        after: SimulationOutcomeSchema,
+      }),
+    )
+    .max(4),
+});
+export type SimulationBody = z.infer<typeof SimulationBodySchema>;
+export type SimulationResponse = z.infer<typeof SimulationResponseSchema>;
 
 export const HealthResponseSchema = z.strictObject({ status: z.literal("ok") });
 const ApiCoverageSchema = z.strictObject({ from: OffsetIsoSchema, to: OffsetIsoSchema });
@@ -145,7 +182,7 @@ const InsightsSourceSchema = z.strictObject({
 });
 
 const InsightsPageSchema = z.strictObject({
-  window: InsightsWindowSchema,
+  window: EvaluationWindowSchema,
   sources: z.tuple([
     InsightsSourceSchema.extend({ source: z.literal("live_demo") }),
     InsightsSourceSchema.extend({ source: z.literal("synthetic_history") }),
@@ -159,7 +196,7 @@ export const InsightsResponseSchema = z.discriminatedUnion("status", [
   }),
   InsightsPageSchema.extend({
     status: z.literal("partial"),
-    nextCursor: InsightsCursorSchema,
+    nextCursor: EvaluationCursorSchema,
   }),
 ]);
 export type InsightsResponse = z.infer<typeof InsightsResponseSchema>;

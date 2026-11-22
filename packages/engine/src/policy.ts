@@ -17,22 +17,39 @@ function invalid(
   return { ok: false, issues: [{ code, path, message }] };
 }
 
+/** Validate changes whose bounds do not depend on a particular clinic snapshot. */
+export function validatePolicyChanges(changes: unknown): TimeResult<PolicyPatch> {
+  const patch = PolicyPatchSchema.safeParse(changes);
+  if (!patch.success)
+    return invalid("invalid_request", ["changes"], "Invalid or conflicting policy changes");
+  const advance = patch.data.findIndex(
+    (change) =>
+      change.entity === "policy" &&
+      change.field === "maxAdvanceDays" &&
+      !Number.isSafeInteger(change.value * 1440),
+  );
+  if (advance !== -1)
+    return invalid(
+      "invalid_request",
+      ["changes", advance],
+      "Advance window exceeds safe minute range",
+    );
+  return { ok: true, value: patch.data };
+}
+
 /** Parse and apply a complete patch to an independent snapshot. */
 export function applyPatch(snapshot: unknown, changes: unknown): TimeResult<AppliedPatch> {
   const parsedSnapshot = ClinicSnapshotSchema.safeParse(snapshot);
   if (!parsedSnapshot.success)
     return invalid("invalid_snapshot", ["snapshot"], "Invalid snapshot structure or references");
-  const patch = PolicyPatchSchema.safeParse(changes);
-  if (!patch.success)
-    return invalid("invalid_request", ["changes"], "Invalid or conflicting policy changes");
+  const patch = validatePolicyChanges(changes);
+  if (!patch.ok) return patch;
 
   // Schema parsing copies all accepted snapshot fields, so partial work stays local on failure.
   const copy = parsedSnapshot.data;
-  for (const [index, change] of patch.data.entries()) {
+  for (const [index, change] of patch.value.entries()) {
     const path = ["changes", index];
     if (change.entity === "policy") {
-      if (change.field === "maxAdvanceDays" && !Number.isSafeInteger(change.value * 1440))
-        return invalid("invalid_request", path, "Advance window exceeds safe minute range");
       copy.policy[change.field] = change.value;
     } else if (change.entity === "practitioner") {
       const practitioner = copy.practitioners.find(({ id }) => id === change.id);
@@ -65,7 +82,7 @@ export function applyPatch(snapshot: unknown, changes: unknown): TimeResult<Appl
       }
     }
   }
-  return { ok: true, value: { snapshot: copy, changes: patch.data } };
+  return { ok: true, value: { snapshot: copy, changes: patch.value } };
 }
 
 /** Apply allowlisted settings to a copy, or return safe validation issues. */
