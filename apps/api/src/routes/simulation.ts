@@ -60,6 +60,7 @@ export function registerSimulation(app: FastifyInstance, db: Database): void {
         supportedInputVersion: sql<boolean>`${inputVersion} = ${evaluationInputVersion}`,
         originalStatus: sql`${result}->>'status'`,
         originalMeta: sql`${result}->'meta'`,
+        originalErrors: sql`${result}->'errors'`,
       })
       .from(evaluationInputs)
       .where(

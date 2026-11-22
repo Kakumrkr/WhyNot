@@ -61,6 +61,14 @@ it("uses the selected source and scope and never persists simulated changes", as
     { ...slot, durationMs: 0 },
     { ...slot, id: "old", engineVersion: "previous-engine", durationMs: 0 },
     { ...slot, id: "missing-options", options: {}, durationMs: 0 },
+    {
+      ...evaluationRecord("off-grid", snapshot, {
+        kind: "slot",
+        request: { ...request, start: request.start + 1 },
+        options: { now: clock.now, trace: false, alternatives: false, includeAdminFix: false },
+      }),
+      durationMs: 0,
+    },
     { ...slot, id: "excluded-window", now: clock.now + 1, durationMs: 0 },
     { ...slot, id: "range", kind: "range", durationMs: 0 },
     { ...slot, id: `${syntheticHistoryPrefix}fixture`, durationMs: 0 },
@@ -72,7 +80,7 @@ it("uses the selected source and scope and never persists simulated changes", as
     method: "independent_replay_estimate",
     window,
     source: "live_demo",
-    total: 3,
+    total: 4,
     eligible: 1,
     newlyFeasible: 1,
     stillBlocked: 0,
@@ -80,6 +88,7 @@ it("uses the selected source and scope and never persists simulated changes", as
     noLongerFeasible: 0,
     unsupported: 1,
     incomplete: 1,
+    invalid: 1,
     inapplicable: 0,
     nextCursor: null,
     examples: [{ start: isoInstant(request.start), before: "blocked", after: "bookable" }],
@@ -98,6 +107,11 @@ it("guards staff access and rejects invalid time windows and patches", async () 
     { ...payload, to: window.from },
     { ...payload, from: "2026-11-16T09:00:01Z" },
     { ...payload, changes: [...payload.changes, ...payload.changes] },
+    {
+      ...payload,
+      source: "synthetic_history",
+      changes: [{ entity: "policy", field: "maxAdvanceDays", value: Number.MAX_SAFE_INTEGER }],
+    },
     { ...payload, patientId: "patient-test" },
     { ...payload, cursor: { afterAt: window.to, afterId: "slot" } },
   ]) {

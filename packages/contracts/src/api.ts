@@ -91,6 +91,7 @@ export const SimulationResponseSchema = z.strictObject({
   noLongerFeasible: NonnegativeSchema,
   unsupported: NonnegativeSchema,
   incomplete: NonnegativeSchema,
+  invalid: NonnegativeSchema,
   inapplicable: NonnegativeSchema,
   nextCursor: EvaluationCursorSchema.nullable(),
   examples: z

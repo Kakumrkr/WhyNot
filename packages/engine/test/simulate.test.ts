@@ -19,6 +19,7 @@ function capture(snapshot: ReturnType<typeof buildMinimalSnapshot>, start: numbe
     policyVersionId: snapshot.policy.versionId,
     originalStatus: original.status,
     originalMeta: original.meta,
+    originalErrors: undefined,
   };
 }
 
@@ -62,6 +63,7 @@ it("rechecks notice and buffer boundaries independently with the original clock 
     noLongerFeasible: 0,
     unsupported: 0,
     incomplete: 0,
+    invalid: 0,
     inapplicable: 0,
     examples: [
       { start, before: "blocked", after: "bookable" },

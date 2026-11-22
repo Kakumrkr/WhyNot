@@ -1,11 +1,13 @@
 import {
+  BookingRequestSchema,
   CapturedSlotOptionsSchema,
+  ClinicSnapshotSchema,
   MetaSchema,
-  PolicyPatchSchema,
+  StaffEvaluationSchema,
   schemaVersion,
 } from "@whynot/contracts";
 import { verifyAssignment } from "./feasibility.js";
-import { applyPolicyChanges } from "./policy.js";
+import { applyPolicyChanges, validatePolicyChanges } from "./policy.js";
 import { validateRequest } from "./validateRequest.js";
 import { engineVersion } from "./version.js";
 
@@ -20,6 +22,7 @@ type HistoricalSlot = {
   supportedInputVersion: boolean;
   originalStatus: unknown;
   originalMeta: unknown;
+  originalErrors: unknown;
 };
 
 type Outcome = "bookable" | "blocked";
@@ -27,8 +30,8 @@ type Example = { start: number; before: Outcome; after: Outcome };
 
 /** Compare the feasibility of each slot independently at its recorded clock. */
 export function simulatePolicyChanges(records: readonly HistoricalSlot[], changes: unknown) {
-  const patch = PolicyPatchSchema.safeParse(changes);
-  if (!patch.success) return null;
+  const patch = validatePolicyChanges(changes);
+  if (!patch.ok) return null;
 
   const counts = {
     total: records.length,
@@ -39,6 +42,7 @@ export function simulatePolicyChanges(records: readonly HistoricalSlot[], change
     noLongerFeasible: 0,
     unsupported: 0,
     incomplete: 0,
+    invalid: 0,
     inapplicable: 0,
   };
   const examples = new Map<string, Example>();
@@ -49,12 +53,36 @@ export function simulatePolicyChanges(records: readonly HistoricalSlot[], change
       continue;
     }
     const options = CapturedSlotOptionsSchema.safeParse(record.options);
-    const meta = MetaSchema.safeParse(record.originalMeta);
     if (
       !record.supportedInputVersion ||
       record.schemaVersion !== schemaVersion ||
       !options.success ||
-      options.data.now !== record.now ||
+      options.data.now !== record.now
+    ) {
+      counts.incomplete++;
+      continue;
+    }
+    if (record.originalStatus === "invalid_request") {
+      const snapshot = ClinicSnapshotSchema.safeParse(record.snapshot);
+      const hasInvalidEvidence = StaffEvaluationSchema.safeParse({
+        status: record.originalStatus,
+        errors: record.originalErrors,
+      }).success;
+      if (
+        snapshot.success &&
+        snapshot.data.policy.versionId === record.policyVersionId &&
+        BookingRequestSchema.safeParse(record.request).success &&
+        hasInvalidEvidence
+      ) {
+        counts.invalid++;
+      } else {
+        counts.incomplete++;
+      }
+      continue;
+    }
+
+    const meta = MetaSchema.safeParse(record.originalMeta);
+    if (
       !meta.success ||
       meta.data.evaluatedAt !== record.now ||
       meta.data.engineVersion !== record.engineVersion ||
@@ -76,7 +104,7 @@ export function simulatePolicyChanges(records: readonly HistoricalSlot[], change
       continue;
     }
 
-    const patched = applyPolicyChanges(baseline.value.snapshot, patch.data);
+    const patched = applyPolicyChanges(baseline.value.snapshot, patch.value);
     const modified = patched.ok
       ? validateRequest(patched.value, baseline.value.request, options.data)
       : patched;
