@@ -4,8 +4,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 
 ## Current state
 
-- **Next history card after this PR merges:** [H4 — Insights dashboard and historical simulator UI](sessions/session-H4.md). Use its starter prompt.
-- **Last confirmed session merge at handoff:** H2 via [PR #30](https://github.com/Kakumrkr/WhyNot/pull/30) at `e20d4be`.
+- **History milestone after this PR merges:** H4 completes the selected follow-on. A later milestone requires human selection.
+- **Last confirmed session merge at handoff:** H3 via [PR #31](https://github.com/Kakumrkr/WhyNot/pull/31) at `9a0506e`.
 - **Open question:** [Q-2.2-capability-context](QUESTIONS.md#q-22-capability-context) tracks the affirmative H1 and H11 qualification lists.
 - **External validation:** Clinical usefulness and developer adoption are pending. See the [first-release evidence](reviews/session-5.2-release.md).
 - **Workflow:** D-071/D-072 apply from 2.1 onward: affected tests while working, `pnpm verify` once, one push, one review, merge, handoff in the same PR. Milestone gates run `pnpm test:deep` + `pnpm bench` locally.
@@ -38,8 +38,8 @@ Keep this file short. Sessions read only "Current state" and the table; update b
 | [P5](sessions/session-P5.md)   | HTTP adapter and full local application        | done        | done        | done   | [#28](https://github.com/Kakumrkr/WhyNot/pull/28) |
 | [H1](sessions/session-H1.md)   | Historical replay inputs and trace access      | done        | done        | done   | [#29](https://github.com/Kakumrkr/WhyNot/pull/29) |
 | [H2](sessions/session-H2.md)   | Descriptive insight aggregates                 | done        | done        | done   | [#30](https://github.com/Kakumrkr/WhyNot/pull/30) |
-| [H3](sessions/session-H3.md)   | Independent historical policy replay           | done        | —           | —      | [#31](https://github.com/Kakumrkr/WhyNot/pull/31) |
-| [H4](sessions/session-H4.md)   | Insights dashboard and historical simulator UI | —           | —           | —      | —                                                 |
+| [H3](sessions/session-H3.md)   | Independent historical policy replay           | done        | done        | done   | [#31](https://github.com/Kakumrkr/WhyNot/pull/31) |
+| [H4](sessions/session-H4.md)   | Insights dashboard and historical simulator UI | done        | —           | —      | [#32](https://github.com/Kakumrkr/WhyNot/pull/32) |
 | [A1](sessions/session-A1.md)   | Optional AI wording experiment design          | —           | —           | —      | —                                                 |
 | [A2](sessions/session-A2.md)   | Provider prototype and adversarial evaluation  | —           | —           | —      | —                                                 |
 | [A3](sessions/session-A3.md)   | Optional narration integration and fallback    | —           | —           | —      | —                                                 |
@@ -56,7 +56,7 @@ Each gate card runs `pnpm test:deep` (5000 properties) and `pnpm bench` locally 
 | Policy/range 4.3 | local passed | 5,000-run properties, built-app Playwright and the Windows baseline benchmark passed. Evidence in PR #23.                                          |
 | Release 5.2      | local passed | 236 standard and deep tests, 68 Chromium checks, Windows S/M/L bench, clean clone and packed consumer. [Evidence](reviews/session-5.2-release.md). |
 | Persistence      | passed       | D-076. P1, P3 and P5 merged.                                                                                                                       |
-| History          | in progress  | Staff trace and descriptive aggregates use stored evaluation records. Independent policy replay uses captured slot inputs.                         |
+| History          | H4 in review | Staff dashboard shows stored descriptive aggregates and independent slot replay estimates.                                                         |
 | Optional AI      | not selected | Human selection after first release.                                                                                                               |
 
 ## Carry-forward notes
@@ -72,8 +72,10 @@ Facts later sessions need, each one line. Remove a note once it no longer applie
 
 ## Last handoff
 
-**H3 — Independent historical policy replay.** Staff `POST /api/admin/simulate` accepts `from`, `to`, `source` and `changes`. The window includes `from` and excludes `to` on the stored evaluation clock. Select one source. A replay compares up to 2,000 slots and returns `nextCursor` when more slots are available. Pass it as `cursor` with the same selection and patch to compare the next page. Range records do not enter the simulation.
+**H4 — Insights dashboard and historical simulator UI.** Full local Staff view offers History insights for the selected demo scope. Select an evaluation date window in UTC and a history source. Each page shows recorded counts and denominators. The chart of selected primary rules has an equivalent HTML table.
 
-The estimate compares each slot at its recorded clock, options and policy settings. Eligible slots partition into newly feasible, still blocked, still feasible and no longer feasible. Unsupported engine versions, incomplete evidence, recorded invalid requests and inapplicable changes are counted separately. Examples show the first historical slot for each observed outcome transition. Replays leave stored history and bookings untouched and do not model knock-on occupancy, demand, clinical suitability or actual conversion.
+The historical simulator uses the selected appointment's verified policy fix and the applied date and source filters. The estimate stays visible through empty and error states. Each replay page shows eligible and excluded counts plus before-and-after examples when available.
 
-Local verification passed 291 tests, including the six H3 checks. The PostgreSQL 16.16 gate passed 10 tests.
+Static mode labels history as a full local capability. The next optional milestone is A1 if explicitly selected.
+
+The six new full-mode and two new static Chromium checks passed at 1280 and 390 pixels. [Desktop](design/history-desktop.png) · [Mobile](design/history-mobile.png).

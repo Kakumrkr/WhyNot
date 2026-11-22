@@ -30,6 +30,7 @@ type Props = {
   edit: (changes: SelectionChanges, start?: number | null, days?: number) => void;
   fallback: ReactNode;
   intro?: ReactNode;
+  history?: ReactNode;
   extra?: ReactNode;
   booking?: ReactNode;
 };
@@ -54,6 +55,7 @@ export function Playground({
   edit,
   fallback,
   intro,
+  history,
   extra,
   booking,
 }: Props) {
@@ -95,6 +97,8 @@ export function Playground({
           {intro}
           <p>Explore how the clinic checks a requested appointment in patient and staff views.</p>
         </div>
+
+        {history}
 
         {selection ? (
           <div className="workspace">

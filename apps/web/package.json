@@ -19,7 +19,8 @@
     "@whynot/fixtures": "workspace:*",
     "@whynot/narrator": "workspace:*",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "recharts": "2.15.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

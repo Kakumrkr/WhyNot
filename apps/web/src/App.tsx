@@ -138,6 +138,11 @@ export function App() {
   const resetSelections = () => update(new URLSearchParams(), undefined, true);
   return (
     <Playground
+      intro={
+        <p className="supporting">
+          Static mode · History insights are available in the full local app.
+        </p>
+      }
       selection={selection}
       starts={selection?.starts ?? null}
       checked={checked}
