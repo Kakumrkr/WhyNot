@@ -1,10 +1,10 @@
-# 01 — Architecture
+# Architecture
 
 ## Principles
 
 The engine decides feasibility, explanations, alternatives, ordering, groups and policy fixes. Apps/templates render. The engine is pure: no I/O, actual clock, randomness, environment, logging, timers, network or Node built-ins. Same inputs produce deep-equal output. Shared types come from Zod schemas; patient data is projected before rendering. Templates ship first. No new infrastructure without approved decisions.
 
-## First-release flow
+## Static playground flow
 
 ~~~mermaid
 flowchart LR
@@ -22,17 +22,16 @@ Links contain curated scenario ID and safe selections only. Imports are validate
 
 ## Layout
 
-| Area | Purpose | Introduced |
-| --- | --- | --- |
-| packages/contracts | Schemas and inferred types | 0.1 skeleton; 1.1 domain |
-| packages/engine | Time, rules, candidates, matrix, explanations, alternatives, projection, preview, range | Phase 1 onward |
-| packages/narrator | Browser-safe deterministic templates/formatting | 0.1 skeleton; 2.2 behavior |
-| packages/fixtures | Synthetic clinic/scenarios and separate test generators | 1.2 onward |
-| packages/engine/test/reference | Independent naive checker; no production exports | 1.5 |
-| apps/web | React playground and browser adapter | 0.1 minimal scaffold; Phase 3 |
-| examples/node | Own-data integration, no Riverside dependency | README scaffold in 0.1; runnable in 5.1 |
-| apps/api | Fastify/DB/transactions, absent from first scaffold | P1 onward |
-| tools/eval-narration | Optional AI experiment, absent from first release | A2 |
+| Area | Purpose |
+| --- | --- |
+| [packages/contracts](../packages/contracts) | Shared schemas and inferred TypeScript types |
+| [packages/engine](../packages/engine) | Scheduling rules, explanations, alternatives, projection, policy previews and time ranges |
+| [packages/narrator](../packages/narrator) | Deterministic wording and formatting |
+| [packages/fixtures](../packages/fixtures) | Fictional clinic scenarios and test generators |
+| [packages/engine/test/reference](../packages/engine/test/reference) | Independent checker that the tests compare with the engine |
+| [apps/web](../apps/web) | React playground with static and full local modes |
+| [examples/node](../examples/node) | Packaged Node integration with a separate fictional clinic |
+| [apps/api](../apps/api) | Fastify HTTP adapter, PostgreSQL persistence and booking transactions |
 
 ## Dependencies and exports
 
@@ -40,17 +39,13 @@ Engine imports only contracts and Luxon (Luxon only in src/time.ts); relative im
 
 Templates import contracts and formatting helpers, never DB/runtime engine decisions. Intl may format display values; timezone conversion stays in engine/time.ts.
 
-Fixtures may use contracts/engine for synthetic data. Production fixture imports are restricted to the static adapter and later seed; property generators have test-only entry points. Consumer libraries/examples do not depend on fixtures.
+Fixtures may use contracts and the engine for synthetic data. Production fixture imports are restricted to the static adapter and database seed. Property generators have test-only entry points. Consumer libraries and examples do not depend on fixtures.
 
-Public runtime functions become exported in their owning sessions: isBookable, evaluate, projectForAudience, applyPolicyChanges, previewPolicyChanges, explainRange, catalog/version. No partially valid public results. Built schema/template subpaths work in Node/browser. No tests, generators, provider clients or secrets in browser entry points.
+The [integration guide](integration.md) lists package entry points and how to use them. Built schema and template subpaths work in Node and in the browser. Keep tests, generators and secrets out of browser entry points.
 
-## Stack and modes
+## Deployment modes
 
-First release: strict TypeScript ESM, pnpm workspaces, Zod, Luxon, React, Vite, React Router, Tailwind, Vitest, fast-check, Playwright and axe. TanStack Query is the only allowed server-state library when asynchronous adapters need one; synchronous in-memory UI does not require it. Pin compatible supported stable versions in 0.1 (D-043), including a supported Node LTS with a minimum of 22. Do not copy obsolete versions from superseded cards.
-
-Static GitHub Pages is the first release. Full local mode begins in P1, P3 and P5: Fastify, Drizzle, supported PostgreSQL, PGlite portable tests, real Postgres concurrency/unsupported-feature checks and Docker Compose. Recharts begins with H4 insights. Hosting and AI model choices are deferred.
-
-No API/DB/provider scaffolds, chart dependencies, placeholder success checks or empty future routes in 0.1.
+The static React/Vite playground runs the engine in the browser and is deployed to GitHub Pages. Full local mode uses the same engine through a Fastify API, Drizzle and PostgreSQL. PGlite supports portable database tests, and PostgreSQL covers concurrency and database extensions. [Runbook](runbook.md)
 
 ## Cross-cutting rules
 
@@ -59,4 +54,4 @@ No API/DB/provider scaffolds, chart dependencies, placeholder success checks or 
 - Measure latency only in benchmark/app wrappers, never Evaluation.
 - Invalid snapshot/request: structured invalid_request; business refusal: blocked; invariant failure: throw.
 - Deterministic engineVersion, policyVersionId, evaluatedAt and schema version; ruleVersion on facts.
-- Later API invokes engine, projects data, captures complete evaluation inputs and measures latency externally.
+- The API invokes the engine, projects data, captures complete evaluation inputs and measures latency outside the engine.

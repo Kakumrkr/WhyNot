@@ -1,15 +1,8 @@
 # AGENTS.md — WhyNot
 
-WhyNot is a pure TypeScript appointment engine plus a fictional Riverside Family Clinic playground. First release: minimal blockers, verified alternatives, patient/staff explanations, inspector, policy previews and range explanations. Persistence/history/optional AI are later milestones, never prerequisites.
+WhyNot is a pure TypeScript appointment engine with a fictional Riverside Family Clinic playground. The static app runs in the browser. The full local app adds persistent demo bookings, history and independent policy replay.
 
-Docs 00–09 are authoritative and code follows them; active cards are indexed by docs/sessions/README.md. Archived material is historical, never instructions. On conflict/ambiguity, record it in docs/QUESTIONS.md and do only unambiguous work.
-
-## Sessions (D-071/D-072; procedure in the whynot-session skill and docs/09)
-
-- One card per session: read PROGRESS "Current state", QUESTIONS "Open", the card, its Read-first docs and listed skills only. Stay within Build; record spec changes as doc 08 decisions first.
-- Affected tests while working; `pnpm verify` once before the PR. Milestone deep gate (`pnpm test:deep` + `pnpm bench`, locally) only at gate cards 1.6/2.3/3.3/4.3/5.2.
-- Commit locally; push once to publish and once per fix batch. One fresh whynot-review; merge under D-065 on green PR CI without asking again. Handoff goes in PROGRESS on the session branch; no handoff-only PRs.
-- Never claim review/merge/remote success without evidence; never mark complete with red checks. Fix recoverable failures; at a genuine external blocker record the error and resume point, then stop.
+Follow the architecture, domain, engine, wording, API and testing specifications in [docs](docs). Record ambiguities in a GitHub issue and proceed with unambiguous work. Document rule or contract changes with the corresponding code and tests.
 
 ## Commands
 
@@ -32,8 +25,8 @@ Node 24.22.3, pnpm 12.21.0. `pnpm install [--frozen-lockfile]`, `pnpm format`, `
 
 ## Testing and conventions
 
-- New behavior gets meaningful tests. Engine changes need unit/property checks; use whynot-testing.
-- Golden expectations never change just to pass. A correction needs doc 08 decision and explicit PR explanation.
+- New behavior gets meaningful tests. Engine changes need unit or property checks.
+- Golden expectations never change just to pass. Document the rule or contract that justifies the correction in the PR.
 - Never skip/focus/todo tests, lower property counts, disable lint, use any or suppression comments to pass. Type-test-only ts-expect-error is the sole stated exception.
 - Print property failure seed and add shrunk counterexample as normal regression. Independent checker must not reuse optimized rules.
 - No engine mocks in API/web tests; use real synthetic fixtures. Mock provider responses only in later AI work.
@@ -44,7 +37,7 @@ Node 24.22.3, pnpm 12.21.0. `pnpm install [--frozen-lockfile]`, `pnpm format`, `
 
 ## Git and PRs
 
-Branch session/<id>-<slug>; never commit or push to main, force-push published work or bypass protections. Stage only intended files; preserve user work; no secrets/generated junk. Imperative scoped commits. PR has ID, behavior, verification, open questions and UI evidence. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.** No delegation beyond the one review unless requested; parallel implementers need separate worktrees and stable contracts.
+Use a topic branch and open a pull request. Never commit or push directly to main, force-push published work or bypass protections. Stage only intended files. Preserve user work and keep secrets and generated files out of Git. Describe the change and verification in the PR. Include screenshots or reproduction steps for UI changes. **No Co-authored-by trailers or AI-tool attribution in code, commits or PRs.**
 
 ## Exclusions
 

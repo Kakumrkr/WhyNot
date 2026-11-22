@@ -1,70 +1,79 @@
-# WhyNot
+<p align="center">
+  <img src="docs/media/whynot-mark.svg" width="96" height="96" alt="" />
+</p>
 
-**Understand why a booking fails, find what works, and inspect what a policy change would do.**
+<h1 align="center">WhyNot</h1>
 
-An open-source TypeScript appointment engine and static playground for fictional Riverside Family Clinic. The engine computes sufficient, irredundant blockers, rechecked alternatives and staff policy previews. Templates explain them; no model decides.
+<p align="center"><strong>Explain why an appointment is unavailable and show what would make it bookable.</strong></p>
 
-## Playground preview
+<p align="center">
+  <a href="https://kakumrkr.github.io/WhyNot/">Try the playground</a> ·
+  <a href="#quick-start">Run locally</a> ·
+  <a href="#use-the-engine">Use the engine</a>
+</p>
 
-The Riverside playground checks appointments against a fictional clinic with a frozen clock. Select a scenario to see patient explanations and verified alternatives, then switch to Staff to inspect candidate combinations and their blockers.
+An open-source TypeScript engine for appointment scheduling. A calendar can show an empty slot even when a practitioner is on leave, a room lacks the right equipment, or the previous booking needs a buffer. WhyNot evaluates those constraints together, returns the facts behind the decision, and rechecks suggested alternatives against the same rules.
 
-[Open the Riverside playground](https://kakumrkr.github.io/WhyNot/)
+## See a booking decision
 
-![Riverside walkthrough showing the H1 blockers, reviewing an alternative, and checking the 14:45 appointment](docs/reviews/media/check-alternative.gif)
+Open the [Riverside minor-procedure scenario](https://kakumrkr.github.io/WhyNot/?scenarioId=H1). At **14:30**, Dr. Rao’s post-procedure buffer is still in effect and Dr. Mehta is unavailable. WhyNot verifies **14:45 with Dr. Rao** as an opening. Switch to **Staff** to inspect the candidate combinations and test a hypothetical policy change.
 
-[Desktop staff inspector](docs/reviews/media/staff-inspector-desktop.png) · [Mobile patient explanation](docs/reviews/media/patient-mobile.png) · [Two-minute walkthrough script](docs/video-script.md)
+<p align="center">
+  <img src="docs/reviews/media/check-alternative.gif" width="780" alt="The Riverside playground explains the blocked 14:30 appointment and opens the verified 14:45 alternative." />
+</p>
 
-To run the static playground locally, install dependencies with `pnpm install --frozen-lockfile`, then run `pnpm build` and `pnpm dev`. The [runbook](docs/runbook.md) covers clean installs, production builds, checks and GitHub Pages deployment.
+## What it does
 
-Curated links retain the scenario, audience, date, service and practitioner preference. For example, append `?scenarioId=H1&audience=staff` to the playground address to open the minor-procedure inspector.
+| Need                           | WhyNot returns                                                                                                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Explain a rejected appointment | A set of facts that accounts for every candidate. Patients get a privacy-filtered explanation. Staff can inspect the underlying evidence. |
+| Find another time              | Rechecked alternatives and the search coverage, so you can see how far the engine looked.                                                 |
+| Explain an empty calendar      | Groups of blocked starts, any shared cause, and a rechecked next opening when found.                                                      |
+| Test a scheduling policy       | A before-and-after feasibility check for a concrete change, such as shorter notice or a different buffer.                                 |
 
-Open **Synthetic snapshot files** in the playground to import a fictional clinic or download the current snapshot and frozen clock. Use **Reset imported snapshot** to restore the curated view.
+The engine produces the same result for the same snapshot, request, and clock. It evaluates one appointment at one clinic. Search is bounded, and the demo uses fictional data.
 
-## Run the full local application
+## Quick start
 
-The optional full mode uses PostgreSQL and the same engine and explanations as the static playground. Confirm and cancel fictional appointments from the booking panel. Each curated scenario has isolated bookings and its authored frozen clock. Follow the [full local setup](docs/runbook.md#run-the-full-local-application) to seed the database and start the API and web app.
+Use **Node 24.22.3** and **pnpm 12.21.0**.
 
-In Staff view, open **History insights** to filter recorded outcomes or replay the selected appointment’s verified policy fix against historical slots. Base Riverside includes two weeks of seeded synthetic history. The replay estimates feasibility for each slot at its recorded clock and occupancy.
-
-## Use the engine in Node
-
-Build and validate the local packages with the [independent Node example](examples/node/README.md). The [integration guide](docs/integration.md) covers ESM imports, mapping clinic records, using patient projection, and the model and search limits.
-
-## First release
-
-Browser/Node engine, documented schemas, independent integration example, patient/staff views, empty-calendar explanations, alternatives, policy playground and inspector. Free static demo; no server, account, DB or model key.
-
-The model covers one appointment at one clinic and uses the supplied settings and snapshot. Search is bounded, and staff policy previews are hypothetical. Optional AI is a later milestone. Use fictional data. Clinical usefulness and developer adoption are pending external review.
-
-[Release notes](docs/reviews/release-notes-v1.0.0.md) · [Release evidence](docs/reviews/session-5.2-release.md) · [Security review](docs/security/first-release.md) · [Algorithm write-up](docs/writeup.md)
-
-## Start a development session
-
-Open this repository in Codex and paste:
-
-```text
-$whynot-session
-Select the next card from docs/PROGRESS.md "Current state" and run it.
+```sh
+git clone https://github.com/Kakumrkr/WhyNot.git
+cd WhyNot
+pnpm install --frozen-lockfile
+pnpm build
+pnpm dev
 ```
 
-Select current work from [progress](docs/PROGRESS.md) and [active cards](docs/sessions/README.md). Archived phase cards are superseded.
+Open [localhost:5173](http://127.0.0.1:5173/). This is the same static mode served by GitHub Pages. The engine runs in your browser with bundled fictional scenarios. You can also load the [Harbor example snapshot](examples/node/snapshot.json) under **Synthetic snapshot files**.
 
-## Documentation
+### Run with bookings and history
 
-| Document                                   | Purpose                                            |
-| ------------------------------------------ | -------------------------------------------------- |
-| [Product](docs/00-product-brief.md)        | Users, contribution, competition, scope            |
-| [Architecture](docs/01-architecture.md)    | Pure engine, packages and adapters                 |
-| [Domain](docs/02-domain-and-rules.md)      | Rules and hero scenarios                           |
-| [Algorithms](docs/03-engine-algorithms.md) | Explanations, search, patches, ranges, performance |
-| [Wording](docs/04-explanation-and-ai.md)   | Contracts, projection and templates                |
-| [Data](docs/05-api-and-data.md)            | Static import/export and local persistence         |
-| [Testing](docs/06-testing-and-accuracy.md) | Gates, properties and goldens                      |
-| [Roadmap](docs/07-roadmap.md)              | Milestones and release                             |
-| [Decisions](docs/08-decisions.md)          | Accepted and superseded decisions                  |
-| [Workflow](docs/09-codex-workflow.md)      | Skills, agents, Git and handoff                    |
-| [Sessions](docs/sessions/README.md)        | Ordered cards and starter prompts                  |
-| [Progress](docs/PROGRESS.md)               | Implemented/reviewed/merged state                  |
-| [Questions](docs/QUESTIONS.md)             | Issues and resolutions                             |
+For persistent fictional bookings, start the local Fastify API and PostgreSQL using the [full-mode setup](docs/runbook.md#run-the-full-local-application). Confirm or cancel appointments, then open **History insights** in Staff view to inspect recorded outcomes and replay a policy change against historical requests. [History dashboard screenshot](docs/design/history-desktop.png)
 
-Use Node 24.22.3 and pnpm 12.21.0. `pnpm verify` checks formatting, lint, types, tests and builds in order. See the [command table](AGENTS.md) and [version decision](docs/08-decisions.md). Original code is [MIT licensed](LICENSE).
+## Use the engine
+
+The [Node example](examples/node/README.md) packs the ESM libraries from your checkout and exercises them in a separate project. After installing and building, run:
+
+```sh
+pnpm exec node examples/node/verify-packages.mjs
+```
+
+The engine accepts a clinic snapshot, a booking request, and a clock as inputs. Project the result before passing it to patient-facing code.
+
+```ts
+import { evaluate, projectForAudience } from "@whynot/engine";
+
+const staffResult = evaluate(snapshot, request, { now });
+const patientResult = projectForAudience(staffResult, "patient", {
+  requesterPatientId: request.patientId,
+});
+```
+
+See the [integration guide](docs/integration.md) for data mapping, result semantics, and local package installation. The [engine architecture](docs/01-architecture.md) and [algorithm walkthrough](docs/writeup.md) show how candidates, facts, and explanations fit together.
+
+## Contributing
+
+Run `pnpm verify` before you open a pull request. See [Contributing](CONTRIBUTING.md) for test and reporting guidance, or start with the [runbook](docs/runbook.md) for development and deployment commands.
+
+[MIT license](LICENSE) · [v1.0.0 release notes](docs/reviews/release-notes-v1.0.0.md)

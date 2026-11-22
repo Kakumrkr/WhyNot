@@ -8,4 +8,4 @@ WhyNot is an open-source TypeScript appointment engine and static playground. Ex
 - Import and export versioned fictional snapshots locally. Imported selections clear on reset or browser navigation.
 - Build the ESM engine, contracts and templates as tarballs and run the independent Harbor clinic example. The `v1.0.0` tag versions the repository release. The package manifests are private and the example installs from local archives. [Integration guide](../integration.md)
 
-The release models one appointment in one clinic from the supplied records and settings. Search is bounded. The static demo stores no appointments and requires no account, server, database or model key. Clinical usefulness and developer adoption are pending external review. [Runbook](../runbook.md) · [Technical evidence](session-5.2-release.md)
+The release models one appointment in one clinic from the supplied records and settings. Search is bounded. The static demo stores no appointments and requires no account, server, database or model key. Clinical usefulness and developer adoption are pending external review. [Runbook](../runbook.md) · [Security review](../security/first-release.md)

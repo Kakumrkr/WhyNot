@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">WhyNot calendar mark</title>
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="#174f45"/>
+  <path d="M43 30v15m42-15v15M31 57h66m-56-20h46a10 10 0 0 1 10 10v44a10 10 0 0 1-10 10H41a10 10 0 0 1-10-10V47a10 10 0 0 1 10-10Z" fill="none" stroke="#f8f7f2" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5"/>
+  <path d="M42 78h13m-6.5-6.5v13" fill="none" stroke="#87ad9e" stroke-linecap="round" stroke-width="3.5" transform="rotate(45 48.5 78)"/>
+  <path d="M67 79.5l6.5 6.5L85 73" fill="none" stroke="#e9c67b" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5"/>
+</svg>

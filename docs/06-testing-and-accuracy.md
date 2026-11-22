@@ -43,7 +43,7 @@ packages/engine/test/reference directly loops real candidates and checks domain 
 
 ## Golden and regression corpus
 
-H1–H8 explanations in 1.6, template expectations in 2.2, alternatives in 2.3, actual patches in 4.1; isolated H9–H11 in 4.2. Format: schemaVersion, id, named snapshot/overrides, injected now, request, expected behavior. Adding planned expectations is permitted; changing existing expectations needs a decision and PR explanation.
+The Riverside goldens cover explanations, wording, alternatives, policy patches and range outcomes. Each has a schema version, ID, named snapshot or overrides, injected clock, request and expected behavior. Explain why any change to an existing expectation is correct in the pull request.
 
 At least 16 edge goldens: DST transition, closing boundary, break edge, exact adjacency, zero buffers, no qualified practitioner, no capable room, patient-limit plus notice, preference plus leave, equipment-only conflict, maintenance midnight, advance boundary, exact notice, exact cap, cancelled booking, equal-cost ties.
 
@@ -51,10 +51,10 @@ Additional regressions: every empty pool, malformed references, equal-weight tie
 
 ## Review, performance and claims
 
-Human helpfulness: correct, clear, complete enough, kind, actionable; target >=4/5 per audience/scenario. Record reviewer/date and real observations in docs/reviews. Missing reviewers mean validation pending; technical preview/release reports status honestly.
+Assess explanation helpfulness for correctness, clarity, completeness, tone and whether the reader can act on it. Record observations with the audience and scenario. Automated tests cover modeled behavior. Clinical usefulness and developer adoption need external observations.
 
-Use doc 03's sole benchmark target table. Record runtime/hardware/warm-up and p50/p95 on S/M/L. Baseline in 1.6, extended as features land; changes require card authority and measured reasons.
+Use the [benchmark targets](03-engine-algorithms.md#performance-targets). Record the runtime, hardware, warm-up and p50/p95 on S, M and L fixtures. Explain baseline changes with measurements.
 
-5.1 consumes packed ESM packages in a clean temporary consumer; check schema/template subpaths and absence of fixture/provider/test dependencies.
+The [Node example](../examples/node/README.md) installs packed ESM packages in a clean temporary project and checks schema and template subpaths and package dependencies.
 
 Say tests check sufficient/irredundant explanations and bookable alternatives for modeled inputs. Claim optimal only with flag true. Do not claim universal proof, clinical endorsement, real demand, recovered revenue or semantic proof of AI prose.

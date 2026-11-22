@@ -1,4 +1,4 @@
-# 05 — Adapters, data and later API
+# Adapters, data and local API
 
 ## First release
 
@@ -12,7 +12,7 @@ Curated links encode scenarioId, audience and validated date/service/practitione
 
 Expose engine-shaped evaluate, availability, explainRange, policy preview and scenario/reset operations. Static adapter is synchronous internally; UI may wrap it for pending/error handling. Avoid artificial network infrastructure. Later HTTP adapter implements the same semantic operations; components do not branch business rules by mode.
 
-## Persistence milestone (P1, P3 and P5)
+## Local persistence
 
 Pin supported Postgres and Drizzle versions at P1. Fastify routes and all wire schemas belong to contracts; instants use explicit-offset ISO. Error envelope is { error: { code, message, details? } }. Validate responses in tests/development. Demo role headers are not authentication and never justify real data use.
 
@@ -58,7 +58,7 @@ Riverside persists its original demo request window separately from known search
 
 `GET /api/clinic` returns both `demoWindow` and `coverage`. The full date picker starts with the demo window and can follow verified openings within coverage (D-081).
 
-## Insights and replay H1–H4
+## Insights and replay
 
 Reported blocking rules count chosen explanations, not every causal blocker or lost bookings. Explanation weights affect attribution. Show total slot evaluations, blocked share and supported-patch feasibility counts with denominators; distinguish ranges, repeated synthetic requests and unique customers.
 
@@ -66,14 +66,14 @@ Replay uses the stored snapshot/now/options and exact engine version. If that en
 
 Always label estimate: independent replays ignore knock-on occupancy, demand, clinical suitability and actual conversion. Synthetic history is visibly synthetic. No recovered-booking or revenue claims.
 
-## Implementation guardrails (P/H/A cards)
+## Implementation guardrails
 
-Formerly the whynot-api skill (folded in by D-072). Use only P/H/A cards, not superseded phase-3 cards. The API orchestrates engine decisions and never recomputes or reorders them.
+The API orchestrates engine decisions and never recomputes or reorders them.
 
 - Shared request/response schemas live in contracts; validate both in development/tests. Explicit-offset ISO at the boundary, frozen clock helper, actual evaluation bundles, durations measured in wrappers.
 - Project before any patient serialization; allowlist errors; no raw trace/fix/booking identifiers in explanations. Staff-only guards and fictional booking ownership for cancellation. Demo headers/role switch are not auth.
 - Body-size and rate limits, explicit CORS, safe logs: never log patient names, payloads or narration.
-- P1 probes PGlite extensions/concurrency and adds a dedicated real-Postgres CI job where needed; no silently skipped constraints/races. Append-only migrations after merge; normalized source settings and immutable policy versions.
+- Test PGlite extensions and concurrency against real PostgreSQL where needed. Keep migrations append-only after merge, normalize source settings and preserve immutable policy versions.
 - Booking: SERIALIZABLE → load inside tx → evaluate → insert or projected 409; up to three retries, honest contention after exhaustion. Exclusion constraints are a backstop; buffer rules stay engine-owned. Soft cancel; deterministic reset.
-- P3 stores immutable full snapshot/request/now/options/schema/engine-version bundles; H1 traces and H3 replay use them, not current settings or booking timestamps. Unsupported engine version is explicit. Range and slot evaluations are distinct.
-- Insights describe reported blockers with denominators, not lost-business causation. Replay estimates are always labelled. The AI endpoint exists only after the A1/A2 decision; keys are read from API configuration only.
+- Store immutable snapshot, request, clock, options, schema and engine version bundles. Trace and replay use those bundles. Count unsupported engine versions explicitly and distinguish range and slot evaluations.
+- Report insight counts with their denominators and label replay results as estimates.

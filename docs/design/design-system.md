@@ -1,6 +1,6 @@
 # Riverside playground design system
 
-[D-073](../08-decisions.md) defines the visual and accessibility choices. The web app's `src/styles.css` holds the tokens.
+The playground's [stylesheet](../../apps/web/src/styles.css) defines the visual tokens.
 
 | Token | Use |
 | --- | --- |
