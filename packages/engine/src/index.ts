@@ -23,3 +23,4 @@ export { evaluate, previewPolicyChanges } from "./evaluate.js";
 export { applyPolicyChanges } from "./policy.js";
 export { projectForAudience } from "./project.js";
 export { explainRange } from "./range.js";
+export { simulatePolicyChanges } from "./simulate.js";
